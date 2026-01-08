@@ -3,7 +3,7 @@ import path from 'path';
 
 // In development, Next.js 'process.cwd()' is the project root (frontend)
 // DB is in sibling 'backend' folder
-const dbPath = path.resolve(process.cwd(), 'investor_news.db');
+const dbPath = path.resolve(process.cwd(), '../backend/investor_news.db');
 
 let db: any;
 

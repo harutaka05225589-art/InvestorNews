@@ -2,7 +2,7 @@ import sqlite3
 import os
 from datetime import datetime
 
-DB_NAME = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'investor_news.db')
+DB_NAME = "investor_news.db"
 
 def get_db_connection():
     conn = sqlite3.connect(DB_NAME)

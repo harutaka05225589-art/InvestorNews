@@ -1,5 +1,4 @@
-import { getInvestors } from '@/lib/db';
-import { Investor } from '@/lib/types';
+import { getInvestors, Investor } from '@/lib/db';
 import { MetadataRoute } from 'next';
 
 const BASE_URL = 'https://investor-news-demo.vercel.app'; // Replace with actual domain
