@@ -18,6 +18,12 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  verification: {
+    google: 'OKOMP12oUHAz49fzUJpuKZsk20XLEsF2nDPgpZRgAZk',
+  },
+  other: {
+    'google-adsense-account': 'ca-pub-1018275382396518',
+  },
 };
 
 import Script from 'next/script';
@@ -30,8 +36,6 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
-        <meta name="google-site-verification" content="OKOMP12oUHAz49fzUJpuKZsk20XLEsF2nDPgpZRgAZk" />
-        <meta name="google-adsense-account" content="ca-pub-1018275382396518" />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1018275382396518"
