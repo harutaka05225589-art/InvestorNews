@@ -1,0 +1,32 @@
+# Systems
+.DS_Store
+Thumbs.db
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+build/
+.vercel
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/

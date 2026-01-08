@@ -1,0 +1,42 @@
+import './globals.css';
+import type { Metadata } from 'next';
+import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: {
+    template: '%s | 投資家ニュース',
+    default: '投資家ニュース - 日本株投資家の注目情報を自動集約',
+  },
+  description: 'テスタ、藤本茂など、日本株市場で注目される投資家のニュースを自動で収集・要約。忙しい投資家のための時短情報サイトです。',
+  keywords: ['投資家', '株', '日本株', 'ニュース', 'まとめ', 'テスタ'],
+  openGraph: {
+    type: 'website',
+    locale: 'ja_JP',
+    siteName: '投資家ニュース',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="ja">
+      <body>
+        <main className="container">
+          <header>
+            <div className="header-content">
+              <Link href="/" className="brand">Investor News</Link>
+            </div>
+          </header>
+          {children}
+        </main>
+      </body>
+    </html>
+  );
+}
