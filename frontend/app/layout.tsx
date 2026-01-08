@@ -20,6 +20,8 @@ export const metadata: Metadata = {
   },
 };
 
+import Script from 'next/script';
+
 export default function RootLayout({
   children,
 }: {
@@ -28,6 +30,12 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1018275382396518"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <main className="container">
           <header>
             <div className="header-content">
