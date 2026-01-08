@@ -30,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <head>
+        <meta name="google-site-verification" content="OKOMP12oUHAz49fzUJpuKZsk20XLEsF2nDPgpZRgAZk" />
         <meta name="google-adsense-account" content="ca-pub-1018275382396518" />
         <script
           async

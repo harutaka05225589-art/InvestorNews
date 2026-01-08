@@ -56,16 +56,16 @@ def init_db():
 
     # Seed Initial Investors
     initial_investors = [
-        ("テスタ", '["Testa"]', "デイトレード・スキャルピング中心、数十億運用", "https://twitter.com/tesuta1"),
-        ("藤本茂", '["シゲル"]', "88歳の現役デイトレーダー", "https://twitter.com/"), 
-        ("弐億貯男", '["2okutameo"]', "割安成長株、サラリーマン投資家", "https://twitter.com/2okutameo"),
-        ("テンバガー投資家X", '[]', "中長期の成長株投資", "https://twitter.com/"),
-        ("かんち", '["kanchi"]', "高配当・優待バリュー株", "https://twitter.com/kanchi555"),
-        ("DAIBOUCYOU", '["大膨張"]', "割安成長株からの分散投資", "https://twitter.com/DAIBOUCHOU"),
-        ("成長株テリー", '["Terry"]', "成長株集中投資", "https://twitter.com/"),
-        ("桐谷広人", '["桐谷さん"]', "株主優待投資", "https://twitter.com/"),
-        ("kenmo", '["けんも"]', "イベントドリブン・需給", "https://twitter.com/kenmocalis"),
-        ("かぶ１０００", '["kabu1000"]', "バリュー株・資産バリュー", "https://twitter.com/kabu1000")
+        ("テスタ", '["Testa"]', "デイトレード・スキャルピング中心、数十億運用", "https://twitter.com/testa001"),
+        ("藤本茂(シゲルさん)", '["シゲル"]', "88歳の現役デイトレーダー", ""), 
+        ("弍億貯男", '["2okutameo"]', "割安成長株、サラリーマン投資家", "https://twitter.com/2okutameo"),
+        ("テンバガー投資家X", '[]', "中長期の成長株投資", "https://twitter.com/Investor__X"),
+        ("かんち", '["kanchi"]', "高配当・優待バリュー株", "https://twitter.com/kanto990"),
+        ("DAIBOUCHOU", '["大膨張"]', "割安成長株からの分散投資", "https://twitter.com/DAIBOUCHO"),
+        ("成長株テリー", '["Terry"]', "成長株集中投資", "https://twitter.com/freepapa"),
+        ("桐谷広人(桐谷さん)", '["桐谷さん"]', "株主優待投資", "https://twitter.com/yuutaihiroto"),
+        ("kenmo", '["けんも"]', "イベントドリブン・需給", "https://twitter.com/kenmokenmo"),
+        ("かぶ1000", '["kabu1000"]', "バリュー株・資産バリュー", "https://twitter.com/kabu1000")
     ]
 
     # Check if investors exist, if not seed
