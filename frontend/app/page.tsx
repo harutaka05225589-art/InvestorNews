@@ -9,7 +9,7 @@ export default function Home() {
 
   return (
     <div>
-      <h1>注目投資家ランキング</h1>
+      <h1>注目投資家の動向</h1>
 
       {investors.map((investor) => (
         <Link href={`/investors/${investor.id}`} key={investor.id}>
