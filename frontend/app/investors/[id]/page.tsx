@@ -41,10 +41,19 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
         <div>
             <div className="card" style={{ marginBottom: '2rem', borderColor: 'var(--primary)' }}>
                 <h2>{investor.name}</h2>
-                <p style={{ color: 'var(--secondary)', marginBottom: '1rem' }}>{investor.style_description}</p>
+                <p style={{ color: 'var(--secondary)', marginBottom: '1rem', fontWeight: 'bold' }}>{investor.style_description}</p>
+
+                {investor.profile && (
+                    <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '1rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
+                        {investor.profile.split('\n').map((line, i) => (
+                            <p key={i} style={{ marginBottom: line.trim() ? '0.8rem' : 0 }}>{line}</p>
+                        ))}
+                    </div>
+                )}
+
                 {investor.twitter_url && (
                     <a href={investor.twitter_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                        Ofiicial X (Twitter) &rarr;
+                        Official X (Twitter) &rarr;
                     </a>
                 )}
             </div>
