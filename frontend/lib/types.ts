@@ -5,6 +5,7 @@ export interface Investor {
     style_description: string;
     twitter_url: string;
     image_url: string;
+    profile?: string;
     news_count?: number;
 }
 
