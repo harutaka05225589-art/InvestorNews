@@ -63,10 +63,10 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                 <h2 className="section-title" style={{ borderBottom: '2px solid var(--primary)', display: 'inline-block', paddingBottom: '0.2rem' }}>
                     メディア掲載数推移 (過去7日間)
                 </h2>
-                <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', marginTop: '0.5rem', marginBottom: '1rem' }}>
-                    この投資家に関するニュースや記事が、直近1週間でどれくらいメディアに取り上げられたか（話題の大きさ）を可視化しています。
-                </p>
                 <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                    <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
+                        このグラフは、直近1週間で各投資家に関するニュースや記事がどれくらいメディアに取り上げられたか（話題の大きさ）を表しています。
+                    </p>
                     <div style={{ display: 'flex', alignItems: 'flex-end', height: '150px', gap: '8px' }}>
                         {(() => {
                             // Calculate daily counts for the last 7 days from 'news' array
@@ -96,7 +96,7 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                             ));
                         })()}
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', marginTop: '1rem', textAlign: 'right' }}>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', marginTop: '0.5rem', textAlign: 'right', opacity: 0.7 }}>
                         ※詳細な感情分析はAI機能を有効化すると表示されます
                     </p>
                 </div>

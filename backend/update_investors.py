@@ -13,17 +13,22 @@ def update_investors():
     c = conn.cursor()
 
     # Mapping: Old Name in DB -> (New Name, New Twitter URL)
+    # Mapping: Current/Old Name -> (Correct Name, Correct Twitter URL)
     updates = {
-        "テスタ": ("テスタ", "https://twitter.com/testa001"),
-        "藤本茂": ("藤本茂(シゲルさん)", ""), # No twitter
-        "かんち": ("かんち", "https://twitter.com/kanto990"),
+        "テスタ": ("テスタ", "https://twitter.com/tesuta001"), # User specified tesuta001
+        "藤本茂": ("藤本茂(シゲルさん)", ""),
+        "藤本茂(シゲルさん)": ("藤本茂(シゲルさん)", ""),
+        "かんち": ("かんち", "https://twitter.com/kanti990"), # User specified kanti990
         "成長株テリー": ("成長株テリー", "https://twitter.com/freepapa"),
         "桐谷広人": ("桐谷広人(桐谷さん)", "https://twitter.com/yuutaihiroto"),
+        "桐谷広人(桐谷さん)": ("桐谷広人(桐谷さん)", "https://twitter.com/yuutaihiroto"),
         "kenmo": ("kenmo", "https://twitter.com/kenmokenmo"),
-        "かぶ１０００": ("かぶ1000", "https://twitter.com/kabu1000"), # Full width -> Half width
-        "弐億貯男": ("弍億貯男", "https://twitter.com/2okutameo"), # Kanji variant
+        "かぶ1000": ("かぶ1000", "https://twitter.com/kabu1000"),
+        "かぶ１０００": ("かぶ1000", "https://twitter.com/kabu1000"),
+        "弍億貯男": ("弍億貯男", "https://twitter.com/2okutameo"),
+        "弐億貯男": ("弍億貯男", "https://twitter.com/2okutameo"),
         "テンバガー投資家X": ("テンバガー投資家X", "https://twitter.com/Investor__X"),
-        "DAIBOUCYOU": ("DAIBOUCHOU", "https://twitter.com/DAIBOUCHO"), # Spelling fix
+        "DAIBOUCHOU": ("DAIBOUCHOU", "https://twitter.com/DAIBOUCHO"),
     }
 
     print("Updating investor data...")

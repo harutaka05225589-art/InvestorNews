@@ -22,22 +22,26 @@ def cleanup_summaries():
         
         original_summary = summary
         
-        # Remove "自動収集された記事です"
+        import re
+        
         # Remove "自動収集された記事です" and "詳細を見る"
         summary = summary.replace("自動収集された記事です", "")
         summary = summary.replace("詳細を見る", "")
         
-        # Remove Google News full coverage links if present in text
-        # Simple heuristic: remove trailing "..." or google urls
-        if "news.google.com" in summary:
-             # Split by http to possibly remove the link part if it's at the end
-             parts = summary.split("http")
-             if len(parts) > 1:
-                 # Keep only the part before the link
-                 summary = parts[0].strip()
+        # Regex to remove Google News URLs
+        summary = re.sub(r'https?://news\.google\.com\S+', '', summary)
         
-        # aggressive trim of trailing punctuation or broken links
-        summary = summary.strip(" .…")
+        # Regex to remove any URL at the very end of the string
+        summary = re.sub(r'https?://\S+$', '', summary.strip())
+        
+        # Remove HTML tags (specifically anchor tags showing up as text)
+        # e.g. <a href="...">
+        summary = re.sub(r'<a\s+href=.*?>.*?</a>', '', summary, flags=re.IGNORECASE)
+        summary = re.sub(r'<a\s+href=.*', '', summary, flags=re.IGNORECASE) # Truncated at end
+        summary = re.sub(r'</?a>', '', summary, flags=re.IGNORECASE) # Stray tags
+        summary = summary.replace('<a href="', '') # Explicit fix for user report
+        summary = summary.replace('<a href=', '')
+
         
         # Check if changed
         if summary != original_summary:
