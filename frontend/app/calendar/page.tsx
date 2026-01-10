@@ -13,14 +13,11 @@ const MOCK_EVENTS = [
     { id: 4, ticker: "6861", name: "キーエンス", date: "2026-01-22", type: "1Q" },
     // Feb 2026
     { id: 5, ticker: "6098", name: "リクルートHD", date: "2026-02-01", type: "2Q" },
-    { id: 6, ticker: "8035", name: "東京エレクトロン", date: "2026-02-10", type: "3Q" },
-    // Dec 2025 (Past)
-    { id: 7, ticker: "4063", name: "信越化学", date: "2025-12-25", type: "2Q" },
-];
-
 export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date()); // State for month view navigation
+    const [events, setEvents] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
 
     const today = new Date();
 
@@ -42,12 +39,54 @@ export default function CalendarPage() {
     const startDayOfWeek = currentMonthStart.getDay(); // 0 = Sun
 
     const getEventsForDate = (dateStr: string) => {
-        return MOCK_EVENTS.filter(e => e.date === dateStr);
+        return events.filter(e => e.date === dateStr);
     };
 
     const formatDate = (date: Date) => {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
+
+    // Fetch Events when month changes
+    React.useEffect(() => {
+        const fetchEvents = async (year: number, month: number) => {
+            setLoading(true);
+            try {
+                const res = await fetch(`/api/calendar?year=${year}&month=${month}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setEvents(prev => {
+                        // Merge with existing events to avoid flickering when switching back/forth,
+                        // or just replace if we only care about current view.
+                        // For simplicity, let's replace but ideally we might want to cache?
+                        // Actually, if we navigate, we want to reload or keep.
+                        // Let's just append or replace. Replaing is safer to avoid duplicates if API returns full list.
+                        // But wait, "Weekly view" needs CURRENT week data even if we view Next Month.
+                        // So we should fetch Current Week separately or just fetch "current month + next month".
+                        // For now, let's just add to a big list.
+                        const newEvents = data.events || [];
+                        // Simple de-dupe
+                        const combined = [...prev, ...newEvents].filter((v, i, a) => a.findIndex(t => (t.ticker === v.ticker && t.date === v.date)) === i);
+                        return combined;
+                    });
+                }
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvents(viewYear, viewMonth + 1);
+
+        // Also fetch for "Current Week" if not already covered?
+        // The simplified logic above only fetches for the "View Month".
+        // If View Month is NOT current month, the Weekly View (Top) might be empty.
+        // Let's ensure we fetch for the "Current Month" too if it's different.
+        if (viewYear !== today.getFullYear() || viewMonth !== today.getMonth()) {
+            fetchEvents(today.getFullYear(), today.getMonth() + 1);
+        }
+
+    }, [viewYear, viewMonth]);
 
     // Navigation Handlers
     const handlePrevMonth = () => {
@@ -80,7 +119,7 @@ export default function CalendarPage() {
                 <div className={styles.weeklyGrid}>
                     {weekDays.map((date, idx) => {
                         const dateStr = formatDate(date);
-                        const events = getEventsForDate(dateStr);
+                        const evs = getEventsForDate(dateStr);
                         const isToday = idx === 0;
 
                         return (
@@ -92,8 +131,8 @@ export default function CalendarPage() {
                                     {date.getMonth() + 1}/{date.getDate()} ({['日', '月', '火', '水', '木', '金', '土'][date.getDay()]})
                                 </div>
                                 <div className="events-list">
-                                    {events.length > 0 ? (
-                                        events.map(e => (
+                                    {evs.length > 0 ? (
+                                        evs.map(e => (
                                             <div key={e.id} className={styles.eventTag}>
                                                 <span className={styles.eventType}>{e.type}</span> {e.name}
                                             </div>
@@ -134,8 +173,8 @@ export default function CalendarPage() {
                         {Array.from({ length: daysInMonth }).map((_, i) => {
                             const d = new Date(viewYear, viewMonth, i + 1);
                             const dateStr = formatDate(d);
-                            const events = getEventsForDate(dateStr);
-                            const hasEvents = events.length > 0;
+                            const evs = getEventsForDate(dateStr);
+                            const hasEvents = evs.length > 0;
                             const isSelected = selectedDate === dateStr;
 
                             return (
@@ -147,7 +186,7 @@ export default function CalendarPage() {
                                     <div className={styles.cellNumber}>{i + 1}</div>
                                     {hasEvents && (
                                         <div className={styles.eventBadge}>
-                                            {events.length}
+                                            {evs.length}
                                         </div>
                                     )}
                                 </div>
