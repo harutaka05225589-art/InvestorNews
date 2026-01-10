@@ -61,8 +61,11 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
             {/* News Volume Chart (Simple CSS Bar Chart) */}
             <section style={{ marginBottom: '3rem' }}>
                 <h2 className="section-title" style={{ borderBottom: '2px solid var(--primary)', display: 'inline-block', paddingBottom: '0.2rem' }}>
-                    ニュース分析 (過去7日間)
+                    メディア掲載数推移 (過去7日間)
                 </h2>
+                <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', marginTop: '0.5rem', marginBottom: '1rem' }}>
+                    この投資家に関するニュースや記事が、直近1週間でどれくらいメディアに取り上げられたか（話題の大きさ）を可視化しています。
+                </p>
                 <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'flex-end', height: '150px', gap: '8px' }}>
                         {(() => {
