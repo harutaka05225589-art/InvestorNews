@@ -13,6 +13,16 @@ def cleanup_summaries():
 
     print("Cleaning up news summaries...")
     
+    # ---------------------------------------------------------
+    # Special reset for "成長株テリー" (Delete ALL to allow fresh strict fetch)
+    # ---------------------------------------------------------
+    terry = c.execute("SELECT id FROM investors WHERE name = '成長株テリー'").fetchone()
+    if terry:
+        terry_id = terry[0]
+        print(f"Purging ALL news for 成長株テリー (ID: {terry_id}) to fix noise...")
+        c.execute("DELETE FROM news_items WHERE investor_id = ?", (terry_id,))
+        print("Purge complete.")
+    
     # Fetch all news items
     items = c.execute("SELECT id, summary, title FROM news_items").fetchall()
     
