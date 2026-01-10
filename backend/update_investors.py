@@ -26,7 +26,7 @@ def update_investors():
         
         "かんち": ("かんち", "https://twitter.com/kanti990", ["kanchi"]),
         
-        "成長株テリー": ("成長株テリー", "https://twitter.com/freepapa", ["Terry", "テリー"]),
+        "成長株テリー": ("成長株テリー", "https://twitter.com/freepapa", []),
         
         "桐谷広人": ("桐谷広人(桐谷さん)", "https://twitter.com/yuutaihiroto", ["桐谷広人", "桐谷さん"]),
         "桐谷広人(桐谷さん)": ("桐谷広人(桐谷さん)", "https://twitter.com/yuutaihiroto", ["桐谷広人", "桐谷さん"]),
