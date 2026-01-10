@@ -100,7 +100,6 @@ def summarize_with_llm(title, content, is_paid):
     
     # 2. Limit length
     clean_snippet = clean_snippet[:120].replace('\n', ' ').strip()
-    
     return f"{prefix}{clean_snippet}..."
 
 def run_fetch():
@@ -183,3 +182,4 @@ if __name__ == "__main__":
     while True:
         schedule.run_pending()
         time.sleep(60)
+

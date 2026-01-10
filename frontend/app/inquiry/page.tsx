@@ -3,7 +3,7 @@
 export default function InquiryPage() {
     // ★TODO: PLACEHOLDER for New Inquiry Form URL
     // Please replace this URL with the new Google Form URL for "Contact Us"
-    const targetUrl = ''; // e.g. 'https://docs.google.com/forms/d/e/...'
+    const targetUrl = 'https://forms.gle/7UHmp7vxXqKKh7VV8';
 
     return (
         <div>
