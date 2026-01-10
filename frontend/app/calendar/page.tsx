@@ -2,8 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import styles from './calendar.module.css';
 
-// Mock Data for UI development
+// Mock Data
 const MOCK_EVENTS = [
     { id: 1, ticker: "7203", name: "トヨタ自動車", date: "2026-01-15", type: "3Q" },
     { id: 2, ticker: "6758", name: "ソニーG", date: "2026-01-16", type: "3Q" },
@@ -39,21 +40,21 @@ export default function CalendarPage() {
     };
 
     return (
-        <main className="min-h-screen p-4 md:p-8 max-w-7xl mx-auto">
-            <header className="mb-8 flex justify-between items-center">
+        <main className={styles.container}>
+            <header className={styles.header}>
                 <div>
-                    <h1 className="text-3xl font-bold mb-2">IRカレンダー</h1>
-                    <p className="text-[var(--secondary)]">決算発表スケジュール (日本株)</p>
+                    <h1 className={styles.title}>IRカレンダー</h1>
+                    <p className={styles.subtitle}>決算発表スケジュール (日本株)</p>
                 </div>
-                <Link href="/" className="text-[var(--primary)] hover:underline">
+                <Link href="/" className={styles.backLink}>
                     &larr; ホームに戻る
                 </Link>
             </header>
 
             {/* Weekly View */}
-            <section className="mb-12">
-                <h2 className="section-title mb-6">週間スケジュール</h2>
-                <div className="grid grid-cols-7 gap-2">
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>週間スケジュール</h2>
+                <div className={styles.weeklyGrid}>
                     {weekDays.map((date, idx) => {
                         const dateStr = formatDate(date);
                         const events = getEventsForDate(dateStr);
@@ -62,20 +63,20 @@ export default function CalendarPage() {
                         return (
                             <div
                                 key={idx}
-                                className={`p-3 rounded-lg border ${isToday ? 'border-[var(--primary)] bg-[rgba(0,255,136,0.05)]' : 'border-[rgba(255,255,255,0.1)]'} bg-[var(--card-bg)] min-h-[120px]`}
+                                className={`${styles.weeklyDateBox} ${isToday ? styles.currentDay : ''}`}
                             >
-                                <div className={`text-center mb-2 font-bold ${isToday ? 'text-[var(--primary)]' : ''}`}>
+                                <div className={styles.dateLabel}>
                                     {date.getMonth() + 1}/{date.getDate()} ({['日', '月', '火', '水', '木', '金', '土'][date.getDay()]})
                                 </div>
-                                <div className="space-y-1">
+                                <div className="events-list">
                                     {events.length > 0 ? (
                                         events.map(e => (
-                                            <div key={e.id} className="text-xs bg-[rgba(255,255,255,0.1)] p-1 rounded">
-                                                <span className="font-bold text-[var(--accent)]">{e.type}</span> {e.name}
+                                            <div key={e.id} className={styles.eventTag}>
+                                                <span className={styles.eventType}>{e.type}</span> {e.name}
                                             </div>
                                         ))
                                     ) : (
-                                        <div className="text-xs text-[var(--secondary)] text-center mt-4">-</div>
+                                        <div className={styles.noEvents}>-</div>
                                     )}
                                 </div>
                             </div>
@@ -85,18 +86,19 @@ export default function CalendarPage() {
             </section>
 
             {/* Monthly View */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div className="lg:col-span-2">
-                    <h2 className="section-title mb-6">{today.getFullYear()}年 {today.getMonth() + 1}月</h2>
-                    <div className="grid grid-cols-7 gap-1 text-center mb-2">
+            <section className={styles.layoutSplit}>
+                <div>
+                    <h2 className={styles.sectionTitle}>{today.getFullYear()}年 {today.getMonth() + 1}月</h2>
+
+                    <div className={styles.calendarGrid}>
+                        {/* Headers */}
                         {['日', '月', '火', '水', '木', '金', '土'].map(d => (
-                            <div key={d} className="text-sm text-[var(--secondary)] py-2">{d}</div>
+                            <div key={d} className={styles.dayHeader}>{d}</div>
                         ))}
-                    </div>
-                    <div className="grid grid-cols-7 gap-1">
+
                         {/* Empty cells for start of month */}
                         {Array.from({ length: startDayOfWeek }).map((_, i) => (
-                            <div key={`empty-${i}`} className="h-24 bg-[rgba(255,255,255,0.02)] rounded"></div>
+                            <div key={`empty-${i}`} className={styles.calendarCell} style={{ background: 'transparent', cursor: 'default' }}></div>
                         ))}
 
                         {/* Days */}
@@ -111,17 +113,12 @@ export default function CalendarPage() {
                                 <div
                                     key={i}
                                     onClick={() => hasEvents && setSelectedDate(dateStr)}
-                                    className={`h-24 p-2 rounded border border-[rgba(255,255,255,0.05)] relative cursor-pointer transition-all
-                    ${hasEvents ? 'bg-[rgba(59,130,246,0.1)] hover:bg-[rgba(59,130,246,0.2)] border-[rgba(59,130,246,0.3)]' : 'bg-[var(--card-bg)]'}
-                    ${isSelected ? 'ring-2 ring-[var(--primary)]' : ''}
-                  `}
+                                    className={`${styles.calendarCell} ${hasEvents ? styles.cellWithEvents : ''} ${isSelected ? styles.cellSelected : ''}`}
                                 >
-                                    <div className="text-sm font-semibold">{i + 1}</div>
+                                    <div className={styles.cellNumber}>{i + 1}</div>
                                     {hasEvents && (
-                                        <div className="absolute bottom-2 right-2">
-                                            <span className="bg-[var(--accent)] text-black text-xs font-bold px-1.5 py-0.5 rounded-full">
-                                                {events.length}
-                                            </span>
+                                        <div className={styles.eventBadge}>
+                                            {events.length}
                                         </div>
                                     )}
                                 </div>
@@ -131,31 +128,31 @@ export default function CalendarPage() {
                 </div>
 
                 {/* Daily Detail Side Panel */}
-                <div className="bg-[var(--card-bg)] p-6 rounded-xl border border-[rgba(255,255,255,0.1)] h-fit">
-                    <h3 className="text-xl font-bold mb-4 border-b border-[rgba(255,255,255,0.1)] pb-2">
+                <div className={styles.detailsPanel}>
+                    <h3 className={styles.detailsTitle}>
                         {selectedDate ? `${selectedDate} の発表` : '日付を選択してください'}
                     </h3>
 
                     {selectedDate ? (
-                        <div className="space-y-4">
+                        <div>
                             {getEventsForDate(selectedDate).map(e => (
-                                <div key={e.id} className="flex items-center justify-between p-3 bg-[rgba(0,0,0,0.2)] rounded">
+                                <div key={e.id} className={styles.detailItem}>
                                     <div>
-                                        <div className="text-sm text-[var(--secondary)]">{e.ticker}</div>
-                                        <div className="font-bold">{e.name}</div>
+                                        <div className={styles.ticker}>コード: {e.ticker}</div>
+                                        <div className={styles.companyName}>{e.name}</div>
                                     </div>
-                                    <span className="text-xs font-bold px-2 py-1 rounded bg-[var(--profit)] text-black">
+                                    <span className={styles.typeLabel}>
                                         {e.type}
                                     </span>
                                 </div>
                             ))}
                             {getEventsForDate(selectedDate).length === 0 && (
-                                <p className="text-[var(--secondary)]">予定はありません</p>
+                                <p className={styles.noEvents}>予定はありません</p>
                             )}
                         </div>
                     ) : (
-                        <p className="text-[var(--secondary)] text-sm">
-                            カレンダー上で色が付いている日付をクリックすると、その日の決算発表企業一覧が表示されます。
+                        <p className={styles.subtitle} style={{ fontSize: '0.9rem' }}>
+                            カレンダー上で色が付いている日付をクリックすると、詳細が表示されます。
                         </p>
                     )}
                 </div>
