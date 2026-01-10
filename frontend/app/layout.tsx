@@ -60,6 +60,14 @@ export default function RootLayout({
             </div>
           </header>
           {children}
+          <footer style={{ marginTop: '4rem', padding: '2rem 0', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.9rem' }}>
+            <nav style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+              <Link href="/privacy" style={{ color: 'var(--accent)' }}>プライバシーポリシー</Link>
+              <Link href="/inquiry" style={{ color: 'var(--accent)' }}>お問い合わせ</Link>
+              <Link href="/request" style={{ color: 'var(--accent)' }}>投資家追加リクエスト</Link>
+            </nav>
+            <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
+          </footer>
         </main>
       </body>
     </html>

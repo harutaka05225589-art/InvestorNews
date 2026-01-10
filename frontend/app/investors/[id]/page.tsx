@@ -41,13 +41,64 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
         <div>
             <div className="card" style={{ marginBottom: '2rem', borderColor: 'var(--primary)' }}>
                 <h2>{investor.name}</h2>
-                <p style={{ color: 'var(--secondary)', marginBottom: '1rem' }}>{investor.style_description}</p>
+                <p style={{ color: 'var(--secondary)', marginBottom: '1rem', fontWeight: 'bold' }}>{investor.style_description}</p>
+
+                {investor.profile && (
+                    <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '1rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
+                        {investor.profile.split('\n').map((line, i) => (
+                            <p key={i} style={{ marginBottom: line.trim() ? '0.8rem' : 0 }}>{line}</p>
+                        ))}
+                    </div>
+                )}
+
                 {investor.twitter_url && (
                     <a href={investor.twitter_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 600 }}>
-                        Ofiicial X (Twitter) &rarr;
+                        Official X (Twitter) &rarr;
                     </a>
                 )}
             </div>
+
+            {/* News Volume Chart (Simple CSS Bar Chart) */}
+            <section style={{ marginBottom: '3rem' }}>
+                <h2 className="section-title" style={{ borderBottom: '2px solid var(--primary)', display: 'inline-block', paddingBottom: '0.2rem' }}>
+                    ニュース分析 (過去7日間)
+                </h2>
+                <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', height: '150px', gap: '8px' }}>
+                        {(() => {
+                            // Calculate daily counts for the last 7 days from 'news' array
+                            const today = new Date();
+                            const stats = [];
+                            for (let i = 6; i >= 0; i--) {
+                                const d = new Date();
+                                d.setDate(today.getDate() - i);
+                                const dateStr = d.toLocaleDateString();
+                                const count = news.filter(n => new Date(n.published_at).toLocaleDateString() === dateStr).length;
+                                stats.push({ date: `${d.getMonth() + 1}/${d.getDate()}`, count });
+                            }
+                            const maxCount = Math.max(...stats.map(s => s.count), 1); // Avoid div by zero
+
+                            return stats.map((day, idx) => (
+                                <div key={idx} style={{ flex: 1, textAlign: 'center' }}>
+                                    <div style={{
+                                        height: `${(day.count / maxCount) * 100}%`,
+                                        background: day.count > 0 ? 'var(--profit)' : 'rgba(255,255,255,0.1)',
+                                        borderRadius: '4px 4px 0 0',
+                                        minHeight: '4px',
+                                        transition: 'height 0.3s ease'
+                                    }}></div>
+                                    <div style={{ fontSize: '0.7rem', marginTop: '4px', color: 'var(--secondary)' }}>{day.date}</div>
+                                    <div style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>{day.count}</div>
+                                </div>
+                            ));
+                        })()}
+                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', marginTop: '1rem', textAlign: 'right' }}>
+                        ※詳細な感情分析はAI機能を有効化すると表示されます
+                    </p>
+                </div>
+            </section>
+
 
             {/* Free News Section */}
             <section style={{ marginBottom: '3rem' }}>

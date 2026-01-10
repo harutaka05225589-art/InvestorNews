@@ -93,7 +93,15 @@ def summarize_with_llm(title, content, is_paid):
 
     # Fallback / Mock
     prefix = "[有料記事] " if is_paid else ""
-    return f"{prefix}{title}に関するニュースです。詳細な内容は公式サイトをご確認ください。\n- 自動収集された記事です\n- {content[:50]}..."
+    
+    # 1. Clean boilerplate text if present in the raw content
+    # Common patterns: "自動収集された記事です", "詳細を見る", or google links
+    clean_snippet = content.replace("自動収集された記事です", "").replace("詳細を見る", "")
+    
+    # 2. Limit length
+    clean_snippet = clean_snippet[:120].replace('\n', ' ').strip()
+    
+    return f"{prefix}{clean_snippet}..."
 
 def run_fetch():
     conn = get_db_connection()
@@ -132,7 +140,11 @@ def run_fetch():
                 if extracted:
                     content_snippet = extracted
             
-            summary = summarize_with_llm(title, content_snippet, is_paid)
+            # Sanitize HTML from content/snippet
+            soup = BeautifulSoup(content_snippet, "html.parser")
+            clean_content = soup.get_text(separator=" ", strip=True)
+            
+            summary = summarize_with_llm(title, clean_content, is_paid)
             
             # Parse date
             try:

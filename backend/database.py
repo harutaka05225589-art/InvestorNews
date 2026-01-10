@@ -20,6 +20,7 @@ def init_db():
         name TEXT NOT NULL,
         aliases TEXT,  -- JSON string of aliases
         style_description TEXT,
+        profile TEXT,  -- Detailed Wiki-style bio
         twitter_url TEXT,
         image_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
