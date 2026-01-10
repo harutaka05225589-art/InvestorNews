@@ -25,7 +25,12 @@ def is_paid_domain(url):
     return False
 
 def fetch_rss(query):
-    encoded_query = requests.utils.quote(query)
+    # Enforce investment related keywords to avoid noise
+    # Query format: (Name OR Alias) AND (株 OR 投資 OR 銘柄 OR 資産 OR トレード)
+    base_query = f"({query}) AND (株 OR 投資 OR 銘柄 OR 資産 OR トレード)"
+    print(f"  [DEBUG] Query: {base_query}")
+    
+    encoded_query = requests.utils.quote(base_query)
     url = f"https://news.google.com/rss/search?q={encoded_query}&hl=ja&gl=JP&ceid=JP:ja"
     feed = feedparser.parse(url)
     return feed.entries
