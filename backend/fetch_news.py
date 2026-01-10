@@ -154,7 +154,7 @@ def run_fetch():
             
             print(f"  New article: {title}")
             c.execute('''
-                INSERT INTO news_items (investor_id, title, url, summary, domain, is_paid, published_at)
+                INSERT OR IGNORE INTO news_items (investor_id, title, url, summary, domain, is_paid, published_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             ''', (inv_id, title, link, summary, domain, is_paid, pub_date))
             
