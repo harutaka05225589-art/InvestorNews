@@ -119,6 +119,30 @@
     }
 }
 
+/* Month Navigation */
+.monthHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.navButton {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--foreground);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.navButton:hover {
+    background: var(--card-hover);
+    border-color: var(--primary);
+}
+
 .calendarGrid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
