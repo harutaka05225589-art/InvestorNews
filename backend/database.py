@@ -55,6 +55,19 @@ def init_db():
     )
     ''')
 
+    # IR Events Table for Calendar
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS ir_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticker TEXT NOT NULL,
+        company_name TEXT NOT NULL,
+        event_date DATE NOT NULL,
+        event_type TEXT, -- e.g. "1Q", "2Q", "3Q", "4Q", "Forecast"
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+
     # Seed Initial Investors
     initial_investors = [
         ("テスタ", '["Testa"]', "デイトレード・スキャルピング中心、数十億運用", "https://twitter.com/testa001"),

@@ -64,7 +64,12 @@ export default function RootLayout({
             <nav style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
               <Link href="/privacy" style={{ color: 'var(--accent)' }}>プライバシーポリシー</Link>
               <Link href="/inquiry" style={{ color: 'var(--accent)' }}>お問い合わせ</Link>
-              <Link href="/request" style={{ color: 'var(--accent)' }}>投資家追加リクエスト</Link>
+              <Link href="/request" className="text-sm text-gray-400 hover:text-[var(--primary)] transition-colors">
+                投資家追加リクエスト
+              </Link>
+              <Link href="/calendar" className="text-sm text-gray-400 hover:text-[var(--primary)] transition-colors">
+                IRカレンダー
+              </Link>
             </nav>
             <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
           </footer>
