@@ -14,10 +14,10 @@ def cleanup_summaries():
     print("Cleaning up news summaries...")
     
     # Fetch all news items
-    items = c.execute("SELECT id, summary FROM news_items").fetchall()
+    items = c.execute("SELECT id, summary, title FROM news_items").fetchall()
     
     count = 0
-    for item_id, summary in items:
+    for item_id, summary, title in items:
         if not summary: continue
         
         original_summary = summary
@@ -43,7 +43,17 @@ def cleanup_summaries():
         summary = summary.replace('<a href=', '')
 
         
-        # Check if changed
+        # ---------------------------------------------------------
+        # Data Purge Logic (Remove irrelevant news)
+        # ---------------------------------------------------------
+        # Delete "Terry Ito" news (often confused with Investor Terry)
+        if "テリー伊藤" in (summary or "") or "テリー伊藤" in (title or ""):
+            print(f"Deleting irrelevant item {item_id}: Contains 'テリー伊藤'")
+            c.execute("DELETE FROM news_items WHERE id = ?", (item_id,))
+            count += 1
+            continue
+
+        # Check if changed (and not deleted)
         if summary != original_summary:
             c.execute("UPDATE news_items SET summary = ? WHERE id = ?", (summary.strip(), item_id))
             count += 1
