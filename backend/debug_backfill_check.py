@@ -17,14 +17,25 @@ def check_past_date():
         
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Focus on the main content area to avoid nav links
-        main_div = soup.find('div', id='main_body')
-        if not main_div:
-            print("No main_body div found, searching entire body")
-            main_div = soup
+        # main_body not found. Let's look for tables.
+        # Typically news lists are in a table with class 's_news_list' or just a table.
+        tables = soup.find_all('table')
+        print(f"Total tables found: {len(tables)}")
+        
+        links = []
+        for t in tables:
+            # Check if this table looks like a news list (has many links)
+            t_links = t.find_all('a')
+            if len(t_links) > 5:
+                print(f"Table with {len(t_links)} links found. Classes: {t.get('class')}")
+                # Add these links to our candidates
+                links.extend(t_links)
+        
+        if not links:
+            print("No suitable table links found. Checking raw 'li' tags?")
+            links = soup.find_all('a') # Fallback
             
-        links = main_div.find_all('a')
-        print(f"Total links in main area: {len(links)}")
+        print(f"Total candidate links: {len(links)}")
         
         count = 0
         debug_printed = 0
