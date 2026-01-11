@@ -35,35 +35,32 @@ def fetch_events_for_date(date):
         soup = BeautifulSoup(res.text, 'html.parser')
         
         # Parse logic
-        # Based on inspection, we need to find the list of articles.
-        # Usually in <div class="main_body"> ... <ul class="news_list"> ...
-        # Titles like "Toyota, 3Q Financial Results..."
-        
+        # Based on debug, links are inside a table within main_body
         events = []
-        news_list = soup.find('div', {'class': 'main_body'})
         
-        # Debug: Print first 500 chars of main_body text if found
-        if news_list:
-            # Look for <a> tags inside
-            links = news_list.find_all('a')
-            for link in links:
-                text = link.get_text().strip()
-                # Example: "トヨタ <7203> [東証Ｐ] 決算 ..."
-                # Regex to extract Ticker and Name
-                match = re.search(r'(.+?)\s*<(\d{4})>', text)
-                if match and ('決算' in text or '修正' in text):
+        # Strategy: Find any <a> tag that looks like a stock link <Code>
+        # e.g. "Toyota <7203> ..."
+        # This bypasses "main_body" class issues if the layout changed or is mobile view.
+        links = soup.find_all('a')
+        
+        for link in links:
+            text = link.get_text().strip()
+            # Regex to extract Name and Ticker <Code>
+            match = re.search(r'(.+?)\s*<(\d{4})>', text)
+            
+            if match: 
+                 # Check if it's an announcement (決算, 修正, 配当, etc)
+                if any(k in text for k in ['決算', '修正', '配当', '業績', '短信']):
                     name = match.group(1).strip()
                     ticker = match.group(2)
                     
-                    # Determine type
-                    ev_type = "決算"
+                    # Determine specific type from text
+                    ev_type = "発表" # Default
                     if '1Q' in text or '第1' in text: ev_type = "1Q"
                     elif '2Q' in text or '第2' in text or '中間' in text: ev_type = "2Q"
                     elif '3Q' in text or '第3' in text: ev_type = "3Q"
                     elif '本決算' in text or '通期' in text: ev_type = "本決算"
                     elif '修正' in text: ev_type = "修正"
-                    
-                    link_url = link.get('href')
                     
                     events.append({
                         'ticker': ticker,
@@ -72,8 +69,6 @@ def fetch_events_for_date(date):
                         'type': ev_type,
                         'desc': text
                     })
-        else:
-            print("  Warning: 'main_body' div not found.")
 
         print(f"  Found {len(events)} events.")
         return events
@@ -109,6 +104,24 @@ def run_fetch(days_back=5, days_forward=30):
     
     current = start_date
     while current <= end_date:
+        # Check if we already have events for this date?
+        # User requested "no refetch for acquired data".
+        # We can do a quick check: count events for this date. If > 0, skip.
+        # But wait, what if new events are added? 
+        # User explicitly said "once acquired data requires no re-acquisition". 
+        # So we strict skip if count > 0 in DB.
+        
+        conn = get_db_connection()
+        c = conn.cursor()
+        date_str = current.strftime('%Y-%m-%d')
+        count = c.execute("SELECT count(*) FROM ir_events WHERE event_date = ?", (date_str,)).fetchone()[0]
+        conn.close()
+        
+        if count > 0:
+            print(f"Skipping {date_str} (Already has {count} events)")
+            current += datetime.timedelta(days=1)
+            continue
+            
         events = fetch_events_for_date(current)
         save_events(events)
         current += datetime.timedelta(days=1)

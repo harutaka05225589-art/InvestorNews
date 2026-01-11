@@ -13,6 +13,8 @@ const MOCK_EVENTS = [
     { id: 4, ticker: "6861", name: "キーエンス", date: "2026-01-22", type: "1Q" },
     // Feb 2026
     { id: 5, ticker: "6098", name: "リクルートHD", date: "2026-02-01", type: "2Q" },
+];
+
 export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date()); // State for month view navigation
