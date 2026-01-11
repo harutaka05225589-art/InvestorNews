@@ -117,10 +117,23 @@ def fetch_events_for_date(requested_date):
                     ticker = col0_txt
 
             if not name:
-                # If name link wasn't found, maybe it's plain text in Col 1 or 2?
-                # If Col 1 is "東Ｐ", check Col 2?
-                # Debug output had '' at Col 2.
-                # Let's set a distinct fallback.
+                # Fallback: check Col 2 (index 1) or Col 3 (index 2) for text
+                # Usually Col 0 = Code, Col 1 = Market, Col 2 = Name (sometimes)
+                # Let's inspect available columns.
+                if len(cols) > 2:
+                    potential_name = cols[2].get_text().strip()
+                    if potential_name:
+                        name = potential_name
+                
+                if not name and len(cols) > 1:
+                     # Sometimes Market is Col 1, Name is Col 2.
+                     # But if Col 2 is empty, maybe it's in Col 1 mixed?
+                     potential_name = cols[1].get_text().strip()
+                     # Ignore "東Ｐ", "東Ｓ", "東Ｇ" (Market codes)
+                     if potential_name and potential_name not in ["東Ｐ", "東Ｓ", "東Ｇ", "東Ｍ", "名Ｐ", "札証", "福証"]:
+                         name = potential_name
+
+            if not name:
                 name = "Unknown"  
 
             # Extract Type (e.g. 本決算, etc)
