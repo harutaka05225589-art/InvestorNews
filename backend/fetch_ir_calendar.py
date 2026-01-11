@@ -229,7 +229,11 @@ def save_events(events):
     conn.close()
     print(f"  Saved {unique_count} new events.")
 
-def run_fetch(days_back=5, days_forward=180):
+def run_fetch(days_back=0, days_forward=180):
+    """
+    Scrapes IR events.
+    Default: From today to 6 months ahead (approx 180 days).
+    """
     today = datetime.date.today()
     start_date = today - datetime.timedelta(days=days_back)
     end_date = today + datetime.timedelta(days=days_forward)
@@ -238,24 +242,33 @@ def run_fetch(days_back=5, days_forward=180):
     
     current = start_date
     while current <= end_date:
+        # Check if we already have events for this date?
+        # Optimization: If we have > 0 events, assume we fetched it.
+        # BUT: For future dates, data might CHANGE or appear later.
+        # So we should probably Re-Fetch if it's in the future or recent past.
+        # However, user asked "Once acquired data requires no re-acquisition".
+        # Let's respect that strictly to avoid load, but maybe allow overwrite if we force it?
+        # For now, stick to: if exists, skip.
+        
         conn = get_db_connection()
         c = conn.cursor()
         date_str = current.strftime('%Y-%m-%d')
-        # Check if we already have events for this date
         count = c.execute("SELECT count(*) FROM ir_events WHERE event_date = ?", (date_str,)).fetchone()[0]
+        conn.close()
         
         if count > 0:
-            print(f"  Date {date_str} has {count} events. Overwriting to ensure data quality.")
-            c.execute("DELETE FROM ir_events WHERE event_date = ?", (date_str,))
-            conn.commit()
-            
-        conn.close()
+            print(f"Skipping {date_str} (Already has {count} events)")
+            current += datetime.timedelta(days=1)
+            continue
             
         events = fetch_events_for_date(current)
         save_events(events)
         current += datetime.timedelta(days=1)
         time.sleep(1) # Polite delay
 
+    print("Fetch cycle complete.")
+
 if __name__ == "__main__":
-    # Run slightly wider range by default
-    run_fetch(days_back=1, days_forward=180)
+    # If run directly as script, just run once.
+    # For scheduler, use specific scheduler script or cron.
+    run_fetch(days_back=7, days_forward=180) # Default manual run: Look back 1 week, forward 6 months80)

@@ -15,80 +15,121 @@ const MOCK_EVENTS = [
     { id: 5, ticker: "6098", name: "リクルートHD", date: "2026-02-01", type: "2Q" },
 ];
 
+// Helper to get needed YYYY-MM pairs
+function getRequiredMonths(baseDate: Date, additionalDate?: Date) {
+    const months = new Set<string>();
+
+    // Helper to add
+    const add = (d: Date) => months.add(`${d.getFullYear()}-${d.getMonth() + 1}`);
+
+    // View Month
+    add(baseDate);
+
+    // Current Week (Today to Today+6)
+    const today = new Date();
+    // Use `additionalDate` if provided, otherwise assume standard week logic
+    if (additionalDate) {
+        add(additionalDate);
+    } else {
+        // Just add today and today+6days
+        const weekStart = new Date();
+        const weekEnd = new Date();
+        weekEnd.setDate(weekEnd.getDate() + 7);
+        add(weekStart);
+        add(weekEnd);
+    }
+
+    return Array.from(months).map(s => {
+        const [y, m] = s.split('-');
+        return { year: parseInt(y), month: parseInt(m) };
+    });
+}
+
 export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
     const [currentMonth, setCurrentMonth] = useState(new Date()); // State for month view navigation
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
 
-    const today = new Date();
+    // Memoize week days to avoid re-calc jitter
+    const weekDays = React.useMemo(() => {
+        const days = [];
+        const today = new Date(); // Browser local time
+        for (let i = 0; i < 7; i++) {
+            const d = new Date();
+            d.setDate(today.getDate() + i);
+            days.push(d);
+        }
+        return days;
+    }, []);
 
-    // Weekly Calendar Logic (Next 7 days from TODAY, fixed interaction)
-    const weekDays = [];
-    for (let i = 0; i < 7; i++) {
-        const d = new Date();
-        d.setDate(today.getDate() + i);
-        weekDays.push(d);
-    }
-
-    // Monthly Calendar Logic (Based on currentMonth state)
     const viewYear = currentMonth.getFullYear();
     const viewMonth = currentMonth.getMonth(); // 0-indexed
 
     const currentMonthStart = new Date(viewYear, viewMonth, 1);
     const currentMonthEnd = new Date(viewYear, viewMonth + 1, 0);
     const daysInMonth = currentMonthEnd.getDate();
-    const startDayOfWeek = currentMonthStart.getDay(); // 0 = Sun
-
-    const getEventsForDate = (dateStr: string) => {
-        return events.filter(e => e.date === dateStr);
-    };
+    const startDayOfWeek = currentMonthStart.getDay();
 
     const formatDate = (date: Date) => {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
 
-    // Fetch Events when month changes
+    const getEventsForDate = (dateStr: string) => {
+        return events.filter(e => e.date === dateStr);
+    };
+
+    // Unified Fetch Logic
     React.useEffect(() => {
-        const fetchEvents = async (year: number, month: number) => {
+        const required = getRequiredMonths(currentMonth);
+
+        const fetchAll = async () => {
             setLoading(true);
             try {
-                const res = await fetch(`/api/calendar?year=${year}&month=${month}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setEvents(prev => {
-                        // Merge with existing events to avoid flickering when switching back/forth,
-                        // or just replace if we only care about current view.
-                        // For simplicity, let's replace but ideally we might want to cache?
-                        // Actually, if we navigate, we want to reload or keep.
-                        // Let's just append or replace. Replaing is safer to avoid duplicates if API returns full list.
-                        // But wait, "Weekly view" needs CURRENT week data even if we view Next Month.
-                        // So we should fetch Current Week separately or just fetch "current month + next month".
-                        // For now, let's just add to a big list.
-                        const newEvents = data.events || [];
-                        // Simple de-dupe
-                        const combined = [...prev, ...newEvents].filter((v, i, a) => a.findIndex(t => (t.ticker === v.ticker && t.date === v.date)) === i);
-                        return combined;
+                // Determine which months we need to fetch
+                // We will fetch efficiently.
+                // Note: simple implementation fetches all required months in parallel.
+                const promises = required.map(req =>
+                    fetch(`/api/calendar?year=${req.year}&month=${req.month}`).then(r => r.json())
+                );
+
+                const results = await Promise.all(promises);
+
+                setEvents(prev => {
+                    let allNewEvents: any[] = [];
+                    results.forEach(data => {
+                        if (data.events) allNewEvents = [...allNewEvents, ...data.events];
                     });
-                }
+
+                    // Merge and Deduplicate
+                    // Map by ticker+date is robust
+                    const eventMap = new Map();
+                    // Keep existing events? 
+                    // To be safe against "flashing", distinct merge is best.
+                    // But if we navigate far, `prev` might get huge. 
+                    // For now, let's keep all `prev` + `new`.
+
+                    [...prev, ...allNewEvents].forEach(e => {
+                        const key = `${e.ticker}-${e.date}`;
+                        if (!eventMap.has(key)) {
+                            eventMap.set(key, e);
+                        }
+                    });
+
+                    return Array.from(eventMap.values());
+                });
+
             } catch (e) {
-                console.error(e);
+                console.error("Fetch failed", e);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchEvents(viewYear, viewMonth + 1);
+        fetchAll();
+    }, [viewYear, viewMonth]); // Re-run when view changes. Note: weekDays is constant relative to "Today", so no dependency needed unless day changes (rare).
 
-        // Also fetch for "Current Week" if not already covered?
-        // The simplified logic above only fetches for the "View Month".
-        // If View Month is NOT current month, the Weekly View (Top) might be empty.
-        // Let's ensure we fetch for the "Current Month" too if it's different.
-        if (viewYear !== today.getFullYear() || viewMonth !== today.getMonth()) {
-            fetchEvents(today.getFullYear(), today.getMonth() + 1);
-        }
-
-    }, [viewYear, viewMonth]);
+    // ... (Navigation Handlers remain same)
 
     // Navigation Handlers
     const handlePrevMonth = () => {
