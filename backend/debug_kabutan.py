@@ -1,37 +1,63 @@
 import requests
 from bs4 import BeautifulSoup
 
-def debug_page():
-    # Target a normal weekday where earnings usually happen
-    url = "https://kabutan.jp/news/?date=20250114&category=3"
+def debug_schedule_page():
+    url = "https://kabutan.jp/warning/?mode=5_1"
     print(f"Fetching {url}...")
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
-    res = requests.get(url, headers=headers)
-    print(f"Status: {res.status_code}")
-    
-    soup = BeautifulSoup(res.text, 'html.parser')
-
-    print("\n--- Inspecting Links ---")
-    links = soup.find_all('a')
-    count = 0
-    for link in links:
-        text = link.get_text().strip()
-        # Print if it contains digits (like ticker) or "決算"
-        if '決算' in text or any(char.isdigit() for char in text):
-            print(f"Link Text: '{text}'  |  Href: {link.get('href')}")
-            count += 1
-            if count > 50: break # Don't flood
+    try:
+        res = requests.get(url, headers=headers, timeout=10)
+        res.encoding = res.apparent_encoding
+        soup = BeautifulSoup(res.text, 'html.parser')
+        
+        # 1. Look for the main table
+        table = soup.find('table', class_='tablesorter')
+        if not table:
+             # Fallback
+            tables = soup.find_all('table')
+            for t in tables:
+                if 'コード' in t.get_text():
+                    table = t
+                    break
+        
+        if table:
+            print("\n[Table Found]")
             
-    print("\n--- Testing Regex on sample ---")
-    import re
-    # Test on a hypothetical string if real ones aren't showing
-    test_str = "トヨタ <7203> [東証Ｐ] 決算"
-    match = re.search(r'(.+?)\s*<(\d{4})>', test_str)
-    print(f"Test '{test_str}': {match.groups() if match else 'No match'}")
+            # Check Headers
+            thead = table.find('thead')
+            if thead:
+                headers = [th.get_text().strip() for th in thead.find_all(['th', 'td'])]
+                print(f"Headers: {headers}")
+            else:
+                # Try first row as header
+                first_row = table.find('tr')
+                if first_row:
+                    headers = [c.get_text().strip() for c in first_row.find_all(['th', 'td'])]
+                    print(f"First Row (Header?): {headers}")
+
+            # Check content rows
+            rows = table.find_all('tr')
+            print(f"Total Rows: {len(rows)}")
+            
+            print("\n[Sample Rows (First 5)]")
+            count = 0
+            for row in rows:
+                cols = row.find_all('td')
+                if not cols: continue
+                
+                row_data = [c.get_text().strip() for c in cols]
+                print(row_data)
+                count += 1
+                if count >= 5: break
+        else:
+            print("No suitable table found.")
+
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
-    debug_page()
+    debug_schedule_page()
