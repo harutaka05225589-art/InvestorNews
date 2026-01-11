@@ -16,8 +16,15 @@ def check_past_date():
         print(f"Status: {res.status_code}")
         
         soup = BeautifulSoup(res.text, 'html.parser')
-        links = soup.find_all('a')
-        print(f"Total links on page: {len(links)}")
+        
+        # Focus on the main content area to avoid nav links
+        main_div = soup.find('div', id='main_body')
+        if not main_div:
+            print("No main_body div found, searching entire body")
+            main_div = soup
+            
+        links = main_div.find_all('a')
+        print(f"Total links in main area: {len(links)}")
         
         count = 0
         debug_printed = 0
