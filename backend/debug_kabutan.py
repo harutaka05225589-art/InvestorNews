@@ -13,49 +13,34 @@ def debug_schedule_page():
         res = requests.get(url, headers=headers, timeout=10)
         res.encoding = res.apparent_encoding
         soup = BeautifulSoup(res.text, 'html.parser')
+
+        print("\n[Searching for Date info]")
         
-        # 1. Look for the main table
+        # 1. Print ALL Headers (h1-h4)
+        for i in range(1, 5):
+            tags = soup.find_all(f'h{i}')
+            for t in tags:
+                print(f"<{t.name}>: {t.get_text().strip()}")
+        
+        # 2. Check Table Caption
         table = soup.find('table', class_='tablesorter')
         if not table:
-             # Fallback
-            tables = soup.find_all('table')
-            for t in tables:
-                if 'コード' in t.get_text():
-                    table = t
-                    break
+             tables = soup.find_all('table') # Fallback
+             for t in tables:
+                 if 'コード' in t.get_text(): table = t; break
         
         if table:
-            print("\n[Table Found]")
-            
-            # Check Headers
-            thead = table.find('thead')
-            if thead:
-                headers = [th.get_text().strip() for th in thead.find_all(['th', 'td'])]
-                print(f"Headers: {headers}")
+            caption = table.find('caption')
+            if caption:
+                print(f"Table Caption: {caption.get_text().strip()}")
             else:
-                # Try first row as header
-                first_row = table.find('tr')
-                if first_row:
-                    headers = [c.get_text().strip() for c in first_row.find_all(['th', 'td'])]
-                    print(f"First Row (Header?): {headers}")
-
-            # Check content rows
-            rows = table.find_all('tr')
-            print(f"Total Rows: {len(rows)}")
-            
-            print("\n[Sample Rows (First 5)]")
-            count = 0
-            for row in rows:
-                cols = row.find_all('td')
-                if not cols: continue
+                print("No table caption.")
                 
-                row_data = [c.get_text().strip() for c in cols]
-                print(row_data)
-                count += 1
-                if count >= 5: break
-        else:
-            print("No suitable table found.")
-
+            # Check previous sibling of table?
+            prev = table.find_previous_sibling()
+            if prev:
+                print(f"Table Previous Sibling ({prev.name}): {prev.get_text().strip()[:50]}...")
+        
     except Exception as e:
         print(f"Error: {e}")
 
