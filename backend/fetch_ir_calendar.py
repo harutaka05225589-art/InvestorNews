@@ -38,12 +38,19 @@ def fetch_events_for_date(requested_date):
         soup = BeautifulSoup(res.text, 'html.parser')
         
         # 1. Attempt to find the ACTUAL date from the page header
-        # Header usually looks like: <h2>1月14日の決算発表予定</h2>
+        # Header usually looks like: <h1>1月14日の決算発表予定銘柄</h1> or <h2>...</h2>
         header_date = None
-        h2 = soup.find('div', id='main_body').find('h2') if soup.find('div', id='main_body') else soup.find('h2')
-        if h2:
-            header_text = h2.get_text().strip()
-            print(f"  [Debug] Header Text found: '{header_text}'")
+        
+        # Try finding H1 first (most common for schedule page)
+        header_tag = soup.find('div', id='main_body').find('h1') if soup.find('div', id='main_body') else soup.find('h1')
+        
+        # Fallback to H2 if H1 not found
+        if not header_tag:
+            header_tag = soup.find('div', id='main_body').find('h2') if soup.find('div', id='main_body') else soup.find('h2')
+
+        if header_tag:
+            header_text = header_tag.get_text().strip()
+            print(f"  [Debug] Header Text found in <{header_tag.name}>: '{header_text}'")
             # Extract month and day: (\d+)月(\d+)日
             date_match = re.search(r'(\d+)月(\d+)日', header_text)
             if date_match:
@@ -55,7 +62,7 @@ def fetch_events_for_date(requested_date):
             else:
                 print("  [Debug] Could not parse date from header.")
         else:
-            print("  [Debug] No H2 header found.")
+            print("  [Debug] No H1/H2 header found.")
         
         # Use the extracted date if found, otherwise fallback to requested_date (risky but necessary)
         target_date = header_date if header_date else requested_date
