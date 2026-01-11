@@ -17,34 +17,26 @@ def check_past_date():
         
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Target the specific listmenu found in previous logs
-        print("Looking for div.listmenu_kessan...")
-        target_div = soup.find('div', class_='listmenu_kessan')
-        if not target_div:
-            print("listmenu_kessan not found, trying generic 'listmenu'...")
-            target_div = soup.find('div', class_='listmenu')
+        # Survey ALL tables to find the right one
+        tables = soup.find_all('table')
+        print(f"Total tables found: {len(tables)}")
+        
+        for i, t in enumerate(tables):
+            links = t.find_all('a')
+            print(f"\n[Table {i}] Classes: {t.get('class')} - Link Count: {len(links)}")
             
-        if target_div:
-            print("Found div.listmenu_kessan. Checking siblings...")
-            
-            # Look at the next few siblings
-            sibling = target_div.find_next_sibling()
-            count = 0
-            while sibling and count < 3:
-                if sibling.name: # Skip NavigableStrings (whitespace)
-                    print(f"\n[Sibling {count}] Tag: <{sibling.name}> Class: {sibling.get('class')}")
-                    
-                    # Check for links in this sibling
-                    s_links = sibling.find_all('a')
-                    print(f"  Links inside: {len(s_links)}")
-                    
-                    for i, lnk in enumerate(s_links[:10]):
-                        print(f"    Link {i}: {lnk.get_text().strip()}")
-                    
-                    count += 1
-                sibling = sibling.find_next_sibling()
-        else:
-            print("Could not find div.listmenu or class listmenu_kessan")
+            # Print first 3 links to ID the table purpose
+            for j, lnk in enumerate(links[:3]):
+                print(f"  Link {j}: {lnk.get_text().strip()}")
+        
+        # Also check for likely UL classes
+        ul_news = soup.find('ul', class_='s_news_list')
+        if ul_news:
+            print("\n[Found ul.s_news_list]")
+            ul_links = ul_news.find_all('a')
+            print(f"  Link Count: {len(ul_links)}")
+            for j, lnk in enumerate(ul_links[:3]):
+                print(f"  Link {j}: {lnk.get_text().strip()}")
 
     except Exception as e:
         print(f"Error: {e}")
