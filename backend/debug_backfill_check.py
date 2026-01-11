@@ -25,12 +25,24 @@ def check_past_date():
             target_div = soup.find('div', class_='listmenu')
             
         if target_div:
-            # Print first 10 links inside this div
-            links = target_div.find_all('a')
-            print(f"Links in target div: {len(links)}")
-            for i, link in enumerate(links[:20]):
-                print(f"  [Link {i}] Text: '{link.get_text().strip()}'")
-                print(f"           Href: {link.get('href')}")
+            print("Found div.listmenu_kessan. Checking siblings...")
+            
+            # Look at the next few siblings
+            sibling = target_div.find_next_sibling()
+            count = 0
+            while sibling and count < 3:
+                if sibling.name: # Skip NavigableStrings (whitespace)
+                    print(f"\n[Sibling {count}] Tag: <{sibling.name}> Class: {sibling.get('class')}")
+                    
+                    # Check for links in this sibling
+                    s_links = sibling.find_all('a')
+                    print(f"  Links inside: {len(s_links)}")
+                    
+                    for i, lnk in enumerate(s_links[:10]):
+                        print(f"    Link {i}: {lnk.get_text().strip()}")
+                    
+                    count += 1
+                sibling = sibling.find_next_sibling()
         else:
             print("Could not find div.listmenu or class listmenu_kessan")
 
