@@ -211,21 +211,13 @@ def run_fetch(days_back=5, days_forward=180):
         date_str = current.strftime('%Y-%m-%d')
         # Check if we already have events for this date
         count = c.execute("SELECT count(*) FROM ir_events WHERE event_date = ?", (date_str,)).fetchone()[0]
-        conn.close()
         
         if count > 0:
             print(f"  Date {date_str} has {count} events. Overwriting to ensure data quality.")
-            # Optional: Delete existing to force clean slate for this date
-            # c.execute("DELETE FROM ir_events WHERE event_date = ?", (date_str,))
-            # conn.commit()
-            # Actually, let's rely on the save_events logic. 
-            # But save_events currently only INSERTS if not exists.
-            # We need to change save_events to UPSERT or we delete here.
-            
-            # Let's purge this date's events first to be safe and ensure we get strict fresh data.
-            # This fixes the "Bad Name" issue by removing the bad records.
             c.execute("DELETE FROM ir_events WHERE event_date = ?", (date_str,))
             conn.commit()
+            
+        conn.close()
             
         events = fetch_events_for_date(current)
         save_events(events)
