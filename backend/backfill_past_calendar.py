@@ -36,37 +36,75 @@ def fetch_past_events_for_date(date):
         soup = BeautifulSoup(res.text, 'html.parser')
         events = []
         
-        # In the NEWS section, links are typically just list items.
-        # We look for <a> tags containing stock code <XXXX>.
-        links = soup.find_all('a')
+        # New Logic based on HTML Inspection:
+        # News/Earnings are in <table class="s_news_list"> matches
+        # Ticker is in <td class="... oncodetip_code-data1" data-code="XXXX">
+        # or <div data-code="XXXX"> inside a TD.
+        # Event text is in a <span> or just text in the last <td>.
         
-        for link in links:
-            text = link.get_text().strip()
-            # Regex to extract Name and Ticker <Code>
-            # e.g. "Toyota <7203> [TSE P] Financial Results..."
-            match = re.search(r'(.+?)\s*<(\d{4})>', text)
-            
-            if match: 
-                 # Filter by keywords to ensure it's an earnings report
-                if any(k in text for k in ['決算', '修正', '配当', '業績', '短信', '上振れ', '下振れ']):
-                    name = match.group(1).strip()
-                    ticker = match.group(2)
+        tables = soup.find_all('table', class_='s_news_list')
+        
+        for table in tables:
+            rows = table.find_all('tr')
+            for row in rows:
+                try:
+                    # Ticker: Look for ANY element with data-code attribute in this row
+                    # The dump showed: <td><div data-code="4596">...</div></td>
+                    code_el = row.find(attrs={"data-code": True})
+                    if not code_el:
+                        continue
+                        
+                    ticker = code_el.get('data-code')
+                    if not ticker or not ticker.isdigit() or len(ticker) != 4:
+                        continue
+                        
+                    # Text: The news summary is usually in the last <td> or a <span>
+                    # Dump: <td><span class="fin_modal vtlink">窪田製薬ＨＤ、1-9月期(3Q累計)最終が…</span></td>
+                    text_el = row.find('span', class_='fin_modal')
+                    if not text_el:
+                        # Fallback to the last cell's text
+                        cells = row.find_all('td')
+                        if cells:
+                            text_el = cells[-1]
                     
+                    if not text_el:
+                         continue
+                         
+                    full_text = text_el.get_text().strip()
+                    
+                    # Split Name and Description
+                    # Text format: "窪田製薬ＨＤ、1-9月期(3Q累計)最終が…"
+                    # Usually "Name、Description"
+                    if '、' in full_text:
+                        name, desc = full_text.split('、', 1)
+                        desc = desc # Keep the description
+                    else:
+                        name = "Unknown"
+                        desc = full_text
+
                     # Determine type
                     ev_type = "発表"
-                    if '1Q' in text or '第1' in text: ev_type = "1Q"
-                    elif '2Q' in text or '第2' in text or '中間' in text: ev_type = "2Q"
-                    elif '3Q' in text or '第3' in text: ev_type = "3Q"
-                    elif '本決算' in text or '通期' in text: ev_type = "本決算"
-                    elif '修正' in text: ev_type = "修正"
+                    if '1Q' in full_text or '第1' in full_text: ev_type = "1Q"
+                    elif '2Q' in full_text or '第2' in full_text or '中間' in full_text: ev_type = "2Q"
+                    elif '3Q' in full_text or '第3' in full_text: ev_type = "3Q"
+                    elif '本決算' in full_text or '通期' in full_text: ev_type = "本決算"
+                    elif '修正' in full_text: ev_type = "修正"
+                    
+                    # Filter: Only keep Earnings/Dividend/Forecast related
+                    # Inspect '決算' div class? 
+                    # Dump: <div class="newslist_ctg newsctg3_kk_b ...">決算</div>
+                    # 'newsctg3' seems to correspond to category 3 (Earnings)
+                    # We are querying category=3 so all should be relevant.
                     
                     events.append({
                         'ticker': ticker,
-                        'name': name,
+                        'name': name.strip(),
                         'date': date.strftime('%Y-%m-%d'),
                         'type': ev_type,
-                        'desc': text
+                        'desc': full_text
                     })
+                except Exception as row_err:
+                    continue
 
         print(f"  Found {len(events)} events.")
         return events
