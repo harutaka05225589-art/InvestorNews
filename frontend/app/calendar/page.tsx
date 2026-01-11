@@ -48,7 +48,7 @@ export default function CalendarPage() {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
 
-    // Fetch Events when month changes or for initial load
+    // Fetch Events when month changes
     React.useEffect(() => {
         const fetchEvents = async (year: number, month: number) => {
             setLoading(true);
@@ -57,6 +57,14 @@ export default function CalendarPage() {
                 if (res.ok) {
                     const data = await res.json();
                     setEvents(prev => {
+                        // Merge with existing events to avoid flickering when switching back/forth,
+                        // or just replace if we only care about current view.
+                        // For simplicity, let's replace but ideally we might want to cache?
+                        // Actually, if we navigate, we want to reload or keep.
+                        // Let's just append or replace. Replaing is safer to avoid duplicates if API returns full list.
+                        // But wait, "Weekly view" needs CURRENT week data even if we view Next Month.
+                        // So we should fetch Current Week separately or just fetch "current month + next month".
+                        // For now, let's just add to a big list.
                         const newEvents = data.events || [];
                         // Simple de-dupe
                         const combined = [...prev, ...newEvents].filter((v, i, a) => a.findIndex(t => (t.ticker === v.ticker && t.date === v.date)) === i);
@@ -70,48 +78,15 @@ export default function CalendarPage() {
             }
         };
 
-        // 1. Fetch View Month
         fetchEvents(viewYear, viewMonth + 1);
 
-        // 2. Fetch Weekly View Data (Today -> Today + 7 days)
-        // Ensure we have data for the entire week, even if it crosses month boundaries.
-        const weekStart = new Date(); // Today
-        const weekEnd = new Date();
-        weekEnd.setDate(weekStart.getDate() + 7);
-
-        // Start Month
-        const wStartYear = weekStart.getFullYear();
-        const wStartMonth = weekStart.getMonth();
-
-        // End Month
-        const wEndYear = weekEnd.getFullYear();
-        const wEndMonth = weekEnd.getMonth();
-
-        // If Weekly View Start/End months are different from View Month, fetch them too.
-
-        // Check Start Month of Week
-        if ((wStartYear !== viewYear || wStartMonth !== viewMonth) &&
-            !(wStartYear === viewYear && wStartMonth === viewMonth)) {
-            // Logic simplified: Just fetch unique months needed for the week.
+        // Also fetch for "Current Week" if not already covered?
+        // The simplified logic above only fetches for the "View Month".
+        // If View Month is NOT current month, the Weekly View (Top) might be empty.
+        // Let's ensure we fetch for the "Current Month" too if it's different.
+        if (viewYear !== today.getFullYear() || viewMonth !== today.getMonth()) {
+            fetchEvents(today.getFullYear(), today.getMonth() + 1);
         }
-
-        // Better approach: Just list all unique months involved in:
-        // [ViewMonth, WeekStartMonth, WeekEndMonth]
-        // And fetch them if they differ.
-
-        const fetchTargets = new Set();
-        fetchTargets.add(`${viewYear}-${viewMonth + 1}`);
-        fetchTargets.add(`${wStartYear}-${wStartMonth + 1}`);
-        fetchTargets.add(`${wEndYear}-${wEndMonth + 1}`);
-
-        // Iterate and fetch (ignoring the one we just called)
-        fetchTargets.forEach(t => {
-            const [y, m] = t.split('-').map(Number);
-            // Skip the main ViewMonth call we already did above to avoid double-firing (though React might batch)
-            if (y === viewYear && m === (viewMonth + 1)) return;
-
-            fetchEvents(y, m);
-        });
 
     }, [viewYear, viewMonth]);
 
