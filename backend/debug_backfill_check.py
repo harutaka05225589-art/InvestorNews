@@ -39,15 +39,18 @@ def check_past_date():
         
         count = 0
         debug_printed = 0
-        for link in links:
+        for i, link in enumerate(links):
             text = link.get_text().strip()
             
-            # Print first few links just to see what we are getting
-            if debug_printed < 10 and text:
-                print(f"  Link: '{text}' (Href: {link.get('href')})")
-                debug_printed += 1
+            # Print a few links from the middle (where news usually is)
+            if 50 <= i < 60:
+                 print(f"  [Sample {i}] '{text}'")
 
-            # Same logic as backfill script
+            # Check for ANY 4-digit number in the text
+            if re.search(r'\d{4}', text):
+                print(f"  [Potential Match] '{text}'")
+                
+            # Strict logic check (same as backfill script)
             match = re.search(r'(.+?)\s*<(\d{4})>', text)
             if match:
                  if any(k in text for k in ['決算', '修正', '配当', '業績']):
