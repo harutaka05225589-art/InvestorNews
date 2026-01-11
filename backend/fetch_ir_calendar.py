@@ -42,23 +42,22 @@ def fetch_events_for_date(requested_date):
         header_date = None
         h2 = soup.find('div', id='main_body').find('h2') if soup.find('div', id='main_body') else soup.find('h2')
         if h2:
-            header_text = h2.get_text()
+            header_text = h2.get_text().strip()
+            print(f"  [Debug] Header Text found: '{header_text}'")
             # Extract month and day: (\d+)月(\d+)日
             date_match = re.search(r'(\d+)月(\d+)日', header_text)
             if date_match:
                 month = int(date_match.group(1))
                 day = int(date_match.group(2))
-                # Guess year: assume it's close to requested_date year
-                # If requested Jan 2026, and we see 1月14日, it's likely 2026.
                 year = requested_date.year
-                # Edge case: crossing year boundary (e.g. searching for Jan in Dec)
                 header_date = datetime.date(year, month, day)
-                # Correction if year diff is large? Leave simple for now.
+                print(f"  [Debug] Parsed Date from Header: {header_date}")
+            else:
+                print("  [Debug] Could not parse date from header.")
+        else:
+            print("  [Debug] No H2 header found.")
         
         # Use the extracted date if found, otherwise fallback to requested_date (risky but necessary)
-        # Verify if extracted date is distinctly different from requested?
-        # If scraper loops 2026-03-01...05 and page always says "1/14", we should save as 1/14.
-        # This prevents duplicate fake entries.
         target_date = header_date if header_date else requested_date
         print(f"  Page Date: {target_date} (Requested: {requested_date})")
 
