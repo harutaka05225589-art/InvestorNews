@@ -50,7 +50,6 @@ def fetch_events_for_date(requested_date):
 
         if header_tag:
             header_text = header_tag.get_text().strip()
-            print(f"  [Debug] Header Text found in <{header_tag.name}>: '{header_text}'")
             # Extract month and day: (\d+)月(\d+)日
             date_match = re.search(r'(\d+)月(\d+)日', header_text)
             if date_match:
@@ -58,15 +57,11 @@ def fetch_events_for_date(requested_date):
                 day = int(date_match.group(2))
                 year = requested_date.year
                 header_date = datetime.date(year, month, day)
-                print(f"  [Debug] Parsed Date from Header: {header_date}")
-            else:
-                print("  [Debug] Could not parse date from header.")
-        else:
-            print("  [Debug] No H1/H2 header found.")
         
         # Use the extracted date if found, otherwise fallback to requested_date (risky but necessary)
         target_date = header_date if header_date else requested_date
         print(f"  Page Date: {target_date} (Requested: {requested_date})")
+
 
         events = []
         
