@@ -61,6 +61,13 @@ def fetch_events_for_date(requested_date):
         # Use the extracted date if found, otherwise fallback to requested_date (risky but necessary)
         target_date = header_date if header_date else requested_date
         print(f"  Page Date: {target_date} (Requested: {requested_date})")
+        
+        # Guard: If the page redirected us to a completely different date (e.g. "Next available" date),
+        # we should treat this as "No data for requested date" and skip saving it as the requested date.
+        # Otherwise we overwrite 2026-01-13 with data from 2026-07-05 (which is actually just 2026-01-13 content)
+        if header_date and header_date != requested_date:
+            print(f"  > Notice: Page date {header_date} differs from requested {requested_date}. Skipping to avoid duplicate/incorrect data.")
+            return []
 
 
         events = []
