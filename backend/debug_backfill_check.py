@@ -17,29 +17,22 @@ def check_past_date():
         
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Structure hunt: Find where "決算" appears in the text
-        print("Searching for '決算' text nodes to identify structure...")
-        results = soup.find_all(string=re.compile("決算"))
-        
-        print(f"Found {len(results)} occurrences of '決算'.")
-        
-        for i, text_node in enumerate(results[:5]):
-            parent = text_node.parent
-            print(f"\n[Match {i}]")
-            print(f"  Text: {text_node.strip()[:50]}...")
-            print(f"  Parent Tag: <{parent.name}> (Class: {parent.get('class')})")
-            print(f"  Grandparent Tag: <{parent.parent.name}> (Class: {parent.parent.get('class')})")
+        # Target the specific listmenu found in previous logs
+        print("Looking for div.listmenu_kessan...")
+        target_div = soup.find('div', class_='listmenu_kessan')
+        if not target_div:
+            print("listmenu_kessan not found, trying generic 'listmenu'...")
+            target_div = soup.find('div', class_='listmenu')
             
-            # Check if there is a link nearby
-            link = parent.find('a') if parent.name != 'a' else parent
-            if not link:
-                link = parent.find_parent('a')
-            
-            if link:
-                print(f"  Nearby Link Text: {link.get_text().strip()}")
-                print(f"  Nearby Link Href: {link.get('href')}")
-            else:
-                print("  No link directly associated.")
+        if target_div:
+            # Print first 10 links inside this div
+            links = target_div.find_all('a')
+            print(f"Links in target div: {len(links)}")
+            for i, link in enumerate(links[:20]):
+                print(f"  [Link {i}] Text: '{link.get_text().strip()}'")
+                print(f"           Href: {link.get('href')}")
+        else:
+            print("Could not find div.listmenu or class listmenu_kessan")
 
     except Exception as e:
         print(f"Error: {e}")
