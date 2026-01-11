@@ -17,26 +17,18 @@ def check_past_date():
         
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Survey ALL tables to find the right one
-        tables = soup.find_all('table')
-        print(f"Total tables found: {len(tables)}")
+        # We found tables with class 's_news_list' but they had 0 links?
+        # Let's inspect them closely.
+        news_tables = soup.find_all('table', class_='s_news_list')
+        print(f"Found {len(news_tables)} tables with class 's_news_list'")
         
-        for i, t in enumerate(tables):
-            links = t.find_all('a')
-            print(f"\n[Table {i}] Classes: {t.get('class')} - Link Count: {len(links)}")
+        for i, t in enumerate(news_tables):
+            print(f"\n[News Table {i}] Classes: {t.get('class')}")
+            # Print first 500 chars of HTML to see what's inside
+            print(f"  Content Preview: {str(t)[:500]}")
             
-            # Print first 3 links to ID the table purpose
-            for j, lnk in enumerate(links[:3]):
-                print(f"  Link {j}: {lnk.get_text().strip()}")
-        
-        # Also check for likely UL classes
-        ul_news = soup.find('ul', class_='s_news_list')
-        if ul_news:
-            print("\n[Found ul.s_news_list]")
-            ul_links = ul_news.find_all('a')
-            print(f"  Link Count: {len(ul_links)}")
-            for j, lnk in enumerate(ul_links[:3]):
-                print(f"  Link {j}: {lnk.get_text().strip()}")
+            # Check for ANY text inside
+            print(f"  Text Content: {t.get_text().strip()[:200]}")
 
     except Exception as e:
         print(f"Error: {e}")
