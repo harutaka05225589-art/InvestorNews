@@ -129,8 +129,13 @@ def fetch_events_for_date(requested_date):
                      # Sometimes Market is Col 1, Name is Col 2.
                      # But if Col 2 is empty, maybe it's in Col 1 mixed?
                      potential_name = cols[1].get_text().strip()
-                     # Ignore "東Ｐ", "東Ｓ", "東Ｇ" (Market codes)
-                     if potential_name and potential_name not in ["東Ｐ", "東Ｓ", "東Ｇ", "東Ｍ", "名Ｐ", "札証", "福証"]:
+                     # Ignore "東Ｐ", "東Ｓ", "東Ｇ" (Market codes) - Full-width and Half-width
+                     ignore_list = [
+                        "東Ｐ", "東Ｓ", "東Ｇ", "東Ｍ", "名Ｐ", "札証", "福証",
+                        "東P", "東S", "東G", "東M", "名P", # Half-width
+                        "東証P", "東証S", "東証G", "プライム", "スタンダード", "グロース"
+                     ]
+                     if potential_name and potential_name not in ignore_list:
                          name = potential_name
 
             if not name:
@@ -209,9 +214,18 @@ def run_fetch(days_back=5, days_forward=180):
         conn.close()
         
         if count > 0:
-            print(f"Skipping {date_str} (Already has {count} events)")
-            current += datetime.timedelta(days=1)
-            continue
+            print(f"  Date {date_str} has {count} events. Overwriting to ensure data quality.")
+            # Optional: Delete existing to force clean slate for this date
+            # c.execute("DELETE FROM ir_events WHERE event_date = ?", (date_str,))
+            # conn.commit()
+            # Actually, let's rely on the save_events logic. 
+            # But save_events currently only INSERTS if not exists.
+            # We need to change save_events to UPSERT or we delete here.
+            
+            # Let's purge this date's events first to be safe and ensure we get strict fresh data.
+            # This fixes the "Bad Name" issue by removing the bad records.
+            c.execute("DELETE FROM ir_events WHERE event_date = ?", (date_str,))
+            conn.commit()
             
         events = fetch_events_for_date(current)
         save_events(events)
