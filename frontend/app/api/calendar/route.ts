@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
 
+export const dynamic = 'force-dynamic'; // Prevent caching of DB results
+
 // DB Connection (Should be shared but initializing here for simplicity in Route Handler)
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
