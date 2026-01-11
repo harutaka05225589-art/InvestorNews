@@ -22,6 +22,15 @@ def cleanup_summaries():
         print(f"Purging ALL news for 成長株テリー (ID: {terry_id}) to fix noise...")
         c.execute("DELETE FROM news_items WHERE investor_id = ?", (terry_id,))
         print("Purge complete.")
+        
+    # ---------------------------------------------------------
+    # PURGE BAD IR EVENTS (Future dates like 2026 which were scraped incorrectly)
+    # ---------------------------------------------------------
+    # Delete all events from 2026 onwards to allow fresh fetch with correct logic
+    print("Purging invalid forward IR events (2026+)...")
+    c.execute("DELETE FROM ir_events WHERE event_date >= '2026-01-01'")
+    print("Purge complete.")
+
     
     # Fetch all news items
     items = c.execute("SELECT id, summary, title FROM news_items").fetchall()
