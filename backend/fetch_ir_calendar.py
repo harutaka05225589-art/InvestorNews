@@ -179,23 +179,19 @@ def save_events(events):
     conn.close()
     print(f"  Saved {unique_count} new events.")
 
-def run_fetch(days_back=5, days_forward=30):
+def run_fetch(days_back=5, days_forward=180):
     today = datetime.date.today()
     start_date = today - datetime.timedelta(days=days_back)
     end_date = today + datetime.timedelta(days=days_forward)
     
+    print(f"Starting fetch from {start_date} to {end_date}...")
+    
     current = start_date
     while current <= end_date:
-        # Check if we already have events for this date?
-        # User requested "no refetch for acquired data".
-        # We can do a quick check: count events for this date. If > 0, skip.
-        # But wait, what if new events are added? 
-        # User explicitly said "once acquired data requires no re-acquisition". 
-        # So we strict skip if count > 0 in DB.
-        
         conn = get_db_connection()
         c = conn.cursor()
         date_str = current.strftime('%Y-%m-%d')
+        # Check if we already have events for this date
         count = c.execute("SELECT count(*) FROM ir_events WHERE event_date = ?", (date_str,)).fetchone()[0]
         conn.close()
         
@@ -210,6 +206,5 @@ def run_fetch(days_back=5, days_forward=30):
         time.sleep(1) # Polite delay
 
 if __name__ == "__main__":
-    # By default verify with a small range, or use args
-    # For now, let's run strict small range to verify
-    run_fetch(days_back=1, days_forward=1)
+    # Run slightly wider range by default
+    run_fetch(days_back=1, days_forward=180)
