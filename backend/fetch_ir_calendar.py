@@ -100,24 +100,24 @@ def fetch_events_for_date(requested_date):
             
             # Try to grab Code and Name by <a> tags in the first few columns
             links = row.find_all('a')
-            if not links: continue
             
             ticker = None
             name = None
             
-            for link in links:
-                txt = link.get_text().strip()
-                href = link.get('href', '')
-                
-                # Check if text is 4 digit ticker
-                if re.match(r'^\d{4}$', txt):
-                    ticker = txt
-                elif txt and not re.match(r'^\d+$', txt) and 'kabutan.jp' not in txt:
-                    # Likely the name (not just a number)
-                    # Exclude generic links if any
-                    name = txt
+            if links:
+                for link in links:
+                    txt = link.get_text().strip()
+                    href = link.get('href', '')
+                    
+                    # Check if text is 4 digit ticker
+                    if re.match(r'^\d{4}$', txt):
+                        ticker = txt
+                    elif txt and not re.match(r'^\d+$', txt) and 'kabutan.jp' not in txt:
+                        # Likely the name (not just a number)
+                        # Exclude generic links if any
+                        name = txt
             
-            if not ticker:
+            if not ticker and cols:
                 # Fallback: check Col 0 text
                 col0_txt = cols[0].get_text().strip()
                 if re.match(r'^\d{4}$', col0_txt):
@@ -136,14 +136,39 @@ def fetch_events_for_date(requested_date):
                      # Sometimes Market is Col 1, Name is Col 2.
                      # But if Col 2 is empty, maybe it's in Col 1 mixed?
                      potential_name = cols[1].get_text().strip()
-                     # Ignore "東Ｐ", "東Ｓ", "東Ｇ" (Market codes) - Full-width and Half-width
-                     ignore_list = [
-                        "東Ｐ", "東Ｓ", "東Ｇ", "東Ｍ", "名Ｐ", "札証", "福証",
-                        "東P", "東S", "東G", "東M", "名P", # Half-width
-                        "東証P", "東証S", "東証G", "プライム", "スタンダード", "グロース"
-                     ]
-                     if potential_name and potential_name not in ignore_list:
+                     
+                     # Strict check: If it looks like a market code, IGNORE it.
+                     # Matches: 東P, 東証プライム, 名M, etc. (Including Full-width characters)
+                     # Regex matches: Start with 東/名/札/福, optional 証, followed by P/G/M/S/1/2 or full-width equivalents
+                     if re.match(r'^[東名札福][証]?[PGMS12１２ＰＧＭＳ\s]*$', potential_name) or potential_name in ["プライム", "スタンダード", "グロース"]:
+                         pass # It's a market code
+                     else:
                          name = potential_name
+
+            # SAFETY NET: If name is still missing or looks like "Unknown", 
+            # try to find the company name from our own database (historical records).
+            if (not name or name == "Unknown") and ticker:
+                try:
+                    conn_lookup = get_db_connection()
+                    c_lookup = conn_lookup.cursor()
+                    # Find the most recent valid name for this ticker
+                    c_lookup.execute("""
+                        SELECT company_name FROM ir_events 
+                        WHERE ticker = ? 
+                        AND company_name NOT LIKE '東%' 
+                        AND company_name NOT LIKE '名%' 
+                        AND company_name NOT LIKE '札%' 
+                        AND company_name NOT LIKE '福%' 
+                        AND company_name != 'Unknown'
+                        ORDER BY event_date DESC LIMIT 1
+                    """, (ticker,))
+                    row_data = c_lookup.fetchone()
+                    conn_lookup.close()
+                    if row_data:
+                        name = row_data[0]
+                        print(f"    [Recovered Name] {ticker} -> {name}")
+                except Exception as e:
+                    pass
 
             if not name:
                 name = "Unknown"  
