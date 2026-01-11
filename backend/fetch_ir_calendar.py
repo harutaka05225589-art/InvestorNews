@@ -15,10 +15,15 @@ def get_db_connection():
 def fetch_events_for_date(date):
     """
     Fetches earnings announcements for a specific date from Kabutan.
-    date: datetime object
+    Target: Earnings Schedule Page (決算発表予定)
+    URL: https://kabutan.jp/warning/?mode=5_1&date=YYYYMMDD
     """
     date_str = date.strftime('%Y%m%d')
-    url = f"https://kabutan.jp/news/?date={date_str}&category=3"
+    # Using the "Earnings Schedule" endpoint (warning mode=5_1)
+    # Note: query param might be ?date= or ?day=, Kabutan often accepts ?date= for news.
+    # For warning section, if date param is ignored, it usually shows "Upcoming". 
+    # We will try passing date.
+    url = f"https://kabutan.jp/warning/?mode=5_1&date={date_str}"
     
     print(f"Fetching: {url}")
     try:
@@ -34,41 +39,67 @@ def fetch_events_for_date(date):
 
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Parse logic
-        # Based on debug, links are inside a table within main_body
         events = []
         
-        # Strategy: Find any <a> tag that looks like a stock link <Code>
-        # e.g. "Toyota <7203> ..."
-        # This bypasses "main_body" class issues if the layout changed or is mobile view.
-        links = soup.find_all('a')
+        # Look for the main schedule table
+        # Structure observed: table.tablesorter (or just the main table in #contents)
+        table = soup.find('table', class_='tablesorter')
+        if not table:
+            # Fallback: try finding first table with "コード" in header
+            tables = soup.find_all('table')
+            for t in tables:
+                if 'コード' in t.get_text():
+                    table = t
+                    break
         
-        for link in links:
-            text = link.get_text().strip()
-            # Regex to extract Name and Ticker <Code>
-            match = re.search(r'(.+?)\s*<(\d{4})>', text)
+        if not table:
+            print("  No schedule table found.")
+            return []
+
+        # Iterate rows (skip header if typically <thead> or first row has th)
+        rows = table.find_all('tr')
+        
+        for row in rows:
+            cols = row.find_all('td')
+            if not cols or len(cols) < 3:
+                continue
+                
+            # Expected columns (based on standard Kabutan schedule):
+            # 0: Code (Ticker) link
+            # 1: Name link
+            # 2: Market
+            # 3: Period/Type
             
-            if match: 
-                 # Check if it's an announcement (決算, 修正, 配当, etc)
-                if any(k in text for k in ['決算', '修正', '配当', '業績', '短信']):
-                    name = match.group(1).strip()
-                    ticker = match.group(2)
-                    
-                    # Determine specific type from text
-                    ev_type = "発表" # Default
-                    if '1Q' in text or '第1' in text: ev_type = "1Q"
-                    elif '2Q' in text or '第2' in text or '中間' in text: ev_type = "2Q"
-                    elif '3Q' in text or '第3' in text: ev_type = "3Q"
-                    elif '本決算' in text or '通期' in text: ev_type = "本決算"
-                    elif '修正' in text: ev_type = "修正"
-                    
-                    events.append({
-                        'ticker': ticker,
-                        'name': name,
-                        'date': date.strftime('%Y-%m-%d'),
-                        'type': ev_type,
-                        'desc': text
-                    })
+            # Extract Code
+            code_col = cols[0]
+            ticker_link = code_col.find('a')
+            if not ticker_link: continue
+            ticker = ticker_link.get_text().strip()
+            
+            # Extract Name
+            name_col = cols[1]
+            name = name_col.get_text().strip()
+            
+            # Extract Type (e.g. 本決算, etc) if available
+            # Note: The table structure might vary. Let's try to find "決算" text in row or just default.
+            ev_type = "決算"
+            row_text = row.get_text()
+            if '1Q' in row_text or '第1' in row_text: ev_type = "1Q"
+            elif '2Q' in row_text or '第2' in row_text: ev_type = "2Q"
+            elif '3Q' in row_text or '第3' in row_text: ev_type = "3Q"
+            elif '本決算' in row_text: ev_type = "本決算"
+            
+            # Verify it's a valid ticker
+            if not ticker.isdigit():
+                continue
+
+            events.append({
+                'ticker': ticker,
+                'name': name,
+                'date': date.strftime('%Y-%m-%d'),
+                'type': ev_type,
+                'desc': f"{name} ({ticker}) {ev_type}発表予定"
+            })
 
         print(f"  Found {len(events)} events.")
         return events
