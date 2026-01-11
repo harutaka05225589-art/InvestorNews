@@ -17,48 +17,29 @@ def check_past_date():
         
         soup = BeautifulSoup(res.text, 'html.parser')
         
-        # main_body not found. Let's look for tables.
-        # Typically news lists are in a table with class 's_news_list' or just a table.
-        tables = soup.find_all('table')
-        print(f"Total tables found: {len(tables)}")
+        # Structure hunt: Find where "決算" appears in the text
+        print("Searching for '決算' text nodes to identify structure...")
+        results = soup.find_all(string=re.compile("決算"))
         
-        links = []
-        for t in tables:
-            # Check if this table looks like a news list (has many links)
-            t_links = t.find_all('a')
-            if len(t_links) > 5:
-                print(f"Table with {len(t_links)} links found. Classes: {t.get('class')}")
-                # Add these links to our candidates
-                links.extend(t_links)
+        print(f"Found {len(results)} occurrences of '決算'.")
         
-        if not links:
-            print("No suitable table links found. Checking raw 'li' tags?")
-            links = soup.find_all('a') # Fallback
+        for i, text_node in enumerate(results[:5]):
+            parent = text_node.parent
+            print(f"\n[Match {i}]")
+            print(f"  Text: {text_node.strip()[:50]}...")
+            print(f"  Parent Tag: <{parent.name}> (Class: {parent.get('class')})")
+            print(f"  Grandparent Tag: <{parent.parent.name}> (Class: {parent.parent.get('class')})")
             
-        print(f"Total candidate links: {len(links)}")
-        
-        count = 0
-        debug_printed = 0
-        for i, link in enumerate(links):
-            text = link.get_text().strip()
+            # Check if there is a link nearby
+            link = parent.find('a') if parent.name != 'a' else parent
+            if not link:
+                link = parent.find_parent('a')
             
-            # Print a few links from the middle (where news usually is)
-            if 50 <= i < 60:
-                 print(f"  [Sample {i}] '{text}'")
-
-            # Check for ANY 4-digit number in the text
-            if re.search(r'\d{4}', text):
-                print(f"  [Potential Match] '{text}'")
-                
-            # Strict logic check (same as backfill script)
-            match = re.search(r'(.+?)\s*<(\d{4})>', text)
-            if match:
-                 if any(k in text for k in ['決算', '修正', '配当', '業績']):
-                    count += 1
-                    if count <= 3:
-                        print(f"  [MATCH] Found: {text}")
-        
-        print(f"Total matched events found: {count}")
+            if link:
+                print(f"  Nearby Link Text: {link.get_text().strip()}")
+                print(f"  Nearby Link Href: {link.get('href')}")
+            else:
+                print("  No link directly associated.")
 
     except Exception as e:
         print(f"Error: {e}")
