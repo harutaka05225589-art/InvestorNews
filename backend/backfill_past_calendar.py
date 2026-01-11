@@ -74,13 +74,19 @@ def fetch_past_events_for_date(date):
                     
                     # Split Name and Description
                     # Text format: "窪田製薬ＨＤ、1-9月期(3Q累計)最終が…"
-                    # Usually "Name、Description"
+                    # Sometimes might be "Toyota Financial Results" (no comma)
                     if '、' in full_text:
                         name, desc = full_text.split('、', 1)
                         desc = desc # Keep the description
                     else:
-                        name = "Unknown"
+                        # If no comma, try to guess the name (e.g. first word) or just use full text
+                        # Often the whole text starts with the company name.
+                        # Using full text as name is better than "Unknown"
+                        name = full_text
                         desc = full_text
+                    
+                    # Cleanup name (remove date prefixes if any match regex)
+                    # Use Regex to clean up leading dates/garbage if needed, but usually it's clean enough.
 
                     # Determine type
                     ev_type = "発表"
