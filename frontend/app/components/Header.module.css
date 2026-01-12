@@ -210,6 +210,26 @@
     color: #ff6b6b;
 }
 
+/* Desktop Nav (Default Hidden) */
+.desktopNav {
+    display: none;
+    gap: 1.5rem;
+    margin-left: 2rem;
+    flex: 1;
+}
+
+.desktopNav a {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.desktopNav a:hover {
+    color: #fff;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+}
+
 .spinner {
     width: 20px;
     height: 20px;
@@ -222,5 +242,21 @@
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+    .burgerBtn {
+        display: none;
+    }
+
+    .brand {
+        margin-left: 0;
+    }
+
+    .desktopNav {
+        display: flex;
+        align-items: center;
     }
 }

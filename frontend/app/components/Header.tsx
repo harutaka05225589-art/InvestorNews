@@ -24,8 +24,16 @@ export default function Header() {
                     <div className={`${styles.bar} ${menuOpen ? styles.open : ''}`}></div>
                 </button>
 
-                {/* Brand Logo (Center? or Left next to burger) */}
+                {/* Brand Logo */}
                 <Link href="/" className={styles.brand}>Investor News</Link>
+
+                {/* Desktop Navigation (Hidden on Mobile) */}
+                <nav className={styles.desktopNav}>
+                    <Link href="/">ホーム</Link>
+                    <Link href="/calendar">IRカレンダー</Link>
+                    <Link href="/alerts">PER通知</Link>
+                    <Link href="/request">リクエスト</Link>
+                </nav>
 
                 {/* Auth Indicator (Right) */}
                 <div className={styles.authContainer}>
