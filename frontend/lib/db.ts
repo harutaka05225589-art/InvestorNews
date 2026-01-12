@@ -24,7 +24,8 @@ export function getInvestors(): Investor[] {
     const stmt = db.prepare(`
         SELECT 
             id, name, aliases, style_description, 
-            twitter_url, image_url, profile 
+            id, name, aliases, style_description, 
+            twitter_url, image_url
         FROM investors
     `);
     return stmt.all() as Investor[];
