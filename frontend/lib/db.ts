@@ -38,7 +38,7 @@ export function getInvestorById(id: string | number): Investor | undefined {
 
 export function getNewsByInvestor(investorId: string | number): NewsItem[] {
     const stmt = db.prepare(`
-        SELECT * FROM news 
+        SELECT * FROM news_items 
         WHERE investor_id = ? 
         ORDER BY published_at DESC 
         LIMIT 50
