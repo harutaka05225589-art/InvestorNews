@@ -253,17 +253,35 @@ def scan_valid_dates(start_date, end_date):
             res = requests.get(url, headers=headers, timeout=10)
             soup = BeautifulSoup(res.text, 'html.parser')
             
+            # DEBUG: Check what page we are actually on
+            page_title = soup.find('title').get_text().strip() if soup.find('title') else "No Title"
+            h1_text = soup.find('h1').get_text().strip() if soup.find('h1') else "No H1"
+            print(f"    DEBUG: Page Title: {page_title[:30]}... | H1: {h1_text}")
+            
             # Find all links to daily schedule
-            # They look like: /warning/?mode=5_1&date=20260113
-            links = soup.find_all('a', href=re.compile(r'mode=5_1.*date=\d{8}'))
+            # Relaxed regex: Just look for 8-digit date param.
+            links = soup.find_all('a', href=re.compile(r'date=\d{8}'))
+            print(f"    DEBUG: Raw links found: {len(links)}") # Detailed debug
+            if len(links) > 0:
+                print(f"    DEBUG: First link: {links[0].get('href')}")
+            else:
+                 # If no date links, print ANY links to see what's going on
+                 all_links = soup.find_all('a')
+                 print(f"    DEBUG: No date links. Total valid links on page: {len(all_links)}")
+                 if len(all_links) > 0:
+                     print(f"    DEBUG: Sample links: {[l.get('href') for l in all_links[:3]]}")
+            
             for l in links:
                 href = l.get('href')
                 match = re.search(r'date=(\d{8})', href)
                 if match:
                     d_str = match.group(1)
-                    d = datetime.datetime.strptime(d_str, '%Y%m%d').date()
-                    if start_date <= d <= end_date:
-                        valid_dates.add(d)
+                    try:
+                        d = datetime.datetime.strptime(d_str, '%Y%m%d').date()
+                        if start_date <= d <= end_date:
+                            valid_dates.add(d)
+                    except ValueError:
+                        pass
         except Exception as e:
             print(f"    Error scanning {url}: {e}")
         
