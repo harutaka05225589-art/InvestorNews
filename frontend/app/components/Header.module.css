@@ -261,18 +261,20 @@
     }
 }
 
-/* Responsive Design */
-@media (min-width: 768px) {
-    .burgerBtn {
-        display: none;
-    }
+/* Responsive Design: UNIFIED MOBILE-STYLE LAYOUT */
 
-    .brand {
-        margin-left: 0;
-    }
+/* Force burger button to be visible always */
+.burgerBtn {
+    display: flex;
+    /* Ensure it's not hidden by specificity issues */
+}
 
-    .desktopNav {
-        display: flex;
-        align-items: center;
-    }
+/* Force specific Desktop Nav to be hidden always */
+.desktopNav {
+    display: none !important;
+}
+
+/* Ensure Logo has left margin if needed, but flex gap usually handles it */
+.brand {
+    margin-left: 0.5rem;
 }
