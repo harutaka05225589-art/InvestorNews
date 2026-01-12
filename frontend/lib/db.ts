@@ -21,13 +21,12 @@ export default db;
 // --- Data Fetching Helpers ---
 
 export function getInvestors(): Investor[] {
-    const stmt = db.prepare(`
-        SELECT 
-            id, name, aliases, style_description, 
-            id, name, aliases, style_description, 
-            twitter_url, image_url
-        FROM investors
-    `);
+    SELECT
+    i.id, i.name, i.aliases, i.style_description,
+        i.twitter_url, i.image_url,
+        (SELECT COUNT(*) FROM news_items n WHERE n.investor_id = i.id) as news_count
+        FROM investors i
+        `);
     return stmt.all() as Investor[];
 }
 
@@ -38,10 +37,10 @@ export function getInvestorById(id: string | number): Investor | undefined {
 
 export function getNewsByInvestor(investorId: string | number): NewsItem[] {
     const stmt = db.prepare(`
-        SELECT * FROM news_items 
-        WHERE investor_id = ? 
+    SELECT * FROM news_items 
+        WHERE investor_id = ?
         ORDER BY published_at DESC 
         LIMIT 50
-    `);
+        `);
     return stmt.all(investorId) as NewsItem[];
 }
