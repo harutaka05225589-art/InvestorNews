@@ -28,6 +28,8 @@ export const metadata: Metadata = {
 
 import Script from 'next/script';
 
+import Header from './components/Header';
+
 export default function RootLayout({
   children,
 }: {
@@ -54,23 +56,9 @@ export default function RootLayout({
       </head>
       <body>
         <main className="container">
-          <header>
-            <div className="header-content">
-              <Link href="/" className="brand">Investor News</Link>
-            </div>
-          </header>
+          <Header />
           {children}
           <footer style={{ marginTop: '4rem', padding: '2rem 0', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.9rem' }}>
-            <nav style={{ display: 'flex', justifyContent: 'center', gap: '2rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-              <Link href="/privacy" style={{ color: 'var(--accent)' }}>プライバシーポリシー</Link>
-              <Link href="/inquiry" style={{ color: 'var(--accent)' }}>お問い合わせ</Link>
-              <Link href="/request" className="text-sm text-gray-400 hover:text-[var(--primary)] transition-colors">
-                投資家追加リクエスト
-              </Link>
-              <Link href="/calendar" className="text-sm text-gray-400 hover:text-[var(--primary)] transition-colors">
-                IRカレンダー
-              </Link>
-            </nav>
             <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
           </footer>
         </main>
@@ -78,3 +66,4 @@ export default function RootLayout({
     </html>
   );
 }
+
