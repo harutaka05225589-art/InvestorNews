@@ -24,7 +24,7 @@ export function getInvestors(): Investor[] {
     const stmt = db.prepare(`
         SELECT
             i.id, i.name, i.aliases, i.style_description,
-            i.twitter_url, i.image_url,
+            i.twitter_url, i.image_url, i.profile,
             (SELECT COUNT(*) FROM news_items n WHERE n.investor_id = i.id) as news_count
         FROM investors i
     `);
@@ -32,16 +32,24 @@ export function getInvestors(): Investor[] {
 }
 
 export function getInvestorById(id: string | number): Investor | undefined {
+    // profile is already selected by *
     const stmt = db.prepare('SELECT * FROM investors WHERE id = ?');
     return stmt.get(id) as Investor | undefined;
 }
 
-export function getNewsByInvestor(investorId: string | number): NewsItem[] {
+export function getNewsByInvestor(investorId: string | number, page: number = 1, limit: number = 20): { news: NewsItem[], total: number } {
+    const offset = (page - 1) * limit;
+
     const stmt = db.prepare(`
-    SELECT * FROM news_items 
-        WHERE investor_id = ?
+        SELECT * FROM news_items 
+        WHERE investor_id = ? 
         ORDER BY published_at DESC 
-        LIMIT 50
-        `);
-    return stmt.all(investorId) as NewsItem[];
+        LIMIT ? OFFSET ?
+    `);
+    const news = stmt.all(investorId, limit, offset) as NewsItem[];
+
+    const countStmt = db.prepare('SELECT COUNT(*) as total FROM news_items WHERE investor_id = ?');
+    const total = (countStmt.get(investorId) as { total: number }).total;
+
+    return { news, total };
 }

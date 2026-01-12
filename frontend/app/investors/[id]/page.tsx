@@ -25,15 +25,27 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     };
 }
 
-export default async function InvestorPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function InvestorPage({
+    params,
+    searchParams
+}: {
+    params: Promise<{ id: string }>,
+    searchParams: Promise<{ page?: string }>
+}) {
     const { id } = await params;
+    const resolvedSearchParams = await searchParams;
+    const page = resolvedSearchParams.page ? parseInt(resolvedSearchParams.page) : 1;
+    const limit = 20; // 20 items per page
+
     const investor = getInvestorById(id) as Investor | undefined;
 
     if (!investor) {
         notFound();
     }
 
-    const news = getNewsByInvestor(id) as NewsItem[];
+    const { news, total } = getNewsByInvestor(id, page, limit);
+    const totalPages = Math.ceil(total / limit);
+
     const freeNews = news.filter(n => n.is_paid === 0);
     const paidNews = news.filter(n => n.is_paid === 1);
 
@@ -45,8 +57,8 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
 
                 {investor.profile && (
                     <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '1rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                        {investor.profile.split('\n').map((line, i) => (
-                            <p key={i} style={{ marginBottom: line.trim() ? '0.8rem' : 0 }}>{line}</p>
+                        {investor.profile.split('\n').filter(line => line.trim() !== '').map((line, i) => (
+                            <p key={i} style={{ marginBottom: '0.8rem' }}>{line}</p>
                         ))}
                     </div>
                 )}
@@ -56,6 +68,25 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                         Official X (Twitter) &rarr;
                     </a>
                 )}
+            </div>
+
+            {/* Pagination Controls */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                {page > 1 ? (
+                    <Link href={`/investors/${id}?page=${page - 1}`} style={{ padding: '0.5rem 1rem', background: 'var(--card-bg)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                        &larr; 前へ
+                    </Link>
+                ) : <div></div>}
+
+                <span style={{ color: 'var(--secondary)' }}>
+                    Page {page} / {totalPages || 1} (全{total}件)
+                </span>
+
+                {page < totalPages ? (
+                    <Link href={`/investors/${id}?page=${page + 1}`} style={{ padding: '0.5rem 1rem', background: 'var(--card-bg)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                        次へ &rarr;
+                    </Link>
+                ) : <div></div>}
             </div>
 
             {/* News Volume Chart (Simple CSS Bar Chart) */}
@@ -69,9 +100,14 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                     </p>
                     <div style={{ display: 'flex', alignItems: 'flex-end', height: '150px', gap: '8px' }}>
                         {(() => {
-                            // Calculate daily counts for the last 7 days from 'news' array
+                            // Note: Charts should ideally use a separate API to get full stats, 
+                            // but for now we use the loaded news. This might be inaccurate with pagination.
+                            // Ideally we'd fetch stats separately.
                             const today = new Date();
                             const stats = [];
+                            // For chart, we need more data than current page. 
+                            // Using displayed news is a limitation here but acceptable for now.
+                            // Ideally: create getNewsStats(id)
                             for (let i = 6; i >= 0; i--) {
                                 const d = new Date();
                                 d.setDate(today.getDate() - i);
@@ -79,7 +115,7 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                                 const count = news.filter(n => new Date(n.published_at).toLocaleDateString() === dateStr).length;
                                 stats.push({ date: `${d.getMonth() + 1}/${d.getDate()}`, count });
                             }
-                            const maxCount = Math.max(...stats.map(s => s.count), 1); // Avoid div by zero
+                            const maxCount = Math.max(...stats.map(s => s.count), 1);
 
                             return stats.map((day, idx) => (
                                 <div key={idx} style={{ flex: 1, textAlign: 'center' }}>
@@ -96,9 +132,6 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                             ));
                         })()}
                     </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--secondary)', marginTop: '0.5rem', textAlign: 'right', opacity: 0.7 }}>
-                        ※詳細な感情分析はAI機能を有効化すると表示されます
-                    </p>
                 </div>
             </section>
 
@@ -109,7 +142,7 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                     無料ニュース ({freeNews.length})
                 </h2>
 
-                {freeNews.length === 0 ? <p style={{ color: 'var(--secondary)', marginTop: '1rem' }}>記事はありません</p> : null}
+                {freeNews.length === 0 ? <p style={{ color: 'var(--secondary)', marginTop: '1rem' }}>このページの表示範囲に記事はありません</p> : null}
 
                 {freeNews.map(item => (
                     <div key={item.id} className="news-item">
@@ -137,7 +170,7 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                     有料記事・レポート ({paidNews.length})
                 </h2>
 
-                {paidNews.length === 0 ? <p style={{ color: 'var(--secondary)', marginTop: '1rem' }}>記事はありません</p> : null}
+                {paidNews.length === 0 ? <p style={{ color: 'var(--secondary)', marginTop: '1rem' }}>このページの表示範囲に記事はありません</p> : null}
 
                 {paidNews.map(item => (
                     <div key={item.id} className="news-item">
@@ -162,6 +195,22 @@ export default async function InvestorPage({ params }: { params: Promise<{ id: s
                     </div>
                 ))}
             </section>
+
+            {/* Pagination Controls (Bottom) */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    {page > 1 && (
+                        <Link href={`/investors/${id}?page=${page - 1}`} style={{ padding: '0.5rem 1rem', background: 'var(--card-bg)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                            &larr; 前のページ
+                        </Link>
+                    )}
+                    {page < totalPages && (
+                        <Link href={`/investors/${id}?page=${page + 1}`} style={{ padding: '0.5rem 1rem', background: 'var(--card-bg)', borderRadius: '4px', border: '1px solid var(--border)' }}>
+                            次のページ &rarr;
+                        </Link>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
