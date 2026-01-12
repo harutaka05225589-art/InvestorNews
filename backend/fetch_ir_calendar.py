@@ -221,6 +221,64 @@ def save_events(events):
     conn.close()
     print(f"  Saved {unique_count} new events.")
 
+def scan_valid_dates(start_date, end_date):
+    """
+    Crawls Kabutan Monthly Calendar (?mode=5_3) to find valid daily links 
+    within the requested range.
+    Returns: Sorted list of datetime.date objects.
+    """
+    valid_dates = set()
+    base_url = "https://kabutan.jp/warning/?mode=5_3"
+    
+    # Calculate months to visit
+    # Start from start_date's month, end at end_date's month
+    current_m = start_date.replace(day=1)
+    end_m = end_date.replace(day=1)
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
+    print("  Scanning monthly calendar for valid dates...")
+    
+    while current_m <= end_m:
+        ym_str = current_m.strftime('%Y%m')
+        # For current month, we can use base_url or explicit date
+        # Note: Kabutan might behave differently if we force date=YYYYMM for current month vs no param.
+        # Safest is to use explicit date param for all queries to ensure we get the right month.
+        url = f"{base_url}&date={ym_str}"
+        
+        # print(f"    Crawling month: {url}")
+        try:
+            res = requests.get(url, headers=headers, timeout=10)
+            soup = BeautifulSoup(res.text, 'html.parser')
+            
+            # Find all links to daily schedule
+            # They look like: /warning/?mode=5_1&date=20260113
+            links = soup.find_all('a', href=re.compile(r'mode=5_1.*date=\d{8}'))
+            for l in links:
+                href = l.get('href')
+                match = re.search(r'date=(\d{8})', href)
+                if match:
+                    d_str = match.group(1)
+                    d = datetime.datetime.strptime(d_str, '%Y%m%d').date()
+                    if start_date <= d <= end_date:
+                        valid_dates.add(d)
+        except Exception as e:
+            print(f"    Error scanning {url}: {e}")
+        
+        # Move to next month
+        if current_m.month == 12:
+            current_m = current_m.replace(year=current_m.year+1, month=1)
+        else:
+            current_m = current_m.replace(month=current_m.month+1)
+        
+        time.sleep(1)
+        
+    sorted_dates = sorted(list(valid_dates))
+    print(f"  Found {len(sorted_dates)} valid dates in range.")
+    return sorted_dates
+
 def run_fetch(days_back=0, days_forward=180):
     """
     Scrapes IR events.
@@ -232,16 +290,16 @@ def run_fetch(days_back=0, days_forward=180):
     
     print(f"Starting fetch from {start_date} to {end_date}...")
     
-    current = start_date
-    while current <= end_date:
+    # 1. Scan for valid dates first using Monthly View
+    # This avoids visiting future dates that don't exist yet (which redirect to today)
+    target_dates = scan_valid_dates(start_date, end_date)
+    
+    if not target_dates:
+        print("No valid dates found in scan.")
+        return
+
+    for current in target_dates:
         # Check if we already have events for this date?
-        # Optimization: If we have > 0 events, assume we fetched it.
-        # BUT: For future dates, data might CHANGE or appear later.
-        # So we should probably Re-Fetch if it's in the future or recent past.
-        # However, user asked "Once acquired data requires no re-acquisition".
-        # Let's respect that strictly to avoid load, but maybe allow overwrite if we force it?
-        # For now, stick to: if exists, skip.
-        
         conn = get_db_connection()
         c = conn.cursor()
         date_str = current.strftime('%Y-%m-%d')
@@ -250,12 +308,10 @@ def run_fetch(days_back=0, days_forward=180):
         
         if count > 0:
             print(f"Skipping {date_str} (Already has {count} events)")
-            current += datetime.timedelta(days=1)
             continue
             
         events = fetch_events_for_date(current)
         save_events(events)
-        current += datetime.timedelta(days=1)
         time.sleep(1) # Polite delay
 
     print("Fetch cycle complete.")
@@ -263,4 +319,5 @@ def run_fetch(days_back=0, days_forward=180):
 if __name__ == "__main__":
     # If run directly as script, just run once.
     # For scheduler, use specific scheduler script or cron.
-    run_fetch(days_back=7, days_forward=180) # Default manual run: Look back 1 week, forward 6 months80)
+    run_fetch(days_back=7, days_forward=180)
+    # End of script

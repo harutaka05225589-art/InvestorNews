@@ -1,0 +1,8 @@
+Starting check...
+Fetching https://kabutan.jp/warning/?mode=5_3...
+Found 0 valid daily links for next month.
+Status: 200
+Found 0 valid daily links.
+
+Fetching Next Month: https://kabutan.jp/warning/?mode=5_3&date=202602
+Found 0 valid daily links for next month.
