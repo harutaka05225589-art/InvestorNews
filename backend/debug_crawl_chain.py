@@ -5,59 +5,71 @@ import time
 from urllib.parse import urljoin
 
 def crawl_chain(days=5):
-    # Start at warnings top page or today's schedule
-    # Kabutan uses ?mode=5_1 for Daily Schedule
-    current_url = "https://kabutan.jp/warning/?mode=5_1"
+    # Start from a known past business day (Friday Jan 9, 2026) to ensure nav links exist
+    current_url = "https://kabutan.jp/warning/?mode=5_1&date=20260109"
     
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     
-    print(f"Starting Chain Crawl for {days} steps...")
+    print(f"Starting Chain Crawl for {days} steps from {current_url}...")
+    
+    seen_urls = set()
     
     for i in range(days):
+        if current_url in seen_urls:
+            print("  Loop detected. Stopping.")
+            break
+        seen_urls.add(current_url)
+        
         print(f"\nStep {i+1}: Fetching {current_url}")
         try:
             res = requests.get(current_url, headers=headers, timeout=10)
             soup = BeautifulSoup(res.text, 'html.parser')
             
             # Print Page Title/Date
-            title = soup.find('title').get_text().strip() if soup.find('title') else "No Title"
             h1 = soup.find('h1').get_text().strip() if soup.find('h1') else "No H1"
-            print(f"  Title: {title[:30]}... | H1: {h1}")
+            print(f"  H1: {h1}")
             
             # Find "Next Day" link
-            # Look for 翌日 or > arrow
+            # Search for text '翌日' OR 'Next' OR check specific navigation classes
             next_link = soup.find('a', string=re.compile(r'翌日'))
+            
             if not next_link:
-                # Try finding link with text containing ">" or similar if text matches failed
-                # Or specific class
-                print("  '翌日' text link not found. Searching for date links...")
-                
-                # Debug: Print all links that look like navigation
-                nav_links = soup.find_all('a', href=True)
-                candidates = []
-                for l in nav_links:
-                    if 'mode=5_1' in l['href'] and 'date=' in l['href']:
-                        candidates.append(l['href'])
-                
-                if candidates:
-                    # Usually the last one or one with later date is next?
-                    # Let's just print them to see logic
-                    print(f"  Found {len(candidates)} date links: {candidates[:3]} ... {candidates[-3:]}")
+                print("  '翌日' text link not found. Inspecting all 'warning' links...")
+                # Fallback: Look for links to warning mode=5_1 with date > current
+                # current date from URL
+                curr_match = re.search(r'date=(\d{8})', current_url)
+                if curr_match:
+                    curr_date = int(curr_match.group(1))
                     
-                    # Heuristic: If we are at 20260113, find 20260114
-                    # Extract current date from URL or H1
-                    # This is just a debug script, so let's stop if explicit link missing.
-                else:
-                    print("  No date navigation links found.")
+                    all_a = soup.find_all('a', href=True)
+                    candidates = []
+                    for a in all_a:
+                        href = a['href']
+                        if 'mode=5_1' in href and 'date=' in href:
+                            d_match = re.search(r'date=(\d{8})', href)
+                            if d_match:
+                                d_val = int(d_match.group(1))
+                                if d_val > curr_date:
+                                    candidates.append((d_val, href))
+                    
+                    if candidates:
+                        # Sort by date and pick the closest next one
+                        candidates.sort()
+                        print(f"  Found {len(candidates)} future link candidates. Picking closest: {candidates[0][0]}")
+                        next_link = soup.new_tag('a', href=candidates[0][1]) # Mock tag
+                    else:
+                        print("  No future date links found.")
+            
+            if next_link:
+                href = next_link.get('href')
+                print(f"  Found Next Link: {href}")
+                current_url = urljoin("https://kabutan.jp", href)
+            else:
+                print("  Dead end.")
                 break
                 
-            href = next_link.get('href')
-            print(f"  Found Next Link: {href}")
-            
-            # Construct absolute URL
-            current_url = urljoin("https://kabutan.jp", href)
             time.sleep(1)
             
         except Exception as e:
