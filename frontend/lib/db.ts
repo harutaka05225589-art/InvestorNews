@@ -21,12 +21,13 @@ export default db;
 // --- Data Fetching Helpers ---
 
 export function getInvestors(): Investor[] {
-    SELECT
-    i.id, i.name, i.aliases, i.style_description,
-        i.twitter_url, i.image_url,
-        (SELECT COUNT(*) FROM news_items n WHERE n.investor_id = i.id) as news_count
+    const stmt = db.prepare(`
+        SELECT
+            i.id, i.name, i.aliases, i.style_description,
+            i.twitter_url, i.image_url,
+            (SELECT COUNT(*) FROM news_items n WHERE n.investor_id = i.id) as news_count
         FROM investors i
-        `);
+    `);
     return stmt.all() as Investor[];
 }
 
