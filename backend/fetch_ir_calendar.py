@@ -221,81 +221,107 @@ def save_events(events):
     conn.close()
     print(f"  Saved {unique_count} new events.")
 
-def scan_valid_dates(start_date, end_date):
+def fetch_events_from_finance_url(requested_date):
     """
-    Crawls Kabutan Monthly Calendar (?mode=5_3) to find valid daily links 
-    within the requested range.
-    Returns: Sorted list of datetime.date objects.
+    Fallback: method to fetch from /stock/finance URL
+    URL: https://kabutan.jp/stock/finance?code=&date=YYYY/MM/DD
     """
-    valid_dates = set()
-    base_url = "https://kabutan.jp/warning/?mode=5_3"
+    date_str = requested_date.strftime('%Y/%m/%d')
+    url = f"https://kabutan.jp/stock/finance?code=&date={date_str}"
     
-    # Calculate months to visit
-    # Start from start_date's month, end at end_date's month
-    current_m = start_date.replace(day=1)
-    end_m = end_date.replace(day=1)
-    
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-    }
-    
-    print("  Scanning monthly calendar for valid dates...")
-    
-    while current_m <= end_m:
-        ym_str = current_m.strftime('%Y%m')
-        # For current month, we can use base_url or explicit date
-        # Note: Kabutan might behave differently if we force date=YYYYMM for current month vs no param.
-        # Safest is to use explicit date param for all queries to ensure we get the right month.
-        url = f"{base_url}&date={ym_str}"
+    print(f"  Fetching Fallback: {url}")
+    try:
+        headers = {
+            'User-Agent': 'Mozilla/5.0'
+        }
+        res = requests.get(url, headers=headers, timeout=10)
+        res.encoding = res.apparent_encoding
+        if res.status_code != 200: return []
         
-        # print(f"    Crawling month: {url}")
-        try:
-            res = requests.get(url, headers=headers, timeout=10)
-            soup = BeautifulSoup(res.text, 'html.parser')
-            
-            # DEBUG: Check what page we are actually on
-            page_title = soup.find('title').get_text().strip() if soup.find('title') else "No Title"
-            h1_text = soup.find('h1').get_text().strip() if soup.find('h1') else "No H1"
-            print(f"    DEBUG: Page Title: {page_title[:30]}... | H1: {h1_text}")
-            
-            # Find all links to daily schedule
-            # Relaxed regex: Just look for 8-digit date param.
-            links = soup.find_all('a', href=re.compile(r'date=\d{8}'))
-            print(f"    DEBUG: Raw links found: {len(links)}") # Detailed debug
-            if len(links) > 0:
-                print(f"    DEBUG: First link: {links[0].get('href')}")
-            else:
-                 # If no date links, print ANY links to see what's going on
-                 all_links = soup.find_all('a')
-                 print(f"    DEBUG: No date links. Total valid links on page: {len(all_links)}")
-                 if len(all_links) > 0:
-                     print(f"    DEBUG: Sample links: {[l.get('href') for l in all_links[:3]]}")
-            
-            for l in links:
-                href = l.get('href')
-                match = re.search(r'date=(\d{8})', href)
-                if match:
-                    d_str = match.group(1)
-                    try:
-                        d = datetime.datetime.strptime(d_str, '%Y%m%d').date()
-                        if start_date <= d <= end_date:
-                            valid_dates.add(d)
-                    except ValueError:
-                        pass
-        except Exception as e:
-            print(f"    Error scanning {url}: {e}")
+        soup = BeautifulSoup(res.text, 'html.parser')
         
-        # Move to next month
-        if current_m.month == 12:
-            current_m = current_m.replace(year=current_m.year+1, month=1)
-        else:
-            current_m = current_m.replace(month=current_m.month+1)
+        # Parse logic similar to above but generic for tables
+        events = []
+        tables = soup.find_all('table')
+        if not tables: return []
         
-        time.sleep(1)
+        # Usually the main list is in one of the tables.
+        # We look for rows with a ticker code.
+        for table in tables:
+            rows = table.find_all('tr')
+            for row in rows:
+                cols = row.find_all(['td', 'th'])
+                if not cols: continue
+                
+                # Check for ticker in text
+                row_txt = row.get_text()
+                # Simple extraction: Find first 4-digit sequence
+                match = re.search(r'\b(\d{4})\b', row_txt)
+                if not match: continue
+                ticker = match.group(1)
+                
+                # Extract Name (Exclude generic text)
+                name = None
+                links = row.find_all('a')
+                for l in links:
+                    txt = l.get_text().strip()
+                    if not txt.isdigit() and len(txt) > 1 and "kabutan" not in txt:
+                        name = txt
+                        break
+                
+                # Fallback name from columns
+                if not name and len(cols) > 1:
+                    # Heuristic: Column that corresponds to name
+                    # usually Col 1 or 2
+                    for i in [1, 2, 0]:
+                        if i < len(cols):
+                            t = cols[i].get_text().strip()
+                            if t and not t.isdigit() and len(t) > 1 and not is_market_code(t):
+                                name = t
+                                break
+                                
+                if not name: name = "Unknown"
+                if is_market_code(name): name = "Unknown"
+
+                # DB Lookup for Unknown Name
+                if name == "Unknown":
+                    conn = get_db_connection()
+                    c = conn.cursor()
+                    c.execute("SELECT company_name FROM ir_events WHERE ticker = ? AND company_name != 'Unknown' ORDER BY event_date DESC LIMIT 1", (ticker,))
+                    row_data = c.fetchone()
+                    conn.close()
+                    if row_data: name = row_data[0]
+
+                events.append({
+                    'ticker': ticker,
+                    'name': name,
+                    'date': requested_date.strftime('%Y-%m-%d'),
+                    'type': '決算', # Assume earnings
+                    'desc': f"{name} ({ticker}) 決算発表予定"
+                })
         
-    sorted_dates = sorted(list(valid_dates))
-    print(f"  Found {len(sorted_dates)} valid dates in range.")
-    return sorted_dates
+        # Dedup
+        unique_events = []
+        seen = set()
+        for e in events:
+            if e['ticker'] not in seen:
+                seen.add(e['ticker'])
+                unique_events.append(e)
+                
+        print(f"  Found {len(unique_events)} events from Fallback.")
+        return unique_events
+
+    except Exception as e:
+        print(f"  Error in fallback: {e}")
+        return []
+
+def is_market_code(txt):
+    # Re-define or reuse helper
+    known_codes = ['東P', '東S', '東G', '名P', '名M', '札', '福', '東証プライム', '東証スタンダード', '東証グロース']
+    if txt in known_codes: return True
+    if re.match(r'^[東名札福][証]?[PGMS12１２ＰＧＭＳ\s]*$', txt): return True
+    if txt in ['プライム', 'スタンダード', 'グロース']: return True
+    return False
 
 def run_fetch(days_back=0, days_forward=180):
     """
@@ -307,35 +333,35 @@ def run_fetch(days_back=0, days_forward=180):
     end_date = today + datetime.timedelta(days=days_forward)
     
     print(f"Starting fetch from {start_date} to {end_date}...")
+    print("VERSION 2.0: Using Fallback Logic")
     
-    # 1. Scan for valid dates first using Monthly View
-    # This avoids visiting future dates that don't exist yet (which redirect to today)
-    target_dates = scan_valid_dates(start_date, end_date)
-    
-    if not target_dates:
-        print("No valid dates found in scan.")
-        return
-
-    for current in target_dates:
-        # Check if we already have events for this date?
+    current = start_date
+    while current <= end_date:
+        date_str = current.strftime('%Y-%m-%d')
+        
+        # Check if already exists?
         conn = get_db_connection()
         c = conn.cursor()
-        date_str = current.strftime('%Y-%m-%d')
         count = c.execute("SELECT count(*) FROM ir_events WHERE event_date = ?", (date_str,)).fetchone()[0]
         conn.close()
         
         if count > 0:
             print(f"Skipping {date_str} (Already has {count} events)")
+            current += datetime.timedelta(days=1)
             continue
-            
+
+        # Try Primary URL (Warning)
         events = fetch_events_for_date(current)
+        
+        # If Primary returned empty, try Fallback URL (Stock Finance)
+        if not events:
+            events = fetch_events_from_finance_url(current)
+            
         save_events(events)
+        current += datetime.timedelta(days=1)
         time.sleep(1) # Polite delay
 
     print("Fetch cycle complete.")
 
 if __name__ == "__main__":
-    # If run directly as script, just run once.
-    # For scheduler, use specific scheduler script or cron.
-    run_fetch(days_back=7, days_forward=180)
-    # End of script
+    run_fetch(days_back=7, days_forward=180) # Default manual run
