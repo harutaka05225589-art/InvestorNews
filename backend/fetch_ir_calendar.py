@@ -92,88 +92,82 @@ def fetch_events_for_date(requested_date):
             if not cols or len(cols) < 3:
                 continue
                 
-            # Column mapping (Dynamic check):
             # Debug showed: ['1377', '東Ｐ', '', '', ...]
             # This implies Col 0 = Code, Col 1 = Market. Name is missing?
             # BUT usually Name is a link.
             # Let's inspect the HTML of Col 0 and Col 1 more deeply.
             
-            # Try to grab Code and Name by <a> tags in the first few columns
-            links = row.find_all('a')
-            
+            # Extract Ticker and Name
             ticker = None
             name = None
             
+            # Helper to check if text is a market code
+            def is_market_code(txt):
+                # Common market codes on Kabutan
+                known_codes = ['東P', '東S', '東G', '名P', '名M', '札', '福', '東証プライム', '東証スタンダード', '東証グロース']
+                if txt in known_codes: return True
+                # Regex for variations (e.g. full width)
+                if re.match(r'^[東名札福][証]?[PGMS12１２ＰＧＭＳ\s]*$', txt): return True
+                return False
+
+            # 1. Try to find link (Best Source)
+            links = row.find_all('a')
             if links:
                 for link in links:
                     txt = link.get_text().strip()
+                    # Check URL to confirm it's a stock link
                     href = link.get('href', '')
                     
-                    # Check if text is 4 digit ticker
                     if re.match(r'^\d{4}$', txt):
                         ticker = txt
-                    elif txt and not re.match(r'^\d+$', txt) and 'kabutan.jp' not in txt:
-                        # Likely the name (not just a number)
-                        # Exclude generic links if any
-                        name = txt
+                    elif txt and not txt.isdigit() and 'kabutan' not in txt:
+                        # Candidate for name
+                        if not is_market_code(txt):
+                            name = txt
             
+            # 2. Fallback: Text columns
             if not ticker and cols:
-                # Fallback: check Col 0 text
-                col0_txt = cols[0].get_text().strip()
-                if re.match(r'^\d{4}$', col0_txt):
-                    ticker = col0_txt
-
+                t = cols[0].get_text().strip()
+                if re.match(r'^\d{4}$', t): ticker = t
+            
             if not name:
-                # Fallback: check Col 2 (index 1) or Col 3 (index 2) for text
-                # Usually Col 0 = Code, Col 1 = Market, Col 2 = Name (sometimes)
-                # Let's inspect available columns.
+                # Try Col 2 (Name often here)
                 if len(cols) > 2:
-                    potential_name = cols[2].get_text().strip()
-                    if potential_name:
-                        name = potential_name
+                    t = cols[2].get_text().strip()
+                    if t and not is_market_code(t): name = t
                 
+                # Try Col 1 if still missing (Sometimes market is Col 2, Name Col 1? Rare but possible)
                 if not name and len(cols) > 1:
-                     # Sometimes Market is Col 1, Name is Col 2.
-                     # But if Col 2 is empty, maybe it's in Col 1 mixed?
-                     potential_name = cols[1].get_text().strip()
-                     
-                     # Strict check: If it looks like a market code, IGNORE it.
-                     # Matches: 東P, 東証プライム, 名M, etc. (Including Full-width characters)
-                     # Regex matches: Start with 東/名/札/福, optional 証, followed by P/G/M/S/1/2 or full-width equivalents
-                     if re.match(r'^[東名札福][証]?[PGMS12１２ＰＧＭＳ\s]*$', potential_name) or potential_name in ["プライム", "スタンダード", "グロース"]:
-                         pass # It's a market code
-                     else:
-                         name = potential_name
+                    t = cols[1].get_text().strip()
+                    if t and not is_market_code(t) and not t.isdigit(): name = t
 
-            # SAFETY NET: If name is still missing or looks like "Unknown", 
-            # try to find the company name from our own database (historical records).
-            if (not name or name == "Unknown") and ticker:
+            # 3. SAFETY NET: DB Lookup for Name
+            # If name is missing OR looks like a market code (double check), find it in our history.
+            if ticker and (not name or is_market_code(name) or name == "Unknown"):
                 try:
                     conn_lookup = get_db_connection()
                     c_lookup = conn_lookup.cursor()
-                    # Find the most recent valid name for this ticker
+                    # Look for ANY record with this ticker that has a valid-looking name
                     c_lookup.execute("""
                         SELECT company_name FROM ir_events 
                         WHERE ticker = ? 
                         AND company_name NOT LIKE '東%' 
                         AND company_name NOT LIKE '名%' 
-                        AND company_name NOT LIKE '札%' 
-                        AND company_name NOT LIKE '福%' 
-                        AND company_name != 'Unknown'
+                        AND length(company_name) > 1
                         ORDER BY event_date DESC LIMIT 1
                     """, (ticker,))
                     row_data = c_lookup.fetchone()
                     conn_lookup.close()
                     if row_data:
                         name = row_data[0]
-                        print(f"    [Recovered Name] {ticker} -> {name}")
-                except Exception as e:
+                        # print(f"    [Recovered Name] {ticker} -> {name}")
+                except Exception:
                     pass
-
+            
             if not name:
                 name = "Unknown"  
 
-            # Extract Type (e.g. 本決算, etc)
+            # Extract Type
             ev_type = "決算"
             row_text = row.get_text()
             if '1Q' in row_text or '第1' in row_text: ev_type = "1Q"
@@ -181,9 +175,7 @@ def fetch_events_for_date(requested_date):
             elif '3Q' in row_text or '第3' in row_text: ev_type = "3Q"
             elif '本決算' in row_text or '通期' in row_text: ev_type = "本決算"
             
-            # Verify it's a valid ticker
-            if not ticker or not ticker.isdigit():
-                continue
+            if not ticker or not ticker.isdigit(): continue
 
             events.append({
                 'ticker': ticker,
