@@ -160,37 +160,18 @@ export default function CalendarPage() {
             <section className={styles.section}>
                 <h2 className={styles.sectionTitle}>週間スケジュール (直近7日間)</h2>
                 <div className={styles.weeklyGrid}>
-                    {weekDays.map((date, idx) => {
-                        const dateStr = formatDate(date);
-                        const evs = getEventsForDate(dateStr);
-                        const isToday = idx === 0;
-
-                        return (
-                            <div
-                                key={idx}
-                                className={`${styles.weeklyDateBox} ${isToday ? styles.currentDay : ''}`}
-                            >
-                                <div className={styles.dateLabel}>
-                                    {date.getMonth() + 1}/{date.getDate()} ({['日', '月', '火', '水', '木', '金', '土'][date.getDay()]})
-                                </div>
-                                <div className="events-list">
-                                    {evs.length > 0 ? (
-                                        evs.map(e => (
-                                            <div key={e.id} className={styles.eventTag}>
-                                                <span className={styles.eventType}>{e.type}</span> {e.name}
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className={styles.noEvents}>-</div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
+                    {weekDays.map((date, idx) => (
+                        <WeeklyDayBox
+                            key={idx}
+                            date={date}
+                            events={getEventsForDate(formatDate(date))}
+                            isToday={idx === 0}
+                        />
+                    ))}
                 </div>
             </section>
 
-            {/* Monthly View */}
+            {/* Monthly View (Continued...) */}
             <section className={styles.layoutSplit}>
                 <div>
                     <div className={styles.monthHeader}>
@@ -247,7 +228,7 @@ export default function CalendarPage() {
                     {selectedDate ? (
                         <div>
                             {getEventsForDate(selectedDate).map(e => (
-                                <div key={e.id} className={styles.detailItem}>
+                                <div key={e.id || `${e.ticker}-${e.date}`} className={styles.detailItem}>
                                     <div>
                                         <div className={styles.ticker}>コード: {e.ticker}</div>
                                         <div className={styles.companyName}>{e.name}</div>
@@ -269,5 +250,47 @@ export default function CalendarPage() {
                 </div>
             </section>
         </main>
+    );
+}
+
+// Sub-component for Daily Box in Weekly View
+function WeeklyDayBox({ date, events, isToday }: { date: Date, events: any[], isToday: boolean }) {
+    const [expanded, setExpanded] = useState(false);
+    const LIMIT = 5; // Default items to show
+
+    // Safety check
+    const safeEvents = events || [];
+    const showEvents = expanded ? safeEvents : safeEvents.slice(0, LIMIT);
+    const hasMore = safeEvents.length > LIMIT;
+    const remaining = safeEvents.length - LIMIT;
+
+    return (
+        <div className={`${styles.weeklyDateBox} ${isToday ? styles.currentDay : ''}`}>
+            <div className={styles.dateLabel}>
+                {date.getMonth() + 1}/{date.getDate()} ({['日', '月', '火', '水', '木', '金', '土'][date.getDay()]})
+            </div>
+            <div className="events-list">
+                {safeEvents.length > 0 ? (
+                    <>
+                        {showEvents.map(e => (
+                            <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
+                                <span className={styles.eventType}>{e.type}</span> {e.name}
+                            </div>
+                        ))}
+                        {hasMore && (
+                            <button
+                                onClick={() => setExpanded(!expanded)}
+                                className="text-xs text-[var(--accent)] mt-1 hover:underline w-full text-left font-bold"
+                                style={{ color: '#007bff' }}
+                            >
+                                {expanded ? '▲ 閉じる' : `▼ 他 ${remaining} 件`}
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    <div className={styles.noEvents}>-</div>
+                )}
+            </div>
+        </div>
     );
 }
