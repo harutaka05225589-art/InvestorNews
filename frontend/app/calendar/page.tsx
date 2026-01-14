@@ -142,6 +142,16 @@ export default function CalendarPage() {
         setSelectedDate(null);
     };
 
+    // Helper for Type Color
+    const getTypeClass = (type: string, isBg = false) => {
+        const t = (type || "").toLowerCase();
+        if (t.includes('1q')) return isBg ? styles.bgQ1 : styles.q1;
+        if (t.includes('2q')) return isBg ? styles.bgQ2 : styles.q2;
+        if (t.includes('3q')) return isBg ? styles.bgQ3 : styles.q3;
+        if (t.includes('4q') || t.includes('full') || t.includes('本決算')) return isBg ? styles.bgQ4 : styles.q4;
+        return isBg ? styles.bgOther : styles.qOther;
+    };
+
     return (
         <main className={styles.container}>
             <header className={styles.header}>
@@ -166,6 +176,7 @@ export default function CalendarPage() {
                             date={date}
                             events={getEventsForDate(formatDate(date))}
                             isToday={idx === 0}
+                            getTypeClass={getTypeClass}
                         />
                     ))}
                 </div>
@@ -233,7 +244,8 @@ export default function CalendarPage() {
                                         <div className={styles.ticker}>コード: {e.ticker}</div>
                                         <div className={styles.companyName}>{e.name}</div>
                                     </div>
-                                    <span className={styles.typeLabel}>
+                                    {/* Use Background Style for Labels in Details */}
+                                    <span className={`${styles.typeLabel} ${getTypeClass(e.type, true)}`}>
                                         {e.type}
                                     </span>
                                 </div>
@@ -254,7 +266,7 @@ export default function CalendarPage() {
 }
 
 // Sub-component for Daily Box in Weekly View
-function WeeklyDayBox({ date, events, isToday }: { date: Date, events: any[], isToday: boolean }) {
+function WeeklyDayBox({ date, events, isToday, getTypeClass }: { date: Date, events: any[], isToday: boolean, getTypeClass: (t: string, b?: boolean) => string }) {
     const [expanded, setExpanded] = useState(false);
     const LIMIT = 5; // Default items to show
 
@@ -274,7 +286,8 @@ function WeeklyDayBox({ date, events, isToday }: { date: Date, events: any[], is
                     <>
                         {showEvents.map(e => (
                             <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
-                                <span className={styles.eventType}>{e.type}</span> {e.name}
+                                {/* Use Text Color Style for Weekly List */}
+                                <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span> {e.name}
                             </div>
                         ))}
                         {hasMore && (
