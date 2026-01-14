@@ -2,6 +2,7 @@ import { getInvestorById, getNewsByInvestor } from '@/lib/db';
 import { Investor, NewsItem } from '@/lib/types';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import SimpleMarkdown from '@/app/components/SimpleMarkdown';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,10 +57,8 @@ export default async function InvestorPage({
                 <p style={{ color: 'var(--secondary)', marginBottom: '1rem', fontWeight: 'bold' }}>{investor.style_description}</p>
 
                 {investor.profile && (
-                    <div style={{ padding: '1rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '1rem', lineHeight: '1.8', fontSize: '0.95rem' }}>
-                        {investor.profile.split('\n').filter(line => line.trim() !== '').map((line, i) => (
-                            <p key={i} style={{ marginBottom: '0.8rem' }}>{line}</p>
-                        ))}
+                    <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '2rem' }}>
+                        <SimpleMarkdown content={investor.profile} />
                     </div>
                 )}
 
