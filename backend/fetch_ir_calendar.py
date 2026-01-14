@@ -60,6 +60,11 @@ def fetch_jpx_data():
                 # Convert to string and handle formatting
                 events = []
                 
+                # Debug: Print first 5 rows raw content
+                print("DEBUG: Showing first 3 rows of Excel data:")
+                print(df.head(3).to_string())
+                print("------------------------------------------")
+                
                 # Iterate rows
                 for index, row in df.iterrows():
                     # Check if Row is valid data
@@ -130,26 +135,28 @@ def fetch_jpx_data():
                         continue
                 
                 print(f"  Parsed {len(events)} events.")
-                count = save_events(events)
-                total_events_saved += count
+                updated, new = save_events(events)
+                total_events_saved += new
+                print(f"  Saved: {new} new, {updated} updated.")
                 
             except Exception as e:
                 print(f"  Error reading Excel: {e}")
 
-        print(f"JPX Fetch Complete. Total new events: {total_events_saved}")
+        print(f"JPX Fetch Complete. Total new: {total_events_saved}")
 
     except Exception as e:
         print(f"Error in fetch_jpx_data: {e}")
 
 def save_events(events):
-    if not events: return 0
+    if not events: return 0, 0
     conn = get_db_connection()
     c = conn.cursor()
     
-    unique_count = 0
+    new_count = 0
+    update_count = 0
+    
     for e in events:
         try:
-            # Check duplicate (ticker, date)
             # Check duplicate (ticker, date)
             c.execute("SELECT id, event_type FROM ir_events WHERE ticker = ? AND event_date = ?", (e['ticker'], e['date']))
             row = c.fetchone()
@@ -159,22 +166,22 @@ def save_events(events):
                     INSERT INTO ir_events (ticker, company_name, event_date, event_type, description)
                     VALUES (?, ?, ?, ?, ?)
                 """, (e['ticker'], e['name'], e['date'], e['type'], e['desc']))
-                unique_count += 1
+                new_count += 1
             else:
-                # Update existing record with new Type/Desc and Name logic
-                # Always update type/desc to ensure 1Q/2Q info is applied to existing "決算" entries
+                # Update existing record
                 c.execute("""
                     UPDATE ir_events 
                     SET event_type = ?, description = ?, company_name = ?
                     WHERE ticker = ? AND event_date = ?
                 """, (e['type'], e['desc'], e['name'], e['ticker'], e['date']))
+                update_count += 1
 
         except Exception as ex:
             print(f"Error saving row {e}: {ex}")
             
     conn.commit()
     conn.close()
-    return unique_count
+    return update_count, new_count
 
 def run_fetch(days_back=0, days_forward=180):
     """
