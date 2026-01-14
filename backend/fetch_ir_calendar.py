@@ -150,19 +150,24 @@ def save_events(events):
     for e in events:
         try:
             # Check duplicate (ticker, date)
-            c.execute("SELECT id FROM ir_events WHERE ticker = ? AND event_date = ?", (e['ticker'], e['date']))
-            if not c.fetchone():
+            # Check duplicate (ticker, date)
+            c.execute("SELECT id, event_type FROM ir_events WHERE ticker = ? AND event_date = ?", (e['ticker'], e['date']))
+            row = c.fetchone()
+            
+            if not row:
                 c.execute("""
                     INSERT INTO ir_events (ticker, company_name, event_date, event_type, description)
                     VALUES (?, ?, ?, ?, ?)
                 """, (e['ticker'], e['name'], e['date'], e['type'], e['desc']))
                 unique_count += 1
             else:
-                # Optional: Update name if previously "Unknown"
-                c.execute("SELECT company_name FROM ir_events WHERE ticker = ? AND event_date = ?", (e['ticker'], e['date']))
-                curr_name = c.fetchone()[0]
-                if (curr_name == 'Unknown' or curr_name is None) and e['name'] != 'Unknown':
-                    c.execute("UPDATE ir_events SET company_name = ? WHERE ticker = ? AND event_date = ?", (e['name'], e['ticker'], e['date']))
+                # Update existing record with new Type/Desc and Name logic
+                # Always update type/desc to ensure 1Q/2Q info is applied to existing "決算" entries
+                c.execute("""
+                    UPDATE ir_events 
+                    SET event_type = ?, description = ?, company_name = ?
+                    WHERE ticker = ? AND event_date = ?
+                """, (e['type'], e['desc'], e['name'], e['ticker'], e['date']))
 
         except Exception as ex:
             print(f"Error saving row {e}: {ex}")

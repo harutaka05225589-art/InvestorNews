@@ -54,12 +54,13 @@ export default async function InvestorArticlePage({ params }: { params: Promise<
                 )}
             </div>
 
-            {/* Affiliate / Ad Placeholder */}
-            <div style={{
-                border: '2px dashed var(--accent)',
-                borderRadius: '8px',
-                padding: '2rem',
-                textAlign: 'center',
+            {/* Affiliate / Ad Placeholder (Hidden until AdSense approved) */}
+            {/* 
+            <div style={{ 
+                border: '2px dashed var(--accent)', 
+                borderRadius: '8px', 
+                padding: '2rem', 
+                textAlign: 'center', 
                 background: 'rgba(251, 191, 36, 0.05)',
                 marginBottom: '3rem'
             }}>
@@ -69,6 +70,7 @@ export default async function InvestorArticlePage({ params }: { params: Promise<
                     [あて先リンク: SBI証券 / 楽天証券など]
                 </div>
             </div>
+            */}
 
             {/* Footer Navigation */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
