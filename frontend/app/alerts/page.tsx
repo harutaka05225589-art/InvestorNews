@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './alerts.module.css';
@@ -13,14 +13,26 @@ type Alert = {
     is_active: number;
 };
 
+type Company = {
+    ticker: string;
+    name: string;
+};
+
 export default function AlertsPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
     const [alerts, setAlerts] = useState<Alert[]>([]);
+
+    // Form State
     const [ticker, setTicker] = useState('');
     const [targetPER, setTargetPER] = useState('');
     const [condition, setCondition] = useState<'ABOVE' | 'BELOW'>('BELOW');
     const [msg, setMsg] = useState('');
+
+    // Search Suggestions State
+    const [query, setQuery] = useState('');
+    const [suggestions, setSuggestions] = useState<Company[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         if (!loading && !user) {
@@ -32,6 +44,31 @@ export default function AlertsPage() {
         }
     }, [user, loading, router]);
 
+    // Debounce Search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (query.length >= 2) {
+                fetchSuggestions(query);
+            } else {
+                setSuggestions([]);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [query]);
+
+    const fetchSuggestions = async (q: string) => {
+        try {
+            const res = await fetch(`/api/search/companies?q=${encodeURIComponent(q)}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSuggestions(data.companies);
+                setShowSuggestions(true);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     const fetchAlerts = async () => {
         const res = await fetch('/api/alerts');
         if (res.ok) {
@@ -40,15 +77,26 @@ export default function AlertsPage() {
         }
     };
 
+    const handleSelectCompany = (c: Company) => {
+        setTicker(c.ticker);
+        setQuery(`${c.ticker} ${c.name}`); // Show selected info
+        setShowSuggestions(false);
+    };
+
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         setMsg('');
+
+        if (!ticker) {
+            setMsg('銘柄を指定してください');
+            return;
+        }
 
         const res = await fetch('/api/alerts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ticker,
+                ticker: ticker.replace(/\D/g, ''), // Ensure clean ticker
                 target_per: parseFloat(targetPER),
                 condition
             }),
@@ -56,6 +104,7 @@ export default function AlertsPage() {
 
         if (res.ok) {
             setTicker('');
+            setQuery('');
             setTargetPER('');
             fetchAlerts();
             setMsg('アラートを作成しました');
@@ -86,17 +135,44 @@ export default function AlertsPage() {
 
             <div className={styles.panel}>
                 <form onSubmit={handleAdd} className={styles.form}>
-                    <div className={styles.field}>
-                        <label>銘柄コード (4桁)</label>
+                    <div className={styles.field} style={{ position: 'relative' }}>
+                        <label>銘柄検索 (コード・会社名)</label>
                         <input
                             type="text"
-                            value={ticker}
-                            onChange={e => setTicker(e.target.value)}
-                            pattern="\d{4}"
-                            placeholder="例: 7203"
+                            value={query}
+                            onChange={e => {
+                                setQuery(e.target.value);
+                                if (e.target.value === '') setTicker('');
+                            }}
+                            placeholder="例: トヨタ または 7203"
                             required
+                            autoComplete="off"
+                            onFocus={() => query.length >= 2 && setShowSuggestions(true)}
                         />
+                        {/* Suggestions Dropdown */}
+                        {showSuggestions && suggestions.length > 0 && (
+                            <ul className={styles.suggestionsList}>
+                                {suggestions.map((c) => (
+                                    <li
+                                        key={c.ticker}
+                                        onClick={() => handleSelectCompany(c)}
+                                        className={styles.suggestionItem}
+                                    >
+                                        <span className={styles.sugTicker}>{c.ticker}</span>
+                                        <span className={styles.sugName}>{c.name}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {/* Overlay to close suggestions */}
+                        {showSuggestions && <div className={styles.overlay} onClick={() => setShowSuggestions(false)}></div>}
                     </div>
+
+                    {/* Hidden actual ticker input or display only */}
+                    {ticker && <div style={{ fontSize: '0.8rem', color: 'var(--accent)', marginBottom: '1rem' }}>
+                        選択中: {ticker}
+                    </div>}
+
                     <div className={styles.field}>
                         <label>目標PER</label>
                         <input
