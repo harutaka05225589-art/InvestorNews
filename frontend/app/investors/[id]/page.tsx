@@ -2,7 +2,7 @@ import { getInvestorById, getNewsByInvestor } from '@/lib/db';
 import { Investor, NewsItem } from '@/lib/types';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import SimpleMarkdown from '@/app/components/SimpleMarkdown';
+// Removed duplicate import
 
 export const dynamic = 'force-dynamic';
 
@@ -56,11 +56,20 @@ export default async function InvestorPage({
                 <h2>{investor.name}</h2>
                 <p style={{ color: 'var(--secondary)', marginBottom: '1rem', fontWeight: 'bold' }}>{investor.style_description}</p>
 
-                {investor.profile && (
-                    <div style={{ padding: '1.5rem', background: 'rgba(255,255,255,0.03)', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <SimpleMarkdown content={investor.profile} />
-                    </div>
-                )}
+                <div style={{ marginTop: '1.5rem', marginBottom: '1rem' }}>
+                    <Link href={`/introduction/${id}`} style={{
+                        display: 'inline-block',
+                        padding: '0.8rem 1.5rem',
+                        background: 'var(--card-bg)',
+                        color: 'var(--primary)',
+                        border: '1px solid var(--primary)',
+                        borderRadius: '4px',
+                        textDecoration: 'none',
+                        fontWeight: 'bold'
+                    }}>
+                        {investor.name}の詳しい紹介記事を読む &rarr;
+                    </Link>
+                </div>
 
                 {investor.twitter_url && (
                     <a href={investor.twitter_url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', fontWeight: 600 }}>

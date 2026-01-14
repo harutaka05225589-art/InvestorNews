@@ -30,7 +30,7 @@ export default function IntroductionPage() {
 
             <div className={styles.grid}>
                 {investors.map(investor => (
-                    <Link href={`/investors/${investor.id}`} key={investor.id} className={styles.card}>
+                    <Link href={`/introduction/${investor.id}`} key={investor.id} className={styles.card}>
                         <div className={styles.icon}>
                             {investor.image_url ? (
                                 <img src={investor.image_url} alt={investor.name} className={styles.img} />
