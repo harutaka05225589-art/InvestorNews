@@ -1,3 +1,10 @@
+'use client'; // Header v2
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth } from '../../hooks/useAuth';
+import styles from './Header.module.css';
+
 export default function Header() {
     const { user, loading, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
