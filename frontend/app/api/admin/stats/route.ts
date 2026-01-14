@@ -11,22 +11,19 @@ const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 export async function GET(request: NextRequest) {
     // 1. Check Authentication & Admin Status
     const session = await getSession();
-    if (!session || !session.user) {
+
+    // Explicitly cast session to expected type for TS
+    const payload = session as { userId: string | number; nickname: string } | null;
+
+    if (!payload || !payload.userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     try {
         const db = new Database(DB_PATH, { readonly: true });
 
-        // Convert session user id to number or string depending on DB
-        // Assuming session.user.userId matches account_id or db id. 
-        // Let's check `is_admin` column from `users` table via DB lookup to be safe.
-        // Actually `session.user` might not have `is_admin` yet unless we update the session structure.
-        // For now, let's query the DB for the user's admin status.
-
-        // Wait, session might not have the DB ID if it uses account_id.
-        // Let's assume session.user.userId is the account_id.
-        const user = db.prepare('SELECT is_admin FROM users WHERE account_id = ?').get(session.user.userId) as { is_admin: number };
+        // Retrieve userId from payload (it's directly in the session, not in session.user)
+        const user = db.prepare('SELECT is_admin FROM users WHERE account_id = ?').get(payload.userId) as { is_admin: number };
 
         if (!user || user.is_admin !== 1) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
