@@ -1,15 +1,51 @@
-'use client'; // Header v2
-
-
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
-import styles from './Header.module.css';
-
 export default function Header() {
     const { user, loading, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
+    const [notifOpen, setNotifOpen] = useState(false);
+
+    // Notification State
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch Notifications on load if user exists
+    useEffect(() => {
+        if (user) {
+            fetchNotifications();
+            // Polling every 60 seconds
+            const interval = setInterval(fetchNotifications, 60000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await fetch('/api/notifications');
+            if (res.ok) {
+                const data = await res.json();
+                setNotifications(data.notifications);
+                setUnreadCount(data.unreadCount);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleNotifClick = async () => {
+        setNotifOpen(!notifOpen);
+        setProfileOpen(false); // Close other menu
+
+        if (!notifOpen && unreadCount > 0) {
+            // Mark all as read when opening
+            try {
+                await fetch('/api/notifications', { method: 'PUT', body: JSON.stringify({}) });
+                setUnreadCount(0); // Optimistic update
+                fetchNotifications(); // Refresh to be sure
+            } catch (e) {
+                console.error(e);
+            }
+        }
+    };
 
     return (
         <header className={styles.header}>
@@ -41,28 +77,57 @@ export default function Header() {
                     {loading ? (
                         <div className={styles.spinner}></div>
                     ) : user ? (
-                        <div className={styles.userMenu}>
-                            <button
-                                className={styles.avatarBtn}
-                                onClick={() => setProfileOpen(!profileOpen)}
-                                title={user.nickname}
-                            >
-                                <div className={styles.avatarDot}></div>
-                            </button>
-                            {/* Dropdown for User */}
-                            {profileOpen && (
-                                <div className={styles.dropdown}>
-                                    <div className={styles.userInfo}>
-                                        <p className={styles.userName}>{user.nickname}</p>
-                                        <p className={styles.userId}>ID: {user.userId}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            {/* Notification Bell */}
+                            <div className={styles.notifWrapper}>
+                                <button className={styles.notifBtn} onClick={handleNotifClick} aria-label="Notifications">
+                                    🔔
+                                    {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
+                                </button>
+
+                                {notifOpen && (
+                                    <div className={styles.notifDropdown}>
+                                        <div className={styles.notifHeader}>お知らせ</div>
+                                        <div className={styles.notifList}>
+                                            {notifications.length === 0 ? (
+                                                <p className={styles.notifEmpty}>お知らせはありません</p>
+                                            ) : (
+                                                notifications.map(n => (
+                                                    <div key={n.id} className={`${styles.notifItem} ${n.is_read ? '' : styles.unread}`}>
+                                                        <p className={styles.notifMsg}>{n.message}</p>
+                                                        <span className={styles.notifDate}>{new Date(n.created_at).toLocaleString()}</span>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
                                     </div>
-                                    <hr className={styles.divider} />
-                                    <Link href="/settings" className={styles.menuItem}>アカウント編集</Link>
-                                    <button onClick={logout} className={`${styles.menuItem} ${styles.logout}`}>
-                                        サインアウト
-                                    </button>
-                                </div>
-                            )}
+                                )}
+                            </div>
+
+                            {/* User Menu */}
+                            <div className={styles.userMenu}>
+                                <button
+                                    className={styles.avatarBtn}
+                                    onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
+                                    title={user.nickname}
+                                >
+                                    <div className={styles.avatarDot}></div>
+                                </button>
+                                {/* Dropdown for User */}
+                                {profileOpen && (
+                                    <div className={styles.dropdown}>
+                                        <div className={styles.userInfo}>
+                                            <p className={styles.userName}>{user.nickname}</p>
+                                            <p className={styles.userId}>ID: {user.userId}</p>
+                                        </div>
+                                        <hr className={styles.divider} />
+                                        <Link href="/settings" className={styles.menuItem}>アカウント編集</Link>
+                                        <button onClick={logout} className={`${styles.menuItem} ${styles.logout}`}>
+                                            サインアウト
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : (
                         <div className={styles.guestMenu}>

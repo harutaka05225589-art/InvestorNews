@@ -1,0 +1,157 @@
+.container {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+    color: #fff;
+}
+
+.title {
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+}
+
+.desc {
+    color: #aaa;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+.panel {
+    background: #1a1a1a;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border: 1px solid #333;
+}
+
+.form {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.field label {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+.field input,
+.field select {
+    padding: 0.6rem;
+    border-radius: 4px;
+    border: 1px solid #444;
+    background: #2a2a2a;
+    color: #fff;
+    min-width: 120px;
+}
+
+.addButton {
+    padding: 0.6rem 1.5rem;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.addButton:hover {
+    background: #0056b3;
+}
+
+.msg {
+    margin-top: 1rem;
+    color: #4cd964;
+    font-size: 0.9rem;
+}
+
+.list h2 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+}
+
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #111;
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+    animation: fadeIn 0.3s ease;
+}
+
+.item:first-child {
+    border-top: 1px solid #333;
+}
+
+.itemInfo {
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+}
+
+.ticker {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--accent);
+}
+
+.condition {
+    color: #ddd;
+}
+
+.delButton {
+    background: #ff3b30;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.delButton:hover {
+    background: #c12e25;
+}
+
+.empty {
+    color: #666;
+    font-style: italic;
+    padding: 1rem;
+    text-align: center;
+    background: #111;
+    border-radius: 4px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 600px) {
+    .form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .field input,
+    .field select {
+        width: 100%;
+    }
+}
