@@ -75,6 +75,7 @@ export default function Header() {
                 <nav className={styles.desktopNav}>
                     <Link href="/">ホーム</Link>
                     <Link href="/calendar">IRカレンダー</Link>
+                    <Link href="/introduction">投資家紹介</Link>
                     <Link href="/alerts">PER通知</Link>
                     <Link href="/request">リクエスト</Link>
                 </nav>
@@ -150,6 +151,7 @@ export default function Header() {
                 <nav className={styles.navLinks}>
                     <Link href="/" onClick={() => setMenuOpen(false)}>ホーム</Link>
                     <Link href="/calendar" onClick={() => setMenuOpen(false)}>IRカレンダー</Link>
+                    <Link href="/introduction" onClick={() => setMenuOpen(false)}>投資家紹介</Link>
                     <Link href="/alerts" onClick={() => setMenuOpen(false)}>PER通知</Link>
                     <Link href="/inquiry" onClick={() => setMenuOpen(false)}>お問い合わせ</Link>
                     <Link href="/request" onClick={() => setMenuOpen(false)}>投資家追加リクエスト</Link>

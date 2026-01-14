@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
-import { getSession } from '../../../lib/auth';
+import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
