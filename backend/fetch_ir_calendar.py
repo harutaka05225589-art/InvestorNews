@@ -88,12 +88,8 @@ def fetch_jpx_data():
                             global debug_printed
                             debug_printed = True
                             print(f"DEBUG: Valid Row found. Ticker: {ticker_str}")
-                            print(f"Col 0 (Date): {raw_date}")
-                            print(f"Col 1 (Ticker): {raw_ticker}")
-                            print(f"Col 2 (Name): {raw_name}")
-                            if len(row) > 3: print(f"Col 3 (Title?): {row.iloc[3]}")
-                            if len(row) > 4: print(f"Col 4: {row.iloc[4]}")
-                            if len(row) > 5: print(f"Col 5: {row.iloc[5]}")
+                            for i in range(min(len(row), 15)):
+                                print(f"Col {i}: {row.iloc[i]}")
                             print("------------------------------------------")
                             
                         # Validate Date
