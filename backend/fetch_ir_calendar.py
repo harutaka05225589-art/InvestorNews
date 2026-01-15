@@ -82,6 +82,19 @@ def fetch_jpx_data():
                         ticker_str = str(raw_ticker).strip()
                         if not re.match(r'^\d{4}$', ticker_str):
                             continue
+
+                        # Debug: Print the first valid row found to check columns
+                        if 'debug_printed' not in globals():
+                            global debug_printed
+                            debug_printed = True
+                            print(f"DEBUG: Valid Row found. Ticker: {ticker_str}")
+                            print(f"Col 0 (Date): {raw_date}")
+                            print(f"Col 1 (Ticker): {raw_ticker}")
+                            print(f"Col 2 (Name): {raw_name}")
+                            if len(row) > 3: print(f"Col 3 (Title?): {row.iloc[3]}")
+                            if len(row) > 4: print(f"Col 4: {row.iloc[4]}")
+                            if len(row) > 5: print(f"Col 5: {row.iloc[5]}")
+                            print("------------------------------------------")
                             
                         # Validate Date
                         # Pandas usually parses dates as Timestamp
