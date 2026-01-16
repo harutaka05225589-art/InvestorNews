@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
             userAgent: '*',
             allow: '/',
         },
-        sitemap: 'https://investor-news-demo.vercel.app/sitemap.xml',
+        sitemap: 'https://rich-investor-news.com/sitemap.xml',
     };
 }

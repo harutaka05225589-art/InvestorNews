@@ -32,6 +32,29 @@ export default async function InvestorArticlePage({ params }: { params: Promise<
 
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "Article",
+                        "headline": `${investor.name}の投資手法・経歴【詳細解説】`,
+                        "image": investor.image_url ? [investor.image_url] : [],
+                        "datePublished": "2024-01-01T00:00:00+09:00", // Fallback or dynamic
+                        "dateModified": new Date().toISOString(),
+                        "author": [{
+                            "@type": "Organization",
+                            "name": "Investor News",
+                            "url": "https://rich-investor-news.com"
+                        }],
+                        "description": `${investor.name}の基本情報、投資スタイル、資産形成の経緯などを詳しく解説。`,
+                        "mainEntityOfPage": {
+                            "@type": "WebPage",
+                            "@id": `https://rich-investor-news.com/introduction/${investor.id}`
+                        }
+                    })
+                }}
+            />
             {/* Header / Hero Section */}
             <div className="card" style={{ marginBottom: '2rem', textAlign: 'center', borderColor: 'var(--primary)' }}>
                 {investor.image_url ? (

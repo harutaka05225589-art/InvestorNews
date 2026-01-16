@@ -53,6 +53,20 @@ export default function RootLayout({
             gtag('config', 'G-J8SLEGQ44M');
           `
         }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "投資家ニュース (Investor News)",
+              "url": "https://rich-investor-news.com",
+              "logo": "https://rich-investor-news.com/icon.png",
+              "description": "日本株市場で注目される著名投資家の動向やニュースを自動収集・配信するメディア。",
+              "sameAs": []
+            })
+          }}
+        />
       </head>
       <body>
         <main className="container">
