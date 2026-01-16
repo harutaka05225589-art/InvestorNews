@@ -28,6 +28,28 @@ export default function IntroductionPage() {
                 それぞれの投資スタイルを学び、自身の投資戦略の参考にしましょう。
             </p>
 
+            {/* Quick Links */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem', justifyContent: 'center' }}>
+                {investors.map((investor, idx) => (
+                    <Link
+                        key={investor.id}
+                        href={`/introduction/${investor.id}`}
+                        style={{
+                            display: 'inline-block',
+                            padding: '0.4rem 0.8rem',
+                            background: 'var(--card-bg)',
+                            border: '1px solid var(--border)',
+                            borderRadius: '4px',
+                            fontSize: '0.85rem',
+                            color: 'var(--secondary)',
+                            textDecoration: 'none'
+                        }}
+                    >
+                        {idx + 1}. {investor.name}
+                    </Link>
+                ))}
+            </div>
+
             <div className={styles.grid}>
                 {investors.map(investor => (
                     <Link href={`/introduction/${investor.id}`} key={investor.id} className={styles.card}>

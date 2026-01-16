@@ -50,6 +50,7 @@ export default function CalendarPage() {
     const [currentMonth, setCurrentMonth] = useState(new Date()); // State for month view navigation
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [filterType, setFilterType] = useState('ALL'); // ALL, 1Q, 2Q, 3Q, 4Q
 
     // Memoize week days to avoid re-calc jitter
     const weekDays = React.useMemo(() => {
@@ -76,7 +77,19 @@ export default function CalendarPage() {
     };
 
     const getEventsForDate = (dateStr: string) => {
-        return events.filter(e => e.date === dateStr);
+        return events.filter(e => {
+            if (e.date !== dateStr) return false;
+            if (filterType === 'ALL') return true;
+
+            // Normalize Type
+            const t = (e.type || "").toLowerCase();
+            if (filterType === '1Q' && (t.includes('1q') || t.includes('第1'))) return true;
+            if (filterType === '2Q' && (t.includes('2q') || t.includes('第2') || t.includes('中間'))) return true;
+            if (filterType === '3Q' && (t.includes('3q') || t.includes('第3'))) return true;
+            if (filterType === '4Q' && (t.includes('4q') || t.includes('full') || t.includes('本決算') || t.includes('通期'))) return true;
+
+            return false;
+        });
     };
 
     // Unified Fetch Logic
@@ -165,6 +178,29 @@ export default function CalendarPage() {
                     &larr; ホームに戻る
                 </Link>
             </header>
+
+            {/* Filter Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {['ALL', '1Q', '2Q', '3Q', '4Q'].map(type => (
+                    <button
+                        key={type}
+                        onClick={() => setFilterType(type)}
+                        style={{
+                            padding: '0.5rem 1.5rem',
+                            borderRadius: '20px',
+                            border: '1px solid var(--border)',
+                            background: filterType === type ? 'var(--primary)' : 'var(--card-bg)',
+                            color: filterType === type ? '#000' : 'var(--foreground)',
+                            fontWeight: filterType === type ? 'bold' : 'normal',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            fontSize: '0.9rem'
+                        }}
+                    >
+                        {type === 'ALL' ? 'すべて' : type}
+                    </button>
+                ))}
+            </div>
 
             {/* Weekly View */}
             <section className={styles.section}>
