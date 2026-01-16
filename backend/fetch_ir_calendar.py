@@ -84,13 +84,7 @@ def fetch_jpx_data():
                             continue
 
                         # Debug: Print the first valid row found to check columns
-                        if 'debug_printed' not in globals():
-                            global debug_printed
-                            debug_printed = True
-                            print(f"DEBUG: Valid Row found. Ticker: {ticker_str}")
-                            for i in range(min(len(row), 15)):
-                                print(f"Col {i}: {row.iloc[i]}")
-                            print("------------------------------------------")
+                        # Removed debug print block
                             
                         # Validate Date
                         # Pandas usually parses dates as Timestamp
@@ -108,11 +102,11 @@ def fetch_jpx_data():
                         
                         name = str(raw_name).strip()
                         
-                        # Try to get Title/Type from Col 3 (Index 3)
-                        # Standard JPX format: Date, Code, Name, Title, Market ...
+                        # Try to get Title/Type from Col 7 (Index 7)
+                        # JPX format (observed): Date, Ticker, Name, EnglishName, ?, ?, ?, QuarterInfo, ...
                         raw_title = ""
-                        if len(row) > 3:
-                            raw_title = str(row.iloc[3]).strip()
+                        if len(row) > 7:
+                            raw_title = str(row.iloc[7]).strip()
                         
                         # Determine Type
                         event_type = '決算' # Default
@@ -120,15 +114,13 @@ def fetch_jpx_data():
                         
                         if raw_title:
                             desc = f"{name} ({ticker_str}) {raw_title}"
-                            if '第1' in raw_title or '1Q' in raw_title:
+                            if '第１' in raw_title or '第1' in raw_title or '1Q' in raw_title:
                                 event_type = '1Q'
-                            elif '第2' in raw_title or '2Q' in raw_title or '中間' in raw_title:
+                            elif '第２' in raw_title or '第2' in raw_title or '2Q' in raw_title or '中間' in raw_title:
                                 event_type = '2Q'
-                            elif '第3' in raw_title or '3Q' in raw_title:
+                            elif '第３' in raw_title or '第3' in raw_title or '3Q' in raw_title:
                                 event_type = '3Q'
                             elif '本決算' in raw_title or '通期' in raw_title or '決算短信' in raw_title:
-                                # "決算短信" usually implies full year if it doesn't say "第X四半期"
-                                # But let's be careful. If it's just "決算短信", it's likely full year.
                                 event_type = '4Q'
 
                         events.append({
