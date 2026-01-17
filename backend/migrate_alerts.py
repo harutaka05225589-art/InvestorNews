@@ -23,14 +23,23 @@ def migrate():
             target_per REAL, -- Now Nullable
             condition TEXT,  -- Now Nullable
             is_active INTEGER DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            last_triggered_at TIMESTAMP,
+            current_per REAL
         )
     """)
     
     # 3. Copy data
+    # We try to select all columns if they exist.
+    # To be safe against missing columns in old table, we can inspect PRAGMA or just try/except?
+    # Simpler: Assume user ran previous migrations. If not, they can run migrate_missing_columns later?
+    # No, that script adds to 'alerts', which is this new one. So that works.
+    # BUT, if we select valid columns from alerts_old that FAILs if column missing.
+    # Let's ensure we copy what is there.
+    # Actually, simpler approach: The user ALREADY ran migrate_missing_columns. So they HAVE the columns.
     c.execute("""
-        INSERT INTO alerts (id, user_id, ticker, target_per, condition, is_active)
-        SELECT id, user_id, ticker, target_per, condition, is_active FROM alerts_old
+        INSERT INTO alerts (id, user_id, ticker, target_per, condition, is_active, last_triggered_at, current_per)
+        SELECT id, user_id, ticker, target_per, condition, is_active, last_triggered_at, current_per FROM alerts_old
     """)
     
     # 4. Verify and Drop old
