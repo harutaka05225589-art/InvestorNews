@@ -184,251 +184,223 @@ export default function CalendarPage() {
     };
 
     return (
+
         <main className={styles.container}>
-    // ... (rest of existing code)
+            <header className={styles.header}>
+                {/* ... existing header ... */}
+            </header>
 
-    const getEventsForDate = (dateStr: string) => {
-        return events.filter(e => {
-            if (e.date !== dateStr) return false;
+            {/* Guidance for Watchlist */}
+            <div style={{ textAlign: 'center', marginBottom: '1.5rem', background: 'var(--card-bg)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--accent)' }}>
+                <p style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>
+                    <strong>💡 ヒント:</strong> 自分の保有銘柄や監視銘柄だけをカレンダーに表示できます。
+                </p>
+                <Link href="/alerts" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'underline' }}>
+                    &rarr; こちらから銘柄を登録する (ウォッチリスト)
+                </Link>
+            </div>
 
-            // My Calendar Filter
-            if (filterType === 'MY') {
-                return myTickers.includes(e.ticker);
-            }
+            {/* Filter Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <button
+                    onClick={() => setFilterType('ALL')}
+                    style={{
+                        padding: '0.5rem 1.5rem',
+                        borderRadius: '20px',
+                        border: '1px solid var(--border)',
+                        background: filterType === 'ALL' ? 'var(--primary)' : 'var(--card-bg)',
+                        color: filterType === 'ALL' ? '#000' : 'var(--foreground)',
+                        fontWeight: filterType === 'ALL' ? 'bold' : 'normal',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        fontSize: '0.9rem'
+                    }}
+                >
+                    すべて
+                </button>
 
-            if (filterType === 'ALL') return true;
-
-            // Normalize Type
-            const t = (e.type || "").toLowerCase();
-            // ... (existing filter)
-            if (filterType === '1Q' && (t.includes('1q') || t.includes('第1'))) return true;
-            if (filterType === '2Q' && (t.includes('2q') || t.includes('第2') || t.includes('中間'))) return true;
-            if (filterType === '3Q' && (t.includes('3q') || t.includes('第3'))) return true;
-            if (filterType === '4Q' && (t.includes('4q') || t.includes('full') || t.includes('本決算') || t.includes('通期'))) return true;
-
-            return false;
-        });
-    };
-
-            // ...
-
-            return (
-            <main className={styles.container}>
-                <header className={styles.header}>
-                    {/* ... existing header ... */}
-                </header>
-
-                {/* Guidance for Watchlist */}
-                <div style={{ textAlign: 'center', marginBottom: '1.5rem', background: 'var(--card-bg)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--accent)' }}>
-                    <p style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-                        <strong>💡 ヒント:</strong> 自分の保有銘柄や監視銘柄だけをカレンダーに表示できます。
-                    </p>
-                    <Link href="/alerts" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'underline' }}>
-                        &rarr; こちらから銘柄を登録する (ウォッチリスト)
-                    </Link>
-                </div>
-
-                {/* Filter Tabs */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {/* My Calendar Tab (Only if logged in) */}
+                {user && (
                     <button
-                        onClick={() => setFilterType('ALL')}
+                        onClick={() => setFilterType('MY')}
+                        style={{
+                            padding: '0.5rem 1.5rem',
+                            borderRadius: '20px',
+                            border: '1px solid var(--accent)', // Distinct border
+                            background: filterType === 'MY' ? 'var(--accent)' : 'var(--card-bg)',
+                            color: filterType === 'MY' ? '#000' : 'var(--accent)',
+                            fontWeight: 'bold',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s',
+                            fontSize: '0.9rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.3rem'
+                        }}
+                    >
+                        <span>★ Myカレンダー</span>
+                    </button>
+                )}
+
+                {['1Q', '2Q', '3Q', '4Q'].map(type => (
+                    <button
+                        key={type}
+                        onClick={() => setFilterType(type)}
                         style={{
                             padding: '0.5rem 1.5rem',
                             borderRadius: '20px',
                             border: '1px solid var(--border)',
-                            background: filterType === 'ALL' ? 'var(--primary)' : 'var(--card-bg)',
-                            color: filterType === 'ALL' ? '#000' : 'var(--foreground)',
-                            fontWeight: filterType === 'ALL' ? 'bold' : 'normal',
+                            background: filterType === type ? 'var(--primary)' : 'var(--card-bg)',
+                            color: filterType === type ? '#000' : 'var(--foreground)',
+                            fontWeight: filterType === type ? 'bold' : 'normal',
                             cursor: 'pointer',
                             transition: 'all 0.2s',
                             fontSize: '0.9rem'
                         }}
                     >
-                        すべて
+                        {type}
                     </button>
+                ))}
+            </div>
 
-                    {/* My Calendar Tab (Only if logged in) */}
-                    {user && (
-                        <button
-                            onClick={() => setFilterType('MY')}
-                            style={{
-                                padding: '0.5rem 1.5rem',
-                                borderRadius: '20px',
-                                border: '1px solid var(--accent)', // Distinct border
-                                background: filterType === 'MY' ? 'var(--accent)' : 'var(--card-bg)',
-                                color: filterType === 'MY' ? '#000' : 'var(--accent)',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                fontSize: '0.9rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.3rem'
-                            }}
-                        >
-                            <span>★ Myカレンダー</span>
-                        </button>
-                    )}
-
-                    {['1Q', '2Q', '3Q', '4Q'].map(type => (
-                        <button
-                            key={type}
-                            onClick={() => setFilterType(type)}
-                            style={{
-                                padding: '0.5rem 1.5rem',
-                                borderRadius: '20px',
-                                border: '1px solid var(--border)',
-                                background: filterType === type ? 'var(--primary)' : 'var(--card-bg)',
-                                color: filterType === type ? '#000' : 'var(--foreground)',
-                                fontWeight: filterType === type ? 'bold' : 'normal',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                fontSize: '0.9rem'
-                            }}
-                        >
-                            {type}
-                        </button>
+            {/* Weekly View */}
+            <section className={styles.section}>
+                <h2 className={styles.sectionTitle}>週間スケジュール (直近7日間)</h2>
+                <div className={styles.weeklyGrid}>
+                    {weekDays.map((date, idx) => (
+                        <WeeklyDayBox
+                            key={idx}
+                            date={date}
+                            events={getEventsForDate(formatDate(date))}
+                            isToday={idx === 0}
+                            getTypeClass={getTypeClass}
+                        />
                     ))}
                 </div>
+            </section>
 
-                {/* Weekly View */}
-                <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>週間スケジュール (直近7日間)</h2>
-                    <div className={styles.weeklyGrid}>
-                        {weekDays.map((date, idx) => (
-                            <WeeklyDayBox
-                                key={idx}
-                                date={date}
-                                events={getEventsForDate(formatDate(date))}
-                                isToday={idx === 0}
-                                getTypeClass={getTypeClass}
-                            />
+            {/* Monthly View (Continued...) */}
+            <section className={styles.layoutSplit}>
+                <div>
+                    <div className={styles.monthHeader}>
+                        <button onClick={handlePrevMonth} className={styles.navButton}>&larr; 前月</button>
+                        <h2 className={styles.sectionTitle} style={{ marginBottom: 0, border: 'none' }}>
+                            {viewYear}年 {viewMonth + 1}月
+                        </h2>
+                        <button onClick={handleNextMonth} className={styles.navButton}>次月 &rarr;</button>
+                    </div>
+
+                    <div className={styles.calendarGrid}>
+                        {/* Headers */}
+                        {['日', '月', '火', '水', '木', '金', '土'].map(d => (
+                            <div key={d} className={styles.dayHeader}>{d}</div>
                         ))}
-                    </div>
-                </section>
 
-                {/* Monthly View (Continued...) */}
-                <section className={styles.layoutSplit}>
-                    <div>
-                        <div className={styles.monthHeader}>
-                            <button onClick={handlePrevMonth} className={styles.navButton}>&larr; 前月</button>
-                            <h2 className={styles.sectionTitle} style={{ marginBottom: 0, border: 'none' }}>
-                                {viewYear}年 {viewMonth + 1}月
-                            </h2>
-                            <button onClick={handleNextMonth} className={styles.navButton}>次月 &rarr;</button>
-                        </div>
+                        {/* Empty cells for start of month */}
+                        {Array.from({ length: startDayOfWeek }).map((_, i) => (
+                            <div key={`empty-${i}`} className={styles.calendarCell} style={{ background: 'transparent', cursor: 'default' }}></div>
+                        ))}
 
-                        <div className={styles.calendarGrid}>
-                            {/* Headers */}
-                            {['日', '月', '火', '水', '木', '金', '土'].map(d => (
-                                <div key={d} className={styles.dayHeader}>{d}</div>
-                            ))}
+                        {/* Days */}
+                        {Array.from({ length: daysInMonth }).map((_, i) => {
+                            const d = new Date(viewYear, viewMonth, i + 1);
+                            const dateStr = formatDate(d);
+                            const evs = getEventsForDate(dateStr);
+                            const hasEvents = evs.length > 0;
+                            const isSelected = selectedDate === dateStr;
 
-                            {/* Empty cells for start of month */}
-                            {Array.from({ length: startDayOfWeek }).map((_, i) => (
-                                <div key={`empty-${i}`} className={styles.calendarCell} style={{ background: 'transparent', cursor: 'default' }}></div>
-                            ))}
-
-                            {/* Days */}
-                            {Array.from({ length: daysInMonth }).map((_, i) => {
-                                const d = new Date(viewYear, viewMonth, i + 1);
-                                const dateStr = formatDate(d);
-                                const evs = getEventsForDate(dateStr);
-                                const hasEvents = evs.length > 0;
-                                const isSelected = selectedDate === dateStr;
-
-                                return (
-                                    <div
-                                        key={i}
-                                        onClick={() => hasEvents && setSelectedDate(dateStr)}
-                                        className={`${styles.calendarCell} ${hasEvents ? styles.cellWithEvents : ''} ${isSelected ? styles.cellSelected : ''}`}
-                                    >
-                                        <div className={styles.cellNumber}>{i + 1}</div>
-                                        {hasEvents && (
-                                            <div className={styles.eventBadge}>
-                                                {evs.length}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Daily Detail Side Panel */}
-                    <div className={styles.detailsPanel}>
-                        <h3 className={styles.detailsTitle}>
-                            {selectedDate ? `${selectedDate} の発表` : '日付を選択してください'}
-                        </h3>
-
-                        {selectedDate ? (
-                            <div>
-                                {getEventsForDate(selectedDate).map(e => (
-                                    <div key={e.id || `${e.ticker}-${e.date}`} className={styles.detailItem}>
-                                        <div>
-                                            <div className={styles.ticker}>コード: {e.ticker}</div>
-                                            <div className={styles.companyName}>{e.name}</div>
+                            return (
+                                <div
+                                    key={i}
+                                    onClick={() => hasEvents && setSelectedDate(dateStr)}
+                                    className={`${styles.calendarCell} ${hasEvents ? styles.cellWithEvents : ''} ${isSelected ? styles.cellSelected : ''}`}
+                                >
+                                    <div className={styles.cellNumber}>{i + 1}</div>
+                                    {hasEvents && (
+                                        <div className={styles.eventBadge}>
+                                            {evs.length}
                                         </div>
-                                        {/* Use Background Style for Labels in Details */}
-                                        <span className={`${styles.typeLabel} ${getTypeClass(e.type, true)}`}>
-                                            {e.type}
-                                        </span>
-                                    </div>
-                                ))}
-                                {getEventsForDate(selectedDate).length === 0 && (
-                                    <p className={styles.noEvents}>予定はありません</p>
-                                )}
-                            </div>
-                        ) : (
-                            <p className={styles.subtitle} style={{ fontSize: '0.9rem' }}>
-                                カレンダー上で色が付いている日付をクリックすると、詳細が表示されます。
-                            </p>
-                        )}
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
-                </section>
-            </main>
-            );
-}
-
-            // Sub-component for Daily Box in Weekly View
-            function WeeklyDayBox({date, events, isToday, getTypeClass}: {date: Date, events: any[], isToday: boolean, getTypeClass: (t: string, b?: boolean) => string }) {
-    const [expanded, setExpanded] = useState(false);
-            const LIMIT = 5; // Default items to show
-
-            // Safety check
-            const safeEvents = events || [];
-            const showEvents = expanded ? safeEvents : safeEvents.slice(0, LIMIT);
-    const hasMore = safeEvents.length > LIMIT;
-            const remaining = safeEvents.length - LIMIT;
-
-            return (
-            <div className={`${styles.weeklyDateBox} ${isToday ? styles.currentDay : ''}`}>
-                <div className={styles.dateLabel}>
-                    {date.getMonth() + 1}/{date.getDate()} ({['日', '月', '火', '水', '木', '金', '土'][date.getDay()]})
                 </div>
-                <div className="events-list">
-                    {safeEvents.length > 0 ? (
-                        <>
-                            {showEvents.map(e => (
-                                <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
-                                    {/* Use Text Color Style for Weekly List */}
-                                    <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span> {e.name}
+
+                {/* Daily Detail Side Panel */}
+                <div className={styles.detailsPanel}>
+                    <h3 className={styles.detailsTitle}>
+                        {selectedDate ? `${selectedDate} の発表` : '日付を選択してください'}
+                    </h3>
+
+                    {selectedDate ? (
+                        <div>
+                            {getEventsForDate(selectedDate).map(e => (
+                                <div key={e.id || `${e.ticker}-${e.date}`} className={styles.detailItem}>
+                                    <div>
+                                        <div className={styles.ticker}>コード: {e.ticker}</div>
+                                        <div className={styles.companyName}>{e.name}</div>
+                                    </div>
+                                    {/* Use Background Style for Labels in Details */}
+                                    <span className={`${styles.typeLabel} ${getTypeClass(e.type, true)}`}>
+                                        {e.type}
+                                    </span>
                                 </div>
                             ))}
-                            {hasMore && (
-                                <button
-                                    onClick={() => setExpanded(!expanded)}
-                                    className="text-xs text-[var(--accent)] mt-1 hover:underline w-full text-left font-bold"
-                                    style={{ color: '#007bff' }}
-                                >
-                                    {expanded ? '▲ 閉じる' : `▼ 他 ${remaining} 件`}
-                                </button>
+                            {getEventsForDate(selectedDate).length === 0 && (
+                                <p className={styles.noEvents}>予定はありません</p>
                             )}
-                        </>
+                        </div>
                     ) : (
-                        <div className={styles.noEvents}>-</div>
+                        <p className={styles.subtitle} style={{ fontSize: '0.9rem' }}>
+                            カレンダー上で色が付いている日付をクリックすると、詳細が表示されます。
+                        </p>
                     )}
                 </div>
+            </section>
+        </main>
+    );
+}
+
+// Sub-component for Daily Box in Weekly View
+function WeeklyDayBox({ date, events, isToday, getTypeClass }: { date: Date, events: any[], isToday: boolean, getTypeClass: (t: string, b?: boolean) => string }) {
+    const [expanded, setExpanded] = useState(false);
+    const LIMIT = 5; // Default items to show
+
+    // Safety check
+    const safeEvents = events || [];
+    const showEvents = expanded ? safeEvents : safeEvents.slice(0, LIMIT);
+    const hasMore = safeEvents.length > LIMIT;
+    const remaining = safeEvents.length - LIMIT;
+
+    return (
+        <div className={`${styles.weeklyDateBox} ${isToday ? styles.currentDay : ''}`}>
+            <div className={styles.dateLabel}>
+                {date.getMonth() + 1}/{date.getDate()} ({['日', '月', '火', '水', '木', '金', '土'][date.getDay()]})
             </div>
-            );
+            <div className="events-list">
+                {safeEvents.length > 0 ? (
+                    <>
+                        {showEvents.map(e => (
+                            <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
+                                {/* Use Text Color Style for Weekly List */}
+                                <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span> {e.name}
+                            </div>
+                        ))}
+                        {hasMore && (
+                            <button
+                                onClick={() => setExpanded(!expanded)}
+                                className="text-xs text-[var(--accent)] mt-1 hover:underline w-full text-left font-bold"
+                                style={{ color: '#007bff' }}
+                            >
+                                {expanded ? '▲ 閉じる' : `▼ 他 ${remaining} 件`}
+                            </button>
+                        )}
+                    </>
+                ) : (
+                    <div className={styles.noEvents}>-</div>
+                )}
+            </div>
+        </div>
+    );
 }
