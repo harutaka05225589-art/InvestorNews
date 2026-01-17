@@ -134,7 +134,7 @@ export default function AlertsPage() {
                 気になる銘柄を登録して、決算カレンダーで情報をチェックしましょう。
                 <br />
                 <span style={{ fontSize: '0.9em', color: 'var(--accent)' }}>
-                    ※ 下記でPERを入力すると、条件に達した際に「PER通知」を受け取ることも可能です。
+                    ※ 下記でPERを入力すると、条件に達した際に画面右上のベルマーク🔔に「PER通知」が届きます。
                 </span>
             </p>
 
