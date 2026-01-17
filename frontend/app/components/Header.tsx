@@ -89,7 +89,8 @@ export default function Header() {
                             {/* Notification Bell */}
                             <div className={styles.notifWrapper}>
                                 <button className={styles.notifBtn} onClick={handleNotifClick} aria-label="Notifications">
-                                    🔔
+                                    <span>🔔</span>
+                                    <span className={styles.notifText}>お知らせ</span>
                                     {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
                                 </button>
 

@@ -217,8 +217,27 @@ export default function AlertsPage() {
                                     </div>
                                     <span className={styles.condition} style={{ fontSize: '0.85rem', color: 'var(--secondary)' }}>
                                         {alert.target_per
-                                            ? `🔔 PER ${alert.target_per} ${alert.condition === 'BELOW' ? '以下' : '以上'}`
-                                            : '📅 カレンダー登録のみ'}
+                                            ? (
+                                                <>
+                                                    📅 PER目標: {alert.target_per} {alert.condition === 'BELOW' ? '以下' : '以上'}
+                                                    {/* Display Current PER if available */}
+                                                    {alert.current_per && (
+                                                        <span style={{ marginLeft: '1rem', color: 'var(--accent)', fontWeight: 'bold' }}>
+                                                            (現在: {alert.current_per.toFixed(2)})
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )
+                                            : (
+                                                <>
+                                                    📅 カレンダー登録のみ
+                                                    {alert.current_per && (
+                                                        <span style={{ marginLeft: '1rem', color: 'var(--accent)', fontWeight: 'bold' }}>
+                                                            (現在PER: {alert.current_per.toFixed(2)})
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )}
                                     </span>
                                 </div>
                                 <button onClick={() => handleDelete(alert.id)} className={styles.delButton}>

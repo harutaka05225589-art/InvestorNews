@@ -130,9 +130,15 @@ def check_alerts():
                     'current_price': current_price
                 })
 
+            # ALWAYS update current_per in DB regardless of trigger
+            # This allows the frontend to show the latest value
+            c.execute('UPDATE alerts SET current_per = ? WHERE id = ?', (per, alert['id']))
+
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
             continue
+
+    conn.commit() # Commit all updates
 
     # Process triggered alerts
     for item in triggered_alerts:
