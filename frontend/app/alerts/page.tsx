@@ -27,8 +27,6 @@ export default function AlertsPage() {
 
     // Form State
     const [ticker, setTicker] = useState('');
-    const [targetPER, setTargetPER] = useState('');
-    const [condition, setCondition] = useState<'ABOVE' | 'BELOW'>('BELOW');
     const [msg, setMsg] = useState('');
 
     // Search Suggestions State
@@ -98,16 +96,15 @@ export default function AlertsPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ticker: ticker.toUpperCase().trim(), // Allow letters, normalize to upper
-                target_per: targetPER ? parseFloat(targetPER) : null,
-                condition: targetPER ? condition : null
+                ticker: ticker.toUpperCase().trim(),
+                target_per: null,
+                condition: null
             }),
         });
 
         if (res.ok) {
             setTicker('');
             setQuery('');
-            setTargetPER('');
             fetchAlerts();
             setMsg('ウォッチリストに追加しました');
         } else {
@@ -134,7 +131,7 @@ export default function AlertsPage() {
                 気になる銘柄を登録して、決算カレンダーで情報をチェックしましょう。
                 <br />
                 <span style={{ fontSize: '0.9em', color: 'var(--accent)' }}>
-                    ※ 下記でPERを入力すると、条件に達した際に画面右上のベルマーク🔔に「PER通知」が届きます。
+                    ※ 登録した銘柄は「決算カレンダー」の「MY」タブで、その銘柄だけの決算スケジュールを確認できるようになります。
                 </span>
             </p>
 
@@ -178,28 +175,7 @@ export default function AlertsPage() {
                         選択中: {ticker}
                     </div>}
 
-                    <div className={styles.field}>
-                        <label>PERアラート通知 (任意)</label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                            <input
-                                type="number"
-                                step="0.1"
-                                value={targetPER}
-                                onChange={e => setTargetPER(e.target.value)}
-                                placeholder="PER (空欄可)"
-                                style={{ flex: 1 }}
-                            />
-                            <select
-                                value={condition}
-                                onChange={e => setCondition(e.target.value as 'ABOVE' | 'BELOW')}
-                                style={{ flex: 1 }}
-                            >
-                                <option value="BELOW">以下で通知</option>
-                                <option value="ABOVE">以上で通知</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button type="submit" className={styles.addButton}>リストに追加</button>
+                    <button type="submit" className={styles.addButton}>ウォッチリストに追加</button>
                 </form>
                 {msg && <p className={styles.msg}>{msg}</p>}
             </div>
@@ -218,28 +194,7 @@ export default function AlertsPage() {
                                         <span style={{ marginLeft: '1rem', fontWeight: 'bold' }}>{alert.company_name || '名称不明'}</span>
                                     </div>
                                     <span className={styles.condition} style={{ fontSize: '0.85rem', color: 'var(--secondary)' }}>
-                                        {alert.target_per
-                                            ? (
-                                                <>
-                                                    📅 PER目標: {alert.target_per} {alert.condition === 'BELOW' ? '以下' : '以上'}
-                                                    {/* Display Current PER if available */}
-                                                    {alert.current_per && (
-                                                        <span style={{ marginLeft: '1rem', color: 'var(--accent)', fontWeight: 'bold' }}>
-                                                            (現在: {alert.current_per.toFixed(2)})
-                                                        </span>
-                                                    )}
-                                                </>
-                                            )
-                                            : (
-                                                <>
-                                                    📅 カレンダー登録のみ
-                                                    {alert.current_per && (
-                                                        <span style={{ marginLeft: '1rem', color: 'var(--accent)', fontWeight: 'bold' }}>
-                                                            (現在PER: {alert.current_per.toFixed(2)})
-                                                        </span>
-                                                    )}
-                                                </>
-                                            )}
+                                        📅 カレンダー連携中
                                     </span>
                                 </div>
                                 <button onClick={() => handleDelete(alert.id)} className={styles.delButton}>
