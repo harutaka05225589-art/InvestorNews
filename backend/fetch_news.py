@@ -165,7 +165,10 @@ def run_fetch():
             
             conn.commit()
             time.sleep(1) # Be nice
-            
+        
+        # Sleep after each investor to prevent Google 429
+        time.sleep(2)
+
     conn.close()
     print("Fetch complete.")
 

@@ -47,6 +47,9 @@ def fetch_jpx_data():
             if f_res.status_code != 200:
                 print("  Failed download.")
                 continue
+
+            # Sleep to respect JPX server
+            time.sleep(2)
                 
             try:
                 # Read with pandas
