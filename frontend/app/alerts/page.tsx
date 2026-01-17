@@ -11,6 +11,8 @@ type Alert = {
     target_per: number;
     condition: 'ABOVE' | 'BELOW';
     is_active: number;
+    current_per?: number;
+    company_name?: string;
 };
 
 type Company = {
