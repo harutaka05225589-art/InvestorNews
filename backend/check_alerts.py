@@ -89,6 +89,14 @@ def check_alerts():
             try:
                 info = data.tickers[yf_ticker].info
                 
+                if info is None:
+                    print(f"No info found for {ticker}")
+                    if attempt < max_retries - 1:
+                        time.sleep(2)
+                        continue # Retry
+                    else:
+                        break # Give up on this ticker
+
                 # Calculate PER
                 # Sometimes 'trailingPE' or 'forwardPE' is available
                 current_price = info.get('currentPrice') or info.get('regularMarketPrice')
