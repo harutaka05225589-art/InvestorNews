@@ -53,6 +53,23 @@ export default function CalendarPage() {
     const [loading, setLoading] = useState(false);
     const [filterType, setFilterType] = useState('ALL'); // ALL, 1Q, 2Q, 3Q, 4Q
 
+    // Auth for My Calendar
+    const { user } = useAuth();
+    const [myTickers, setMyTickers] = useState<string[]>([]);
+
+    React.useEffect(() => {
+        if (user) {
+            fetch('/api/alerts')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.alerts) {
+                        setMyTickers(data.alerts.map((a: any) => a.ticker));
+                    }
+                })
+                .catch(err => console.error(err));
+        }
+    }, [user]);
+
     // Memoize week days to avoid re-calc jitter
     const weekDays = React.useMemo(() => {
         const days = [];
@@ -168,23 +185,6 @@ export default function CalendarPage() {
 
     return (
         <main className={styles.container}>
-    // Auth for My Calendar
-            const {user} = useAuth();
-            const [myTickers, setMyTickers] = useState<string[]>([]);
-
-    useEffect(() => {
-        if (user) {
-                fetch('/api/alerts')
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.alerts) {
-                            setMyTickers(data.alerts.map((a: any) => a.ticker));
-                        }
-                    })
-                    .catch(err => console.error(err));
-        }
-    }, [user]);
-
     // ... (rest of existing code)
 
     const getEventsForDate = (dateStr: string) => {

@@ -51,7 +51,7 @@ export function getNewsByInvestor(investorId: string | number, page: number = 1,
     const countStmt = db.prepare('SELECT COUNT(*) as total FROM news_items WHERE investor_id = ?');
     const total = (countStmt.get(investorId) as { total: number }).total;
 
-    const total = (countStmt.get(investorId) as { total: number }).total;
+
 
     return { news, total };
 }
