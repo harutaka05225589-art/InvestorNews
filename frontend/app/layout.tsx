@@ -4,15 +4,15 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | 投資家ニュース',
-    default: '投資家ニュース - 日本株投資家の注目情報を自動集約',
+    template: '%s | 億り人・決算速報',
+    default: '億り人・決算速報 - 投資家ニュースとIRカレンダー',
   },
-  description: 'テスタ、藤本茂など、日本株市場で注目される投資家のニュースを自動で収集・要約。忙しい投資家のための時短情報サイトです。',
-  keywords: ['投資家', '株', '日本株', 'ニュース', 'まとめ', 'テスタ'],
+  description: '著名投資家の動向と企業の決算スケジュールを網羅。億り人のニュースと最新のIR情報をまとめてチェックできる投資家必須のサイトです。',
+  keywords: ['投資家', '株', '決算', 'カレンダー', 'テスタ', '億り人', 'IR'],
   openGraph: {
     type: 'website',
     locale: 'ja_JP',
-    siteName: '投資家ニュース',
+    siteName: '億り人・決算速報',
   },
   robots: {
     index: true,
@@ -59,7 +59,7 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "投資家ニュース (Investor News)",
+              "name": "億り人・決算速報",
               "url": "https://rich-investor-news.com",
               "logo": "https://rich-investor-news.com/icon.png",
               "description": "日本株市場で注目される著名投資家の動向やニュースを自動収集・配信するメディア。",

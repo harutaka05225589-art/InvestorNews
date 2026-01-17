@@ -97,8 +97,8 @@ export default function AlertsPage() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 ticker: ticker.replace(/\D/g, ''), // Ensure clean ticker
-                target_per: parseFloat(targetPER),
-                condition
+                target_per: targetPER ? parseFloat(targetPER) : null,
+                condition: targetPER ? condition : null
             }),
         });
 
@@ -107,7 +107,7 @@ export default function AlertsPage() {
             setQuery('');
             setTargetPER('');
             fetchAlerts();
-            setMsg('アラートを作成しました');
+            setMsg('ウォッチリストに追加しました');
         } else {
             setMsg('作成に失敗しました');
         }
@@ -127,10 +127,13 @@ export default function AlertsPage() {
 
     return (
         <div className={styles.container}>
-            <h1 className={styles.title}>PERアラート管理</h1>
+            <h1 className={styles.title}>登録銘柄 (ウォッチリスト)</h1>
             <p className={styles.desc}>
-                指定した銘柄のPERが条件を満たしたときに通知を受け取ることができます。
-                <br />(現在はベータ版のため、通知機能は順次有効化されます)
+                気になる銘柄を登録して、決算カレンダーで情報をチェックしましょう。
+                <br />
+                <span style={{ fontSize: '0.9em', color: 'var(--accent)' }}>
+                    ※ 下記でPERを入力すると、条件に達した際に「PER通知」を受け取ることも可能です。
+                </span>
             </p>
 
             <div className={styles.panel}>
@@ -174,43 +177,48 @@ export default function AlertsPage() {
                     </div>}
 
                     <div className={styles.field}>
-                        <label>目標PER</label>
-                        <input
-                            type="number"
-                            step="0.1"
-                            value={targetPER}
-                            onChange={e => setTargetPER(e.target.value)}
-                            placeholder="例: 15.0"
-                            required
-                        />
+                        <label>PERアラート通知 (任意)</label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <input
+                                type="number"
+                                step="0.1"
+                                value={targetPER}
+                                onChange={e => setTargetPER(e.target.value)}
+                                placeholder="PER (空欄可)"
+                                style={{ flex: 1 }}
+                            />
+                            <select
+                                value={condition}
+                                onChange={e => setCondition(e.target.value as 'ABOVE' | 'BELOW')}
+                                style={{ flex: 1 }}
+                            >
+                                <option value="BELOW">以下で通知</option>
+                                <option value="ABOVE">以上で通知</option>
+                            </select>
+                        </div>
                     </div>
-                    <div className={styles.field}>
-                        <label>条件</label>
-                        <select
-                            value={condition}
-                            onChange={e => setCondition(e.target.value as 'ABOVE' | 'BELOW')}
-                        >
-                            <option value="BELOW">以下になったら (割安)</option>
-                            <option value="ABOVE">以上になったら (割高)</option>
-                        </select>
-                    </div>
-                    <button type="submit" className={styles.addButton}>追加</button>
+                    <button type="submit" className={styles.addButton}>リストに追加</button>
                 </form>
                 {msg && <p className={styles.msg}>{msg}</p>}
             </div>
 
             <div className={styles.list}>
-                <h2>登録済みアラート</h2>
+                <h2>登録済み銘柄</h2>
                 {alerts.length === 0 ? (
-                    <p className={styles.empty}>登録されたアラートはありません</p>
+                    <p className={styles.empty}>登録された銘柄はありません</p>
                 ) : (
                     <ul>
-                        {alerts.map(alert => (
+                        {alerts.map((alert: any) => (
                             <li key={alert.id} className={styles.item}>
                                 <div className={styles.itemInfo}>
-                                    <span className={styles.ticker}>{alert.ticker}</span>
-                                    <span className={styles.condition}>
-                                        PER {alert.target_per} {alert.condition === 'BELOW' ? '以下' : '以上'}
+                                    <div>
+                                        <span className={styles.ticker}>{alert.ticker}</span>
+                                        <span style={{ marginLeft: '1rem', fontWeight: 'bold' }}>{alert.company_name || '名称不明'}</span>
+                                    </div>
+                                    <span className={styles.condition} style={{ fontSize: '0.85rem', color: 'var(--secondary)' }}>
+                                        {alert.target_per
+                                            ? `🔔 PER ${alert.target_per} ${alert.condition === 'BELOW' ? '以下' : '以上'}`
+                                            : '📅 カレンダー登録のみ'}
                                     </span>
                                 </div>
                                 <button onClick={() => handleDelete(alert.id)} className={styles.delButton}>

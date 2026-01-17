@@ -9,7 +9,17 @@ export async function GET() {
     }
 
     try {
-        const stmt = db.prepare('SELECT * FROM alerts WHERE user_id = ? ORDER BY id DESC');
+        // Join with ir_events (or just fetch names? ir_events might have duplicates)
+        // Better: Subquery or just basic select and let frontend handle? 
+        // User asked for company name. IR events is the source.
+        // We can do a subquery.
+        const stmt = db.prepare(`
+            SELECT a.*, 
+            (SELECT company_name FROM ir_events WHERE ticker = a.ticker LIMIT 1) as company_name
+            FROM alerts a 
+            WHERE a.user_id = ? 
+            ORDER BY a.id DESC
+        `);
         const alerts = stmt.all(session.userId);
         return NextResponse.json({ alerts });
     } catch (error) {
@@ -26,17 +36,22 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
+        // target_per and condition can now be null/undefined
         const { ticker, target_per, condition } = body;
 
-        if (!ticker || !target_per || !condition) {
-            return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
+        if (!ticker) {
+            return NextResponse.json({ error: 'Ticker is required' }, { status: 400 });
         }
 
         const stmt = db.prepare(`
             INSERT INTO alerts (user_id, ticker, target_per, condition) 
             VALUES (?, ?, ?, ?)
         `);
-        const info = stmt.run(session.userId, ticker, target_per, condition);
+        // If target_per is empty string or null, save as null
+        const val_per = (target_per === '' || target_per === null) ? null : target_per;
+        const val_cond = (condition === '' || condition === null) ? null : condition;
+
+        const info = stmt.run(session.userId, ticker, val_per, val_cond);
 
         return NextResponse.json({ success: true, id: info.lastInsertRowid });
     } catch (error) {

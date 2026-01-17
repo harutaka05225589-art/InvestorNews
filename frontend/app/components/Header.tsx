@@ -69,14 +69,14 @@ export default function Header() {
                 </button>
 
                 {/* Brand Logo */}
-                <Link href="/" className={styles.brand}>Investor News</Link>
+                <Link href="/" className={styles.brand}>億り人・決算速報</Link>
 
                 {/* Desktop Navigation (Hidden on Mobile) */}
                 <nav className={styles.desktopNav}>
                     <Link href="/">ホーム</Link>
                     <Link href="/calendar">IRカレンダー</Link>
                     <Link href="/introduction">投資家紹介</Link>
-                    <Link href="/alerts">PER通知</Link>
+                    <Link href="/alerts">登録銘柄</Link>
                     <Link href="/request">リクエスト</Link>
                 </nav>
 
@@ -152,7 +152,7 @@ export default function Header() {
                     <Link href="/" onClick={() => setMenuOpen(false)}>ホーム</Link>
                     <Link href="/calendar" onClick={() => setMenuOpen(false)}>IRカレンダー</Link>
                     <Link href="/introduction" onClick={() => setMenuOpen(false)}>投資家紹介</Link>
-                    <Link href="/alerts" onClick={() => setMenuOpen(false)}>PER通知</Link>
+                    <Link href="/alerts" onClick={() => setMenuOpen(false)}>登録銘柄</Link>
                     <Link href="/inquiry" onClick={() => setMenuOpen(false)}>お問い合わせ</Link>
                     <Link href="/request" onClick={() => setMenuOpen(false)}>投資家追加リクエスト</Link>
                     <Link href="/privacy" onClick={() => setMenuOpen(false)}>プライバシーポリシー</Link>

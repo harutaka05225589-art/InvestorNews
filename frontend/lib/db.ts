@@ -51,5 +51,22 @@ export function getNewsByInvestor(investorId: string | number, page: number = 1,
     const countStmt = db.prepare('SELECT COUNT(*) as total FROM news_items WHERE investor_id = ?');
     const total = (countStmt.get(investorId) as { total: number }).total;
 
+    const total = (countStmt.get(investorId) as { total: number }).total;
+
     return { news, total };
+}
+
+export function getDailyIREvents(dateStr: string): { count: number, events: { ticker: string, name: string }[] } {
+    try {
+        const countStmt = db.prepare('SELECT COUNT(*) as count FROM ir_events WHERE event_date = ?');
+        const count = (countStmt.get(dateStr) as { count: number }).count;
+
+        const eventsStmt = db.prepare('SELECT ticker, company_name as name FROM ir_events WHERE event_date = ? LIMIT 5');
+        const events = eventsStmt.all(dateStr) as { ticker: string, name: string }[];
+
+        return { count, events };
+    } catch (e) {
+        console.error("Error fetching daily IR events:", e);
+        return { count: 0, events: [] };
+    }
 }
