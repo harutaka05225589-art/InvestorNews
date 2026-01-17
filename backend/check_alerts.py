@@ -136,7 +136,11 @@ def check_alerts():
 
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
+            time.sleep(2) # Sleep even on error
             continue
+            
+        # Sleep to be nice to the API
+        time.sleep(2)
 
     conn.commit() # Commit all updates
 
