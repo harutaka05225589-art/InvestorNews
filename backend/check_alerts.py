@@ -61,30 +61,31 @@ def check_alerts():
 
     # Fetch data for all tickers
     # Note: yfinance expects tickers like "7203.T" for Japan
-    ticker_map = {t: f"{t}.T" for t in tickers}
+    # We will fetch one by one to avoid rate limits
     
-    try:
-        data = yf.Tickers(" ".join(ticker_map.values()))
-    except Exception as e:
-        print(f"Failed to fetch data: {e}")
-        conn.close()
-        return
+    # Setup custom session to mimic browser
+    import requests
+    session = requests.Session()
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    })
 
     triggered_alerts = []
 
     for alert in alerts:
         # Cooldown check (prevent spamming every check)
-        # e.g., don't trigger again if triggered in last 24 hours
         if alert['last_triggered_at']:
             last_time = datetime.strptime(alert['last_triggered_at'], '%Y-%m-%d %H:%M:%S')
             if datetime.now() - last_time < timedelta(hours=24):
                 continue
 
         ticker = alert['ticker']
-        yf_ticker = ticker_map[ticker]
+        yf_ticker = f"{ticker}.T"
         
         try:
-            info = data.tickers[yf_ticker].info
+            # Fetch individually with custom session
+            dat = yf.Ticker(yf_ticker, session=session)
+            info = dat.info
             
             # Calculate PER
             # Sometimes 'trailingPE' or 'forwardPE' is available
@@ -93,12 +94,16 @@ def check_alerts():
             
             if not current_price:
                 # Fallback: history
-                hist = data.tickers[yf_ticker].history(period="1d")
-                if not hist.empty:
-                    current_price = hist['Close'].iloc[-1]
+                try:
+                    hist = dat.history(period="1d")
+                    if not hist.empty:
+                        current_price = hist['Close'].iloc[-1]
+                except:
+                    pass
             
             if not current_price:
                 print(f"Could not get price for {ticker}")
+                time.sleep(5)
                 continue
 
             # If EPS is missing, we can't calculate PER.
@@ -111,6 +116,7 @@ def check_alerts():
             
             if per is None:
                 print(f"Could not calculate PER for {ticker}")
+                time.sleep(5)
                 continue
                 
             print(f"{ticker}: Price={current_price}, PER={per:.2f}, Target={alert['target_per']} ({alert['condition']})")
@@ -136,11 +142,11 @@ def check_alerts():
 
         except Exception as e:
             print(f"Error processing {ticker}: {e}")
-            # Do not continue immediately, default sleep will handle it
             pass
-
-        # Sleep to be nice to the API
-        time.sleep(5)
+        
+        # Long sleep between requests to be extremely gentle
+        # 10 to 20 seconds is recommended if IP is already suspicious
+        time.sleep(12)
 
     conn.commit() # Commit all updates
 
