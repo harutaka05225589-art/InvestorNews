@@ -97,6 +97,13 @@ export default function CalendarPage() {
     const getEventsForDate = (dateStr: string) => {
         return events.filter(e => {
             if (e.date !== dateStr) return false;
+
+            // My Calendar Filter
+            if (filterType === 'MY') {
+                // Robust string comparison
+                return myTickers.some(t => String(t).trim() === String(e.ticker).trim());
+            }
+
             if (filterType === 'ALL') return true;
 
             // Normalize Type
