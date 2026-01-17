@@ -90,12 +90,12 @@ def check_alerts():
                 info = data.tickers[yf_ticker].info
                 
                 if info is None:
-                    print(f"No info found for {ticker}")
-                    if attempt < max_retries - 1:
-                        time.sleep(2)
-                        continue # Retry
-                    else:
-                        break # Give up on this ticker
+                if info is None:
+                    print(f"No info found for {ticker} (Likely rate limit)")
+                    wait_time = (attempt + 1) * 60
+                    print(f"Waiting {wait_time}s... (Attempt {attempt+1}/{max_retries})")
+                    time.sleep(wait_time)
+                    continue # Retry
 
                 # Calculate PER
                 # Sometimes 'trailingPE' or 'forwardPE' is available
