@@ -83,82 +83,60 @@ def check_alerts():
         ticker = alert['ticker']
         yf_ticker = ticker_map[ticker]
         
-        # Retry logic for rate limiting
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                info = data.tickers[yf_ticker].info
-                
-                if info is None:
-                    print(f"No info found for {ticker} (Likely rate limit)")
-                    wait_time = (attempt + 1) * 60
-                    print(f"Waiting {wait_time}s... (Attempt {attempt+1}/{max_retries})")
-                    time.sleep(wait_time)
-                    continue # Retry
-
-                # Calculate PER
-                # Sometimes 'trailingPE' or 'forwardPE' is available
-                current_price = info.get('currentPrice') or info.get('regularMarketPrice')
-                eps = info.get('trailingEps')
-                
-                if not current_price:
-                    # Fallback: history
-                    hist = data.tickers[yf_ticker].history(period="1d")
-                    if not hist.empty:
-                        current_price = hist['Close'].iloc[-1]
-                
-                if not current_price:
-                    print(f"Could not get price for {ticker}")
-                    break # Skip to next ticker
-
-                # If EPS is missing, we can't calculate PER.
-                # Alternately, we can rely on 'trailingPE' if provided by yfinance
-                per = info.get('trailingPE')
-                
-                # If per is None but we have price and EPS
-                if per is None and current_price and eps:
-                    per = current_price / eps
-                
-                if per is None:
-                    print(f"Could not calculate PER for {ticker}")
-                    break
-                    
-                print(f"{ticker}: Price={current_price}, PER={per:.2f}, Target={alert['target_per']} ({alert['condition']})")
-
-                # Check Condition
-                triggered = False
-                if alert['condition'] == 'BELOW' and per <= alert['target_per']:
-                    triggered = True
-                elif alert['condition'] == 'ABOVE' and per >= alert['target_per']:
-                    triggered = True
-
-                if triggered:
-                    print(f"  !!! TRIGGERED: {ticker} PER {per:.2f} {alert['condition']} {alert['target_per']}")
-                    triggered_alerts.append({
-                        'alert': alert,
-                        'current_per': per,
-                        'current_price': current_price
-                    })
-
-                # ALWAYS update current_per in DB regardless of trigger
-                # This allows the frontend to show the latest value
-                c.execute('UPDATE alerts SET current_per = ? WHERE id = ?', (per, alert['id']))
-                
-                # Success, break retry loop
-                break
-
-            except Exception as e:
-                if "429" in str(e):
-                    wait_time = (attempt + 1) * 60 # 60s, 120s, 180s
-                    print(f"Rate limit hit for {ticker}. Waiting {wait_time}s... (Attempt {attempt+1}/{max_retries})")
-                    time.sleep(wait_time)
-                else:
-                    print(f"Error processing {ticker}: {e}")
-                    time.sleep(2) # Sleep even on error
-                    break # Don't retry other errors
+        try:
+            info = data.tickers[yf_ticker].info
             
-        # Sleep to be nice to the API
-        time.sleep(5)
+            # Calculate PER
+            # Sometimes 'trailingPE' or 'forwardPE' is available
+            current_price = info.get('currentPrice') or info.get('regularMarketPrice')
+            eps = info.get('trailingEps')
+            
+            if not current_price:
+                # Fallback: history
+                hist = data.tickers[yf_ticker].history(period="1d")
+                if not hist.empty:
+                    current_price = hist['Close'].iloc[-1]
+            
+            if not current_price:
+                print(f"Could not get price for {ticker}")
+                continue
+
+            # If EPS is missing, we can't calculate PER.
+            # Alternately, we can rely on 'trailingPE' if provided by yfinance
+            per = info.get('trailingPE')
+            
+            # If per is None but we have price and EPS
+            if per is None and current_price and eps:
+                per = current_price / eps
+            
+            if per is None:
+                print(f"Could not calculate PER for {ticker}")
+                continue
+                
+            print(f"{ticker}: Price={current_price}, PER={per:.2f}, Target={alert['target_per']} ({alert['condition']})")
+
+            # Check Condition
+            triggered = False
+            if alert['condition'] == 'BELOW' and per <= alert['target_per']:
+                triggered = True
+            elif alert['condition'] == 'ABOVE' and per >= alert['target_per']:
+                triggered = True
+
+            if triggered:
+                print(f"  !!! TRIGGERED: {ticker} PER {per:.2f} {alert['condition']} {alert['target_per']}")
+                triggered_alerts.append({
+                    'alert': alert,
+                    'current_per': per,
+                    'current_price': current_price
+                })
+
+            # ALWAYS update current_per in DB regardless of trigger
+            # This allows the frontend to show the latest value
+            c.execute('UPDATE alerts SET current_per = ? WHERE id = ?', (per, alert['id']))
+
+        except Exception as e:
+            print(f"Error processing {ticker}: {e}")
+            continue
 
     conn.commit() # Commit all updates
 
