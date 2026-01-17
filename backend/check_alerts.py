@@ -90,7 +90,6 @@ def check_alerts():
                 info = data.tickers[yf_ticker].info
                 
                 if info is None:
-                if info is None:
                     print(f"No info found for {ticker} (Likely rate limit)")
                     wait_time = (attempt + 1) * 60
                     print(f"Waiting {wait_time}s... (Attempt {attempt+1}/{max_retries})")
