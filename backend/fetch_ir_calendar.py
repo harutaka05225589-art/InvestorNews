@@ -78,9 +78,11 @@ def fetch_jpx_data():
                         raw_ticker = row.iloc[1]
                         raw_name = row.iloc[2]
                         
-                        # Validate Ticker (must be 4 digits)
+                        # Validate Ticker (must be 4 digits or new code like 130A)
                         ticker_str = str(raw_ticker).strip()
-                        if not re.match(r'^\d{4}$', ticker_str):
+                        # Allow 4 digits OR 4-5 chars with letters (e.g. 130A, 25935 etc if preferred shares, but mainly new IPOs)
+                        # JPX new codes are 3 digits + 1 char usually.
+                        if not re.match(r'^[0-9A-Z]{4,5}$', ticker_str):
                             continue
 
                         # Debug: Print the first valid row found to check columns

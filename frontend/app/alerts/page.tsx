@@ -96,7 +96,7 @@ export default function AlertsPage() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                ticker: ticker.replace(/\D/g, ''), // Ensure clean ticker
+                ticker: ticker.toUpperCase().trim(), // Allow letters, normalize to upper
                 target_per: targetPER ? parseFloat(targetPER) : null,
                 condition: targetPER ? condition : null
             }),
