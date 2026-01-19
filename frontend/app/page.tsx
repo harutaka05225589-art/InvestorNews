@@ -8,11 +8,13 @@ export default function Home() {
   const investors = getInvestors() as Investor[];
 
   // Get Today's Date in JST
-  const now = new Date();
-  const jstOffset = 9 * 60; // JST is UTC+9
-  const jstDate = new Date(now.getTime() + (jstOffset + now.getTimezoneOffset()) * 60 * 1000);
-  const todayStr = jstDate.toISOString().split('T')[0];
-  const todayLabel = `${jstDate.getMonth() + 1}/${jstDate.getDate()}`;
+  // Get Today's Date in JST (Robust against Server Timezone)
+  const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+  const y = jstNow.getFullYear();
+  const m = String(jstNow.getMonth() + 1).padStart(2, '0');
+  const d = String(jstNow.getDate()).padStart(2, '0');
+  const todayStr = `${y}-${m}-${d}`;
+  const todayLabel = `${jstNow.getMonth() + 1}/${jstNow.getDate()}`;
 
   const { count, events } = getDailyIREvents(todayStr);
 
