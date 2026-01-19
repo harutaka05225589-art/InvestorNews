@@ -3,6 +3,7 @@ import { getInvestors, getDailyIREvents } from '@/lib/db';
 import { Investor } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default function Home() {
   const investors = getInvestors() as Investor[];
