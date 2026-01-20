@@ -70,3 +70,16 @@ export function getDailyIREvents(dateStr: string): { count: number, events: { ti
         return { count: 0, events: [] };
     }
 }
+
+export function getLatestEdinetDocs(limit: number = 3) {
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM edinet_documents 
+            ORDER BY submitted_at DESC 
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}

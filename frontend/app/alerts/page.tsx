@@ -190,7 +190,11 @@ export default function AlertsPage() {
                             <li key={alert.id} className={styles.item}>
                                 <div className={styles.itemInfo}>
                                     <div>
-                                        <span className={styles.ticker}>{alert.ticker}</span>
+                                        <span className={styles.ticker}>
+                                            <a href={`https://finance.yahoo.co.jp/quote/${alert.ticker}.T`} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                                                {alert.ticker} ↗
+                                            </a>
+                                        </span>
                                         <span style={{ marginLeft: '1rem', fontWeight: 'bold' }}>{alert.company_name || '名称不明'}</span>
                                     </div>
                                     <span className={styles.condition} style={{ fontSize: '0.85rem', color: 'var(--secondary)' }}>

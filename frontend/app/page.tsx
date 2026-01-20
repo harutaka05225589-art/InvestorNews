@@ -1,14 +1,13 @@
-import Link from 'next/link';
-import { getInvestors, getDailyIREvents } from '@/lib/db';
-import { Investor } from '@/lib/types';
+// ... imports
+import { getInvestors, getDailyIREvents, getLatestEdinetDocs } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default function Home() {
   const investors = getInvestors() as Investor[];
+  const edinetDocs = getLatestEdinetDocs(5);
 
-  // Get Today's Date in JST
   // Get Today's Date in JST (Robust against Server Timezone)
   const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
   const y = jstNow.getFullYear();
@@ -22,6 +21,37 @@ export default function Home() {
   return (
     <div>
       <h1 className="sr-only">億り人・決算速報</h1>
+
+      {/* EDINET Breaking News Widget */}
+      {edinetDocs.length > 0 && (
+        <section style={{
+          background: '#fff3cd',
+          border: '1px solid #ffeeba',
+          borderRadius: '8px',
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          color: '#856404'
+        }}>
+          <h2 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            ⚡ 速報：大量保有報告書 (EDINET)
+          </h2>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {edinetDocs.map((doc: any) => (
+              <li key={doc.id} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', borderBottom: '1px dashed rgba(0,0,0,0.1)', paddingBottom: '0.5rem' }}>
+                <span style={{ fontWeight: 'bold' }}>{doc.submitter_name}</span> が
+                <span style={{ fontWeight: 'bold', margin: '0 0.3rem' }}>{doc.doc_description}</span> を提出
+                <br />
+                <a href={doc.pdf_link} target="_blank" rel="noopener noreferrer" style={{ color: '#533f03', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                  ➡ 原文を確認 (PDF)
+                </a>
+                <span style={{ fontSize: '0.8rem', color: '#888', marginLeft: '0.5rem' }}>
+                  {new Date(doc.submitted_at).toLocaleString('ja-JP')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Dashboard Widget */}
       <section className="dashboard-widget" style={{

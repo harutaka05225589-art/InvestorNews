@@ -345,7 +345,9 @@ export default function CalendarPage() {
                             {getEventsForDate(selectedDate).map(e => (
                                 <div key={e.id || `${e.ticker}-${e.date}`} className={styles.detailItem}>
                                     <div>
-                                        <div className={styles.ticker}>コード: {e.ticker}</div>
+                                        <div className={styles.ticker}>
+                                            コード: <a href={`https://finance.yahoo.co.jp/quote/${e.ticker}.T`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{e.ticker}</a>
+                                        </div>
                                         <div className={styles.companyName}>{e.name}</div>
                                     </div>
                                     {/* Use Background Style for Labels in Details */}
