@@ -25,7 +25,35 @@ export default function Home() {
       <h1 className={styles.srOnly}>億り人・決算速報</h1>
 
       <div className={styles.grid}>
-        {/* Main Content (Feed) */}
+
+        {/* Left Sidebar: Navigation (PC Only) */}
+        <nav className={styles.navSidebar}>
+          <div className={styles.navMenu}>
+            <Link href="/" className={`${styles.navItem} ${styles.navItemActive}`}>
+              <span className={styles.navIcon}>🏠</span> ホーム
+            </Link>
+            <Link href="/reports" className={styles.navItem}>
+              <span className={styles.navIcon}>⚡</span> 速報リスト
+            </Link>
+            <Link href="/calendar" className={styles.navItem}>
+              <span className={styles.navIcon}>📅</span> IRカレンダー
+            </Link>
+            <Link href="/introduction" className={styles.navItem}>
+              <span className={styles.navIcon}>👥</span> 投資家紹介
+            </Link>
+            <Link href="/alerts" className={styles.navItem}>
+              <span className={styles.navIcon}>🔔</span> 登録銘柄
+            </Link>
+          </div>
+
+          <div style={{ marginTop: '2rem' }}>
+            <Link href="/inquiry" className={styles.inquiryBtn}>
+              + 投資家リクエスト
+            </Link>
+          </div>
+        </nav>
+
+        {/* Center: Main Feed */}
         <div className={styles.mainColumn}>
           <div className={styles.hero}>
             <h2 className={styles.heroTitle}>
@@ -49,33 +77,32 @@ export default function Home() {
             ))}
           </div>
 
-          <div className={styles.inquirySection}>
-            <Link href="/inquiry" className={styles.inquiryBtn}>
-              + 投資家を追加リクエスト
-            </Link>
+          {/* Mobile Only Inquiry Button (Hidden on PC via CSS if needed, but keeping it visible as secondary CTA isn't bad. 
+               Actually, we moved it to Left Sidebar. Keeping a bottom CTA for mobile is good.) */}
+          <div className={styles.inquirySection} style={{ display: 'none' }}>
+            {/* Hiding duplicate for now to clean up UI */}
           </div>
         </div>
 
-        {/* Sidebar (Widgets) */}
+        {/* Right Sidebar: Widgets */}
         <div className={styles.sidebar}>
           {/* EDINET Breaking News Widget */}
           {edinetDocs.length > 0 && (
             <section className={styles.breakingWidget} style={{ marginBottom: '1.5rem' }}>
               <h2 className={styles.breakingTitle}>
-                ⚡ 速報：大量保有報告書 (EDINET)
+                ⚡ 速報 (EDINET)
               </h2>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {edinetDocs.map((doc: any) => (
                   <li key={doc.id} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', borderBottom: '1px dashed rgba(0,0,0,0.1)', paddingBottom: '0.5rem' }}>
-                    <span style={{ fontWeight: 'bold' }}>{doc.submitter_name}</span> が
-                    <span style={{ fontWeight: 'bold', margin: '0 0.3rem' }}>{doc.doc_description}</span> を提出
+                    <span style={{ fontWeight: 'bold' }}>{doc.submitter_name}</span>
                     <br />
-                    <a href={doc.pdf_link} target="_blank" rel="noopener noreferrer" style={{ color: '#533f03', textDecoration: 'underline', fontSize: '0.85rem' }}>
-                      ➡ 原文を確認 (PDF)
-                    </a>
-                    <span style={{ fontSize: '0.8rem', color: '#888', marginLeft: '0.5rem' }}>
-                      {new Date(doc.submitted_at).toLocaleString('ja-JP')}
-                    </span>
+                    <span style={{ fontSize: '0.85rem' }}>{doc.doc_description}</span>
+                    <div style={{ marginTop: '0.2rem' }}>
+                      <a href={doc.pdf_link} target="_blank" rel="noopener noreferrer" style={{ color: '#533f03', textDecoration: 'underline', fontSize: '0.8rem' }}>
+                        PDF確認 &rarr;
+                      </a>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -90,7 +117,7 @@ export default function Home() {
           {/* Dashboard Widget */}
           <section className={styles.widget}>
             <h2 className={styles.widgetTitle}>
-              📅 本日 ({todayLabel}) の決算発表
+              📅 本日の決算
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'baseline' }}>
@@ -102,8 +129,7 @@ export default function Home() {
 
               {count > 0 && (
                 <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                  主な発表:<br />
-                  {events.slice(0, 3).map(e => e.name).join(', ')} ...
+                  注目: {events.slice(0, 3).map(e => e.name).join(', ')} ...
                 </div>
               )}
 
