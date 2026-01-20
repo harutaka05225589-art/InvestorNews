@@ -5,9 +5,8 @@ import os
 import time
 
 # --- CONFIG ---
-# Get API Key from Environment or use placeholder
-# User must replace this or set env var 'EDINET_API_KEY'
-API_KEY = os.environ.get('EDINET_API_KEY', 'YOUR_API_KEY_HERE')
+# Get API Key from Environment or use provided key
+API_KEY = os.environ.get('EDINET_API_KEY', 'f438dea945154ea89f2bcbc8960d7b8e')
 
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'investor_news.db')
 
