@@ -13,21 +13,6 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ja_JP',
     siteName: '億り人・決算速報',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: '億り人・決算速報',
-    description: '著名投資家の動向と企業の決算スケジュールを網羅。',
-    images: ['https://rich-investor-news.com/icon.png'], // Ensure absolute URL
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'ja_JP',
-    siteName: '億り人・決算速報',
     title: '億り人・決算速報',
     description: '著名投資家の動向と企業の決算スケジュールを網羅。',
     images: [
@@ -38,6 +23,16 @@ export const metadata: Metadata = {
         alt: '億り人・決算速報 ロゴ',
       }
     ],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '億り人・決算速報',
+    description: '著名投資家の動向と企業の決算スケジュールを網羅。',
+    images: ['https://rich-investor-news.com/icon.png'],
   },
   verification: {
     google: 'OKOMP12oUHAz49fzUJpuKZsk20XLEsF2nDPgpZRgAZk',
