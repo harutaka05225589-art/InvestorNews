@@ -29,15 +29,6 @@ export default function IntroductionPage() {
                         <div className="card investor-card" style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                             <div style={{ width: '100%', marginBottom: '1rem' }}>
                                 <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>{investor.name}</h3>
-                                <div style={{
-                                    background: 'var(--card-hover)',
-                                    padding: '0.3rem 0.8rem',
-                                    borderRadius: '20px',
-                                    fontSize: '0.8rem',
-                                    display: 'inline-block'
-                                }}>
-                                    {investor.style_type || '一般'}
-                                </div>
                             </div>
                             <p style={{ color: 'var(--secondary)', fontSize: '0.95rem', lineHeight: '1.6', flex: 1 }}>
                                 {investor.style_description}
