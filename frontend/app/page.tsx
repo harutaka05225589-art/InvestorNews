@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getInvestors, getDailyIREvents, getLatestEdinetDocs } from '@/lib/db';
 import { Investor } from '@/lib/types';
+import styles from './home.module.css';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -20,102 +21,108 @@ export default function Home() {
   const { count, events } = getDailyIREvents(todayStr);
 
   return (
-    <div>
-      <h1 className="sr-only">億り人・決算速報</h1>
+    <div className={styles.container}>
+      <h1 className={styles.srOnly}>億り人・決算速報</h1>
 
-      {/* EDINET Breaking News Widget */}
-      {edinetDocs.length > 0 && (
-        <section style={{
-          background: '#fff3cd',
-          border: '1px solid #ffeeba',
-          borderRadius: '8px',
-          padding: '1rem',
-          marginBottom: '1.5rem',
-          color: '#856404'
-        }}>
-          <h2 style={{ fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            ⚡ 速報：大量保有報告書 (EDINET)
-          </h2>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {edinetDocs.map((doc: any) => (
-              <li key={doc.id} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', borderBottom: '1px dashed rgba(0,0,0,0.1)', paddingBottom: '0.5rem' }}>
-                <span style={{ fontWeight: 'bold' }}>{doc.submitter_name}</span> が
-                <span style={{ fontWeight: 'bold', margin: '0 0.3rem' }}>{doc.doc_description}</span> を提出
-                <br />
-                <a href={doc.pdf_link} target="_blank" rel="noopener noreferrer" style={{ color: '#533f03', textDecoration: 'underline', fontSize: '0.85rem' }}>
-                  ➡ 原文を確認 (PDF)
-                </a>
-                <span style={{ fontSize: '0.8rem', color: '#888', marginLeft: '0.5rem' }}>
-                  {new Date(doc.submitted_at).toLocaleString('ja-JP')}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Dashboard Widget */}
-      <section className="dashboard-widget" style={{
-        background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)',
-        border: '1px solid var(--border)',
-        borderRadius: '12px',
-        padding: '1.5rem',
-        marginBottom: '2rem',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h2 style={{ fontSize: '1.1rem', marginBottom: '0.5rem', color: '#555' }}>
-          📅 本日 ({todayLabel}) の決算発表
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <span style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-              {count}
-            </span>
-            <span style={{ fontSize: '1rem', marginLeft: '0.3rem' }}>件</span>
+      <div className={styles.grid}>
+        {/* Main Content (Feed) */}
+        <div className={styles.mainColumn}>
+          <div className={styles.hero}>
+            <h2 className={styles.heroTitle}>
+              億り人たちの最新動向
+            </h2>
           </div>
 
-          {count > 0 && (
-            <div style={{ flex: 1, marginLeft: '1rem', fontSize: '0.9rem', color: '#666' }}>
-              主な発表: {events.slice(0, 3).map(e => e.name).join(', ')} ...
-            </div>
+          <div className={styles.investorGrid}>
+            {investors.map((investor) => (
+              <Link href={`/investors/${investor.id}`} key={investor.id}>
+                <div className="card investor-card">
+                  <div className="investor-info">
+                    <h3>{investor.name}</h3>
+                    <p className="investor-role">{investor.style_description}</p>
+                  </div>
+                  <div className="news-count">
+                    {investor.news_count || 0} news
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className={styles.inquirySection}>
+            <Link href="/inquiry" className={styles.inquiryBtn}>
+              + 投資家を追加リクエスト
+            </Link>
+          </div>
+        </div>
+
+        {/* Sidebar (Widgets) */}
+        <div className={styles.sidebar}>
+          {/* EDINET Breaking News Widget */}
+          {edinetDocs.length > 0 && (
+            <section className={styles.breakingWidget} style={{ marginBottom: '1.5rem' }}>
+              <h2 className={styles.breakingTitle}>
+                ⚡ 速報：大量保有報告書 (EDINET)
+              </h2>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                {edinetDocs.map((doc: any) => (
+                  <li key={doc.id} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', borderBottom: '1px dashed rgba(0,0,0,0.1)', paddingBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: 'bold' }}>{doc.submitter_name}</span> が
+                    <span style={{ fontWeight: 'bold', margin: '0 0.3rem' }}>{doc.doc_description}</span> を提出
+                    <br />
+                    <a href={doc.pdf_link} target="_blank" rel="noopener noreferrer" style={{ color: '#533f03', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                      ➡ 原文を確認 (PDF)
+                    </a>
+                    <span style={{ fontSize: '0.8rem', color: '#888', marginLeft: '0.5rem' }}>
+                      {new Date(doc.submitted_at).toLocaleString('ja-JP')}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+                <Link href="/reports" style={{ fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'underline', color: '#856404' }}>
+                  すべて見る &rarr;
+                </Link>
+              </div>
+            </section>
           )}
 
-          <Link href="/calendar" style={{
-            background: 'var(--accent)',
-            color: '#000',
-            padding: '0.5rem 1.2rem',
-            borderRadius: '20px',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            fontSize: '0.9rem'
-          }}>
-            カレンダーを見る &rarr;
-          </Link>
+          {/* Dashboard Widget */}
+          <section className={styles.widget}>
+            <h2 className={styles.widgetTitle}>
+              📅 本日 ({todayLabel}) の決算発表
+            </h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                  {count}
+                </span>
+                <span style={{ fontSize: '1rem', marginLeft: '0.3rem' }}>件</span>
+              </div>
+
+              {count > 0 && (
+                <div style={{ fontSize: '0.9rem', color: '#666' }}>
+                  主な発表:<br />
+                  {events.slice(0, 3).map(e => e.name).join(', ')} ...
+                </div>
+              )}
+
+              <Link href="/calendar" style={{
+                background: 'var(--accent)',
+                color: '#000',
+                padding: '0.6rem 0',
+                borderRadius: '20px',
+                fontWeight: 'bold',
+                textDecoration: 'none',
+                fontSize: '0.9rem',
+                display: 'block',
+                textAlign: 'center'
+              }}>
+                カレンダーを見る &rarr;
+              </Link>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '2px solid var(--primary)', paddingBottom: '0.5rem', display: 'inline-block' }}>
-        億り人たちの最新動向
-      </h2>
-
-      {investors.map((investor) => (
-        <Link href={`/investors/${investor.id}`} key={investor.id}>
-          <div className="card investor-card">
-            <div className="investor-info">
-              <h3>{investor.name}</h3>
-              <p className="investor-role">{investor.style_description}</p>
-            </div>
-            <div className="news-count">
-              {investor.news_count || 0} news
-            </div>
-          </div>
-        </Link>
-      ))}
-
-      <div className="inquiry-section">
-        <Link href="/inquiry" className="inquiry-btn">
-          + 投資家を追加リクエスト
-        </Link>
       </div>
     </div>
   );

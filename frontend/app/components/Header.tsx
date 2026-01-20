@@ -74,6 +74,7 @@ export default function Header() {
                 {/* Desktop Navigation (Hidden on Mobile) */}
                 <nav className={styles.desktopNav}>
                     <Link href="/">ホーム</Link>
+                    <Link href="/reports">速報リスト</Link>
                     <Link href="/calendar">IRカレンダー</Link>
                     <Link href="/introduction">投資家紹介</Link>
                     <Link href="/alerts">登録銘柄</Link>
@@ -151,6 +152,7 @@ export default function Header() {
             <div className={`${styles.mobileMenu} ${menuOpen ? styles.menuOpen : ''}`}>
                 <nav className={styles.navLinks}>
                     <Link href="/" onClick={() => setMenuOpen(false)}>ホーム</Link>
+                    <Link href="/reports" onClick={() => setMenuOpen(false)}>速報リスト</Link>
                     <Link href="/calendar" onClick={() => setMenuOpen(false)}>IRカレンダー</Link>
                     <Link href="/introduction" onClick={() => setMenuOpen(false)}>投資家紹介</Link>
                     <Link href="/alerts" onClick={() => setMenuOpen(false)}>登録銘柄</Link>

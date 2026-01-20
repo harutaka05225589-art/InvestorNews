@@ -1,0 +1,158 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.hero {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.heroTitle {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+/* Sidebar Widgets Styles */
+.widget {
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.widgetTitle {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: #555;
+    font-weight: bold;
+}
+
+.breakingWidget {
+    background: #fff3cd;
+    border: 1px solid #ffeeba;
+    border-radius: 8px;
+    padding: 1rem;
+    color: #856404;
+}
+
+.breakingTitle {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Investor Cards Grid */
+.investorGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .investorGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* PC Layout: Sidebar on Right */
+@media (min-width: 1024px) {
+    .grid {
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        /* Main Content | Sidebar */
+        align-items: start;
+        gap: 3rem;
+    }
+
+    /* Change Order: On PC, Main Feed is Left (1st in DOM), Sidebar is Right (2nd) */
+    /* But if we structure HTML as Main -> Sidebar, it works naturally. */
+    /* Currently Page has Widgets -> Feed.
+       We should change HTML structure to:
+       <div className={grid}>
+          <div className={sidebar}>...</div>
+          <div className={main}>...</div>
+       </div>
+       If we want Sidebar on Right, we put Sidebar SECOND in HTML.
+       BUT on Mobile, we want Sidebar (Widgets) FIRST (Top).
+       Flexbox order or Grid areas can solve this.
+    */
+
+    .sidebar {
+        grid-column: 2;
+        grid-row: 1;
+        position: sticky;
+        top: 2rem;
+    }
+
+    .mainColumn {
+        grid-column: 1;
+        grid-row: 1;
+    }
+}
+
+/* Mobile: Widgets First, then Feed */
+@media (max-width: 1023px) {
+    .grid {
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* We will order visually using Flexbox `order` property */
+    .sidebar {
+        order: 1;
+        /* Top */
+    }
+
+    .mainColumn {
+        order: 2;
+        /* Bottom */
+    }
+}
+
+.inquirySection {
+    margin-top: 3rem;
+    text-align: center;
+}
+
+.inquiryBtn {
+    background: transparent;
+    border: 1px dashed var(--secondary);
+    color: var(--secondary);
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.inquiryBtn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(0, 0, 0, 0.02);
+}
