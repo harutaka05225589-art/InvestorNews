@@ -1,5 +1,6 @@
-// ... imports
+import Link from 'next/link';
 import { getInvestors, getDailyIREvents, getLatestEdinetDocs } from '@/lib/db';
+import { Investor } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
