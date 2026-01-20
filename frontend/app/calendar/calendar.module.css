@@ -322,3 +322,15 @@
     color: #a855f7;
     border-color: #a855f7;
 }
+
+.detailsList {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+}
+
+@media (min-width: 1200px) {
+    .detailsList {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}

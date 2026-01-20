@@ -341,7 +341,7 @@ export default function CalendarPage() {
                     </h3>
 
                     {selectedDate ? (
-                        <div>
+                        <div className={styles.detailsList}>
                             {getEventsForDate(selectedDate).map(e => (
                                 <div key={e.id || `${e.ticker}-${e.date}`} className={styles.detailItem}>
                                     <div>
