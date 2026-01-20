@@ -393,7 +393,10 @@ function WeeklyDayBox({ date, events, isToday, getTypeClass }: { date: Date, eve
                         {showEvents.map(e => (
                             <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
                                 {/* Use Text Color Style for Weekly List */}
-                                <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span> {e.name}
+                                <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span>
+                                <a href={`https://finance.yahoo.co.jp/quote/${e.ticker}.T`} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', marginLeft: '0.3rem' }} className="hover:underline">
+                                    {e.name}
+                                </a>
                             </div>
                         ))}
                         {hasMore && (

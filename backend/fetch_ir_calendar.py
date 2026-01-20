@@ -105,7 +105,12 @@ def fetch_jpx_data():
                         
                         if not target_date: continue
                         
+                        
                         name = str(raw_name).strip()
+
+                        # Filter out Investment Corporations / REITs
+                        if '投資法人' in name:
+                            continue
                         
                         # Try to get Title/Type from Col 7 (Index 7)
                         # JPX format (observed): Date, Ticker, Name, EnglishName, ?, ?, ?, QuarterInfo, ...
