@@ -46,6 +46,8 @@ import Script from 'next/script';
 
 import Header from './components/Header';
 
+import Sidebar from './components/Sidebar';
+
 export default function RootLayout({
   children,
 }: {
@@ -85,13 +87,16 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <main className="container">
-          <Header />
-          {children}
-          <footer style={{ marginTop: '4rem', padding: '2rem 0', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.9rem' }}>
-            <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
-          </footer>
-        </main>
+        <Header />
+        <div className="app-layout">
+          <Sidebar />
+          <main className="app-main">
+            {children}
+          </main>
+        </div>
+        <footer style={{ marginTop: '4rem', padding: '2rem 0', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.9rem' }}>
+          <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
+        </footer>
       </body>
     </html>
   );

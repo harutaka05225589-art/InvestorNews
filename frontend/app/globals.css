@@ -37,7 +37,8 @@ a {
 }
 
 .container {
-  max-width: 600px; /* Mobile focused */
+  max-width: 600px;
+  /* Mobile focused */
   margin: 0 auto;
   padding: 1rem;
 }
@@ -200,4 +201,39 @@ header {
   border-radius: 12px;
   font-size: 0.9rem;
   margin-top: 2rem;
+}
+
+/* App General Layout */
+.app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin: 0 auto;
+  max-width: 1280px;
+  padding: 0 1rem;
+}
+
+@media (min-width: 1024px) {
+  .app-layout {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .app-main {
+    flex: 1;
+    width: 100%;
+    /* Ensure it takes remaining width */
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 1023px) {
+  .app-layout {
+    padding: 0;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
 }

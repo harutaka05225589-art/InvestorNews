@@ -26,33 +26,6 @@ export default function Home() {
 
       <div className={styles.grid}>
 
-        {/* Left Sidebar: Navigation (PC Only) */}
-        <nav className={styles.navSidebar}>
-          <div className={styles.navMenu}>
-            <Link href="/" className={`${styles.navItem} ${styles.navItemActive}`}>
-              <span className={styles.navIcon}>🏠</span> ホーム
-            </Link>
-            <Link href="/reports" className={styles.navItem}>
-              <span className={styles.navIcon}>⚡</span> 速報リスト
-            </Link>
-            <Link href="/calendar" className={styles.navItem}>
-              <span className={styles.navIcon}>📅</span> IRカレンダー
-            </Link>
-            <Link href="/introduction" className={styles.navItem}>
-              <span className={styles.navIcon}>👥</span> 投資家紹介
-            </Link>
-            <Link href="/alerts" className={styles.navItem}>
-              <span className={styles.navIcon}>🔔</span> 登録銘柄
-            </Link>
-          </div>
-
-          <div style={{ marginTop: '2rem' }}>
-            <Link href="/inquiry" className={styles.inquiryBtn}>
-              + 投資家リクエスト
-            </Link>
-          </div>
-        </nav>
-
         {/* Center: Main Feed */}
         <div className={styles.mainColumn}>
           <div className={styles.hero}>
@@ -75,12 +48,6 @@ export default function Home() {
                 </div>
               </Link>
             ))}
-          </div>
-
-          {/* Mobile Only Inquiry Button (Hidden on PC via CSS if needed, but keeping it visible as secondary CTA isn't bad. 
-               Actually, we moved it to Left Sidebar. Keeping a bottom CTA for mobile is good.) */}
-          <div className={styles.inquirySection} style={{ display: 'none' }}>
-            {/* Hiding duplicate for now to clean up UI */}
           </div>
         </div>
 
