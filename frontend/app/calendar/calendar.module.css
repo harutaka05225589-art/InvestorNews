@@ -334,3 +334,34 @@
         grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     }
 }
+
+/* Filter Stuff */
+.filterSection {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.filterBtn {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    color: var(--secondary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filterBtn:hover {
+    border-color: var(--primary);
+    color: var(--foreground);
+}
+
+.activeFilter {
+    background: var(--primary);
+    color: #0f172a;
+    border-color: var(--primary);
+    font-weight: bold;
+}

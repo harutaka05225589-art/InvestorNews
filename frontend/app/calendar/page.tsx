@@ -94,13 +94,23 @@ export default function CalendarPage() {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     };
 
+    const [marketFilter, setMarketFilter] = useState('ALL'); // ALL, Prime, Standard, Growth
+
     const getEventsForDate = (dateStr: string) => {
         return events.filter(e => {
             if (e.date !== dateStr) return false;
 
+            // Market Filter
+            if (marketFilter !== 'ALL') {
+                if (!e.market) return false;
+                // DB stores "Prime", "Standard", "Growth"
+                // Note: Ensure DB values match these EXACTLY. 
+                // If script used normalized names (Prime/Standard/Growth), this is fine.
+                if (e.market !== marketFilter) return false;
+            }
+
             // My Calendar Filter
             if (filterType === 'MY') {
-                // Robust string comparison
                 return myTickers.some(t => String(t).trim() === String(e.ticker).trim());
             }
 

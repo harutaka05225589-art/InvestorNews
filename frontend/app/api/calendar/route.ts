@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
         // Actually, user wants "Past Year" so maybe the frontend fetches specific months on demand.
 
         const stmt = db.prepare(`
-      SELECT id, ticker, company_name as name, event_date as date, event_type as type 
+      SELECT id, ticker, company_name as name, event_date as date, event_type as type, market 
       FROM ir_events 
       WHERE event_date BETWEEN ? AND ?
       ORDER BY event_date ASC

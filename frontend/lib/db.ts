@@ -61,8 +61,8 @@ export function getDailyIREvents(dateStr: string): { count: number, events: { ti
         const countStmt = db.prepare('SELECT COUNT(*) as count FROM ir_events WHERE event_date = ?');
         const count = (countStmt.get(dateStr) as { count: number }).count;
 
-        const eventsStmt = db.prepare('SELECT ticker, company_name as name FROM ir_events WHERE event_date = ? LIMIT 5');
-        const events = eventsStmt.all(dateStr) as { ticker: string, name: string }[];
+        const eventsStmt = db.prepare('SELECT ticker, company_name as name, market FROM ir_events WHERE event_date = ? LIMIT 5');
+        const events = eventsStmt.all(dateStr) as { ticker: string, name: string, market: string | null }[];
 
         return { count, events };
     } catch (e) {
