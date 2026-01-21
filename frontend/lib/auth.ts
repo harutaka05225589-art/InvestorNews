@@ -2,7 +2,6 @@ import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
 import { cookies } from 'next/headers';
 
-const SECRET_KEY = process.env.JWT_SECRET || 'your-secret-key-change-this-in-prod';
 const SECRET_KEY = new TextEncoder().encode(process.env.JWT_SECRET || 'default-secret-key-change-it');
 
 export async function hashPassword(password: string) {
