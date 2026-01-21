@@ -17,10 +17,10 @@ export const metadata: Metadata = {
     description: '著名投資家の動向と企業の決算スケジュールを網羅。',
     images: [
       {
-        url: 'https://rich-investor-news.com/icon.png',
-        width: 512,
-        height: 512,
-        alt: '億り人・決算速報 ロゴ',
+        url: 'https://rich-investor-news.com/api/og',
+        width: 1200,
+        height: 630,
+        alt: '億り人・決算速報',
       }
     ],
   },
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '億り人・決算速報',
     description: '著名投資家の動向と企業の決算スケジュールを網羅。',
-    images: ['https://rich-investor-news.com/icon.png'],
+    images: ['https://rich-investor-news.com/api/og'],
   },
   verification: {
     google: 'OKOMP12oUHAz49fzUJpuKZsk20XLEsF2nDPgpZRgAZk',
