@@ -174,10 +174,14 @@ def run_fetch():
 
 import schedule
 import time
+from summarize_news import process_news
 
 def job():
     print(f"Starting scheduled fetch at {datetime.datetime.now()}")
     run_fetch()
+    
+    print("Running AI Summarizer...")
+    process_news()
 
 if __name__ == "__main__":
     # Run once immediately on start

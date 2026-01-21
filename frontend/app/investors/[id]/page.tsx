@@ -165,6 +165,25 @@ export default async function InvestorPage({
                         <div className="news-summary">
                             {item.summary}
                         </div>
+
+                        {/* AI Summary Widget */}
+                        {item.ai_summary && (
+                            <div style={{
+                                marginTop: '0.8rem',
+                                padding: '0.8rem',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                borderLeft: '3px solid #3b82f6',
+                                borderRadius: '4px',
+                                fontSize: '0.9rem',
+                                color: '#e2e8f0'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.3rem', color: '#60a5fa', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                                    <span style={{ marginRight: '0.3rem' }}>🤖</span> AI要約
+                                </div>
+                                {item.ai_summary}
+                            </div>
+                        )}
+
                         <a href={item.url} target="_blank" rel="noopener noreferrer" className="read-more">
                             本文を読む &rarr;
                         </a>
@@ -193,6 +212,25 @@ export default async function InvestorPage({
                         <div className="news-summary" style={{ fontStyle: 'italic', opacity: 0.8 }}>
                             {item.summary}
                         </div>
+
+                        {/* AI Summary Widget */}
+                        {item.ai_summary && (
+                            <div style={{
+                                marginTop: '0.8rem',
+                                padding: '0.8rem',
+                                background: 'rgba(59, 130, 246, 0.1)',
+                                borderLeft: '3px solid #3b82f6',
+                                borderRadius: '4px',
+                                fontSize: '0.9rem',
+                                color: '#e2e8f0'
+                            }}>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.3rem', color: '#60a5fa', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                                    <span style={{ marginRight: '0.3rem' }}>🤖</span> AI要約
+                                </div>
+                                {item.ai_summary}
+                            </div>
+                        )}
+
                         <br />
                         <div style={{ background: 'rgba(251, 191, 36, 0.1)', border: '1px solid var(--accent)', padding: '0.5rem', borderRadius: '4px', fontSize: '0.8rem', color: 'var(--accent)', marginTop: '0.5rem' }}>
                             🔒 有料記事または会員限定です。内容は推測できません。

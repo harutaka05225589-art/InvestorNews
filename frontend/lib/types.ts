@@ -18,4 +18,5 @@ export interface NewsItem {
     domain: string;
     is_paid: number; // SQLite returns 1/0
     published_at: string;
+    ai_summary?: string;
 }
