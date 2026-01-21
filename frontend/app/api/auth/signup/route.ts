@@ -27,7 +27,7 @@ export async function POST(request: Request) {
         const result = insert.run(account_id, email, nickname, hashed);
 
         // Create Session
-        await createSession(result.lastInsertRowid as number, nickname);
+        await createSession(result.lastInsertRowid as number, nickname, email);
 
         return NextResponse.json({ success: true, nickname });
     } catch (error: any) {

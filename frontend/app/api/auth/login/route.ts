@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         }
 
         // Create Session
-        await createSession(user.id, user.nickname);
+        await createSession(user.id, user.nickname, user.email);
 
         return NextResponse.json({ success: true, nickname: user.nickname });
     } catch (error) {

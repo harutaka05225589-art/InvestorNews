@@ -9,12 +9,45 @@ export default function SettingsPage() {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState(false);
+    const [emailEnabled, setEmailEnabled] = useState(false);
+    const [settingLoading, setSettingLoading] = useState(true);
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/auth/signin');
+        } else if (user) {
+            // Fetch current setting
+            fetch(`/api/settings/notifications?userId=${user.id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        setEmailEnabled(!!data.emailNotifications);
+                    }
+                    setSettingLoading(false);
+                })
+                .catch(err => {
+                    console.error(err);
+                    setSettingLoading(false);
+                });
         }
     }, [user, loading, router]);
+
+    const toggleEmail = async () => {
+        const newValue = !emailEnabled;
+        setEmailEnabled(newValue); // Optimistic update
+
+        try {
+            await fetch('/api/settings/notifications', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId: user?.id, emailNotifications: newValue })
+            });
+        } catch (e) {
+            console.error(e);
+            setEmailEnabled(!newValue); // Revert
+            alert("設定の保存に失敗しました");
+        }
+    };
 
     if (loading || !user) return <div style={{ padding: '2rem' }}>Loading...</div>;
 
@@ -59,6 +92,50 @@ export default function SettingsPage() {
                         <div style={{ fontFamily: 'monospace', color: '#cbd5e1' }}>{user.userId}</div>
                     </div>
                 </div>
+            </section >
+
+            <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>通知設定</h2>
+                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>メール通知</label>
+                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
+                                登録したアラート条件にヒットした際、メールを受け取る
+                            </p>
+                        </div>
+                        <div>
+                            <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '28px' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={emailEnabled}
+                                    onChange={toggleEmail}
+                                    disabled={settingLoading || !user.email}
+                                    style={{ opacity: 0, width: 0, height: 0 }}
+                                />
+                                <span style={{
+                                    position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                                    backgroundColor: emailEnabled ? '#3b82f6' : '#ccc', borderRadius: '34px', transition: '.4s'
+                                }}>
+                                    <span style={{
+                                        position: 'absolute', content: '""', height: '20px', width: '20px', left: '4px', bottom: '4px',
+                                        backgroundColor: 'white', borderRadius: '50%', transition: '.4s',
+                                        transform: emailEnabled ? 'translateX(22px)' : 'translateX(0)'
+                                    }}></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    {user.email ? (
+                        <div style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '0.5rem' }}>
+                            送信先: <span style={{ color: '#cbd5e1' }}>{user.email}</span>
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: '0.9rem', color: '#ef4444', marginTop: '0.5rem' }}>
+                            ※ メールアドレスが未登録です。再ログインまたは登録が必要です。
+                        </div>
+                    )}
+                </div>
             </section>
 
             <section style={{ marginBottom: '3rem' }}>
@@ -90,6 +167,6 @@ export default function SettingsPage() {
             <Link href="/" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem' }}>
                 &larr; ホームに戻る
             </Link>
-        </div>
+        </div >
     );
 }

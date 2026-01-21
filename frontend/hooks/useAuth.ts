@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 
 type User = {
+    id: number;
     userId: number;
     nickname: string;
+    email: string;
 } | null;
 
 export function useAuth() {
