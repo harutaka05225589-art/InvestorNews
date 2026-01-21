@@ -217,6 +217,34 @@ export default function CalendarPage() {
                 </Link>
             </div>
 
+            {/* Market Filters */}
+            <div className={styles.filterSection} style={{ justifyContent: 'center', marginBottom: '1rem' }}>
+                <button
+                    className={`${styles.filterBtn} ${marketFilter === 'ALL' ? styles.activeFilter : ''}`}
+                    onClick={() => setMarketFilter('ALL')}
+                >
+                    全市場
+                </button>
+                <button
+                    className={`${styles.filterBtn} ${marketFilter === 'Prime' ? styles.activeFilter : ''}`}
+                    onClick={() => setMarketFilter('Prime')}
+                >
+                    プライム
+                </button>
+                <button
+                    className={`${styles.filterBtn} ${marketFilter === 'Standard' ? styles.activeFilter : ''}`}
+                    onClick={() => setMarketFilter('Standard')}
+                >
+                    スタンダード
+                </button>
+                <button
+                    className={`${styles.filterBtn} ${marketFilter === 'Growth' ? styles.activeFilter : ''}`}
+                    onClick={() => setMarketFilter('Growth')}
+                >
+                    グロース
+                </button>
+            </div>
+
             {/* Filter Tabs */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <button
