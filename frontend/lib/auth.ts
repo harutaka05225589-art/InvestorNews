@@ -28,7 +28,7 @@ export async function createSession(userId: number, nickname: string, email: str
         .setExpirationTime('7d')
         .sign(SECRET_KEY);
 
-    cookies().set('session', session, {
+    (await cookies()).set('session', session, {
         expires,
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -37,7 +37,8 @@ export async function createSession(userId: number, nickname: string, email: str
 }
 
 export async function getSession() {
-    const session = cookies().get('session')?.value;
+    const cookieStore = await cookies();
+    const session = cookieStore.get('session')?.value;
     if (!session) return null;
 
     try {
