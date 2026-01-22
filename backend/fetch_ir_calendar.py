@@ -202,6 +202,11 @@ def run_fetch(days_back=0, days_forward=180):
     """
     print(f"Starting IR Fetch (JPX Source)...")
     fetch_jpx_data()
+    
+    # After fetching events, update market segments
+    print("Updating Market Segments...")
+    from fetch_market_segments import fetch_and_update_markets
+    fetch_and_update_markets()
 
 if __name__ == "__main__":
     run_fetch()
