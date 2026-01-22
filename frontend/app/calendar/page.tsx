@@ -246,20 +246,10 @@ export default function CalendarPage() {
             </div>
 
             {/* Filter Tabs */}
-            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div className={styles.tabSection}>
                 <button
                     onClick={() => setFilterType('ALL')}
-                    style={{
-                        padding: '0.5rem 1.5rem',
-                        borderRadius: '20px',
-                        border: '1px solid var(--border)',
-                        background: filterType === 'ALL' ? 'var(--primary)' : 'var(--card-bg)',
-                        color: filterType === 'ALL' ? '#000' : 'var(--foreground)',
-                        fontWeight: filterType === 'ALL' ? 'bold' : 'normal',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        fontSize: '0.9rem'
-                    }}
+                    className={`${styles.tabBtn} ${filterType === 'ALL' ? styles.tabBtnActive : ''}`}
                 >
                     すべて
                 </button>
@@ -268,20 +258,7 @@ export default function CalendarPage() {
                 {user && (
                     <button
                         onClick={() => setFilterType('MY')}
-                        style={{
-                            padding: '0.5rem 1.5rem',
-                            borderRadius: '20px',
-                            border: '1px solid var(--accent)', // Distinct border
-                            background: filterType === 'MY' ? 'var(--accent)' : 'var(--card-bg)',
-                            color: filterType === 'MY' ? '#000' : 'var(--accent)',
-                            fontWeight: 'bold',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            fontSize: '0.9rem',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.3rem'
-                        }}
+                        className={`${styles.tabBtnMy} ${filterType === 'MY' ? styles.tabBtnMyActive : ''}`}
                     >
                         <span>★ Myカレンダー</span>
                     </button>
@@ -291,17 +268,7 @@ export default function CalendarPage() {
                     <button
                         key={type}
                         onClick={() => setFilterType(type)}
-                        style={{
-                            padding: '0.5rem 1.5rem',
-                            borderRadius: '20px',
-                            border: '1px solid var(--border)',
-                            background: filterType === type ? 'var(--primary)' : 'var(--card-bg)',
-                            color: filterType === type ? '#000' : 'var(--foreground)',
-                            fontWeight: filterType === type ? 'bold' : 'normal',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s',
-                            fontSize: '0.9rem'
-                        }}
+                        className={`${styles.tabBtn} ${filterType === type ? styles.tabBtnActive : ''}`}
                     >
                         {type}
                     </button>
