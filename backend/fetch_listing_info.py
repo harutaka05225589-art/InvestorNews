@@ -4,6 +4,9 @@ import pandas as pd
 import os
 import time
 import datetime
+import requests
+import re
+from bs4 import BeautifulSoup
 from database import get_db_connection
 
 def fetch_listing_years():
@@ -33,34 +36,41 @@ def fetch_listing_years():
                 # 'firstTradeDateEpochUtc' is standard.
                 year = None
                 
-                # Sometimes yfinance fails silently, need robust check
-                try:
-                     # Accessing .info triggers the fetch
-                    info = stock.info
-                    ts = info.get('firstTradeDateEpochUtc')
-                    if ts:
-                        dt = datetime.datetime.fromtimestamp(ts)
-                        year = dt.year
-                    else:
-                        # Fallback: some data doesn't have first trade date
-                        pass
-                except Exception as e:
-                    # print(f"  Failed info fetch for {ticker}: {e}")
-                    pass
+                # yfinance often fails on VPS. Use Yahoo Finance JP Scraping.
+                # URL: https://finance.yahoo.co.jp/quote/{ticker}.T/profile
+                url = f"https://finance.yahoo.co.jp/quote/{ticker}.T/profile"
+                headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
                 
+                try:
+                    res = requests.get(url, headers=headers, timeout=5)
+                    if res.status_code == 200:
+                        soup = BeautifulSoup(res.content, 'html.parser')
+                        # Look for "上場年月日"
+                        # Structure: th="上場年月日", td="2000年1月1日"
+                        # Find th with text 上場年月日
+                        target_th = soup.find('th', string=re.compile("上場年月日"))
+                        if target_th:
+                            td = target_th.find_next_sibling('td')
+                            if td:
+                                text = td.get_text().strip()
+                                # Parse "1949年5月16日" -> 1949
+                                m = re.search(r'(\d{4})年', text)
+                                if m:
+                                    year = int(m.group(1))
+                except Exception as ex:
+                    print(f"  Scrape failed {ticker}: {ex}")
+
                 if year:
                     print(f"  {ticker}: Listed {year}")
                     c.execute("UPDATE ir_events SET listing_year = ? WHERE ticker = ?", (year, ticker))
                 else:
-                    # Mark as 0 or something to avoid refetching? 
-                    # For now leave NULL to retry later or assume old.
-                    pass
+                    print(f"  {ticker}: Year not found")
                 
             except Exception as e:
                 print(f"  Error {ticker}: {e}")
             
             # Be nice to API
-            time.sleep(0.5)
+            time.sleep(1.5) # Yahoo JP is strict
             
         conn.commit()
         print("  Batch committed.")
