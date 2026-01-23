@@ -72,10 +72,18 @@ def fetch_tdnet_revisions(target_date=None):
                     # We flag is_upward=NULL initially, logic needs to fill it later
                     # via XBRL usage or manual check or AI parsing
                     
+                    # Use INSERT OR REPLACE to ensure title is updated if record exists
+                    # Note: This might overwrite other fields if they changed, but for this use case it's fine.
+                    # Or use UPSERT syntax (SQLite 3.24+)
+                    
                     c.execute("""
-                        INSERT OR IGNORE INTO revisions 
+                        INSERT INTO revisions 
                         (ticker, company_name, revision_date, source_url, quarter, title)
                         VALUES (?, ?, ?, ?, ?, ?)
+                        ON CONFLICT(ticker, revision_date) DO UPDATE SET
+                            title=excluded.title,
+                            company_name=excluded.company_name,
+                            source_url=excluded.source_url
                     """, (
                         ticker, 
                         name_text, 
