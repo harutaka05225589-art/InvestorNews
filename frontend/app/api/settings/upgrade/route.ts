@@ -11,6 +11,13 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Interface for DB Result
+    interface InvitationCode {
+        code: string;
+        is_used: number; // SQLite uses 0/1
+        used_by_user_id: number | null;
+    }
+
     try {
         const { code } = await request.json();
 
@@ -21,7 +28,7 @@ export async function POST(request: NextRequest) {
         const db = new Database(DB_PATH);
 
         // Check code
-        const invite = db.prepare("SELECT * FROM invitation_codes WHERE code = ?").get(code.toUpperCase());
+        const invite = db.prepare("SELECT * FROM invitation_codes WHERE code = ?").get(code.toUpperCase()) as InvitationCode | undefined;
 
         if (!invite) {
             return NextResponse.json({ error: '無効な招待コードです' }, { status: 400 });
