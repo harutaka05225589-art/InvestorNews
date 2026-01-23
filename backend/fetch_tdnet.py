@@ -74,14 +74,15 @@ def fetch_tdnet_revisions(target_date=None):
                     
                     c.execute("""
                         INSERT OR IGNORE INTO revisions 
-                        (ticker, company_name, revision_date, source_url, quarter)
-                        VALUES (?, ?, ?, ?, ?)
+                        (ticker, company_name, revision_date, source_url, quarter, title)
+                        VALUES (?, ?, ?, ?, ?, ?)
                     """, (
                         ticker, 
                         name_text, 
                         target_date.strftime('%Y-%m-%d'),
                         pdf_link,
-                        "Unknown" 
+                        "Unknown",
+                        title_text
                     ))
                     
                     if c.rowcount > 0:
