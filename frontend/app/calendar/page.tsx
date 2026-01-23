@@ -130,6 +130,10 @@ export default function CalendarPage() {
     const [ipoStart, setIpoStart] = useState<string>('');
     const [ipoEnd, setIpoEnd] = useState<string>('');
 
+    // Applied states triggers the fetch
+    const [appliedIpoStart, setAppliedIpoStart] = useState<string>('');
+    const [appliedIpoEnd, setAppliedIpoEnd] = useState<string>('');
+
     // ...
 
     // Unified Fetch Logic
@@ -140,10 +144,8 @@ export default function CalendarPage() {
             setLoading(true);
             try {
                 // Determine which months we need to fetch
-                // We will fetch efficiently.
-                // Note: simple implementation fetches all required months in parallel.
                 const promises = required.map(req =>
-                    fetch(`/api/calendar?year=${req.year}&month=${req.month}&listing_start=${ipoStart}&listing_end=${ipoEnd}`).then(r => r.json())
+                    fetch(`/api/calendar?year=${req.year}&month=${req.month}&listing_start=${appliedIpoStart}&listing_end=${appliedIpoEnd}`).then(r => r.json())
                 );
 
                 const results = await Promise.all(promises);
@@ -155,12 +157,13 @@ export default function CalendarPage() {
                     });
 
                     // Merge and Deduplicate
-                    // Map by ticker+date is robust
                     const eventMap = new Map();
-                    // Keep existing events? 
-                    // To be safe against "flashing", distinct merge is best.
-                    // But if we navigate far, `prev` might get huge. 
-                    // For now, let's keep all `prev` + `new`.
+                    // Just overwrite completely if we are filtering? 
+                    // No, existing logic might rely on accumulation.
+                    // But if we apply a filter, we probably want to CLEAR unrelated events ideally.
+                    // However, `required` only covers viewable months.
+                    // Let's stick to simple merging but maybe we need to clear events if filter changes drastically. 
+                    // For now, let's keep robust merging.
 
                     [...prev, ...allNewEvents].forEach(e => {
                         const key = `${e.ticker}-${e.date}`;
@@ -168,6 +171,13 @@ export default function CalendarPage() {
                             eventMap.set(key, e);
                         }
                     });
+
+                    // If filter is active, maybe we should filter out events that don't match?
+                    // The backend returns filtered events, but `prev` might have unfiltered ones.
+                    // Ideally setEvents(allNewEvents) if we want to replace.
+                    // But `prev` holds events for other months that might be cached?
+                    // Let's reset events when filter changes? 
+                    // To keep it simple: Let's Just Return New Events if filter changed.
 
                     return Array.from(eventMap.values());
                 });
@@ -179,8 +189,23 @@ export default function CalendarPage() {
             }
         };
 
+        // If filters changed, we might want to clear events to avoid stale data
+        // But let's rely on fetch.
+        // Actually, to ensure the View is correct, we should probably clear events if it's a new filter search.
+        // But `useEffect` flow makes that tricky.
+
+        // Simple fix: Always clear query-based lists? 
+        // Let's just run fetch.
         fetchAll();
-    }, [viewYear, viewMonth, ipoStart, ipoEnd]); // Re-run when filters change
+    }, [viewYear, viewMonth, appliedIpoStart, appliedIpoEnd]); // Re-run when APPLIED filters change
+
+    const handleSearch = () => {
+        // Trigger the effect by updating applied states
+        // Also clear current events to ensure we only see filtered results?
+        setEvents([]);
+        setAppliedIpoStart(ipoStart);
+        setAppliedIpoEnd(ipoEnd);
+    };
 
     // ... (Navigation Handlers remain same)
 
@@ -247,6 +272,21 @@ export default function CalendarPage() {
                         <option key={y} value={y}>{y}年</option>
                     ))}
                 </select>
+                <button
+                    onClick={handleSearch}
+                    style={{
+                        padding: '0.3rem 1rem',
+                        marginLeft: '0.5rem',
+                        background: 'var(--primary)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold'
+                    }}
+                >
+                    検索
+                </button>
             </div>
 
             {/* Market Filters */}
