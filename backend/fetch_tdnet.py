@@ -113,5 +113,9 @@ def fetch_tdnet_revisions(target_date=None):
         print(f"Error fetching TDnet: {e}")
 
 if __name__ == "__main__":
-    # Test run
-    fetch_tdnet_revisions()
+    # Test run: Fetch past 7 days to backfill
+    today = datetime.datetime.now()
+    for i in range(7):
+        d = today - datetime.timedelta(days=i)
+        fetch_tdnet_revisions(target_date=d)
+        time.sleep(1) # Be nice to server
