@@ -25,6 +25,13 @@ export default function Sidebar() {
                         <span className={styles.icon}>📅</span>
                         <span className={styles.label}>IRカレンダー</span>
                     </Link>
+                    <Link href="/revisions" className={`${styles.item} ${isActive('/revisions')}`}>
+                        <span className={styles.icon}>📊</span>
+                        <span className={styles.label}>
+                            業績修正
+                            <span style={{ fontSize: '0.6rem', background: '#f59e0b', color: '#000', padding: '0.1rem 0.3rem', borderRadius: '4px', marginLeft: '4px', verticalAlign: 'middle' }}>New</span>
+                        </span>
+                    </Link>
                     <Link href="/introduction" className={`${styles.item} ${isActive('/introduction')}`}>
                         <span className={styles.icon}>👥</span>
                         <span className={styles.label}>投資家紹介</span>

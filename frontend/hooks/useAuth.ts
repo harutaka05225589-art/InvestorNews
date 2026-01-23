@@ -5,6 +5,7 @@ type User = {
     userId: number;
     nickname: string;
     email: string;
+    plan?: string;
 } | null;
 
 export function useAuth() {

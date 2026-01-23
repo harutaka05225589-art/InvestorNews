@@ -1,0 +1,117 @@
+import requests
+from bs4 import BeautifulSoup
+import datetime
+import sqlite3
+import os
+import re
+import time
+from database import get_db_connection
+
+# TDnet Public URL Pattern
+# YYYYMMDD format
+TDNET_LIST_URL = "https://www.release.tdnet.info/inbs/I_list_001_{}.html"
+
+def fetch_tdnet_revisions(target_date=None):
+    if not target_date:
+        target_date = datetime.datetime.now()
+    
+    date_str = target_date.strftime('%Y%m%d')
+    url = TDNET_LIST_URL.format(date_str)
+    
+    print(f"Fetching TDnet for {date_str}: {url}")
+    
+    try:
+        res = requests.get(url, timeout=10)
+        if res.status_code != 200:
+            print(f"  TDnet fetch failed: {res.status_code}")
+            return
+        
+        # Parse HTML
+        soup = BeautifulSoup(res.content, 'html.parser')
+        
+        # TDnet structure: Table rows <tr>
+        # Columns changes but usually: Time, Code, Company, Title, PDF Link...
+        # We look for "業績予想の修正" in titles
+        
+        conn = get_db_connection()
+        c = conn.cursor()
+        
+        count = 0
+        
+        # Find all rows (skip header)
+        # Usually inside a table id="main-list-table" or similar class
+        # But broadly searching all tr is safer as structure varies
+        rows = soup.find_all('tr')
+        
+        for row in rows:
+            cols = row.find_all('td')
+            if len(cols) < 4:
+                continue
+            
+            # Extract basic info (heuristic based on standard TDnet layout)
+            # Col 0: Time, Col 1: Code, Col 2: Name, Col 3: Title
+            try:
+                code_text = cols[1].get_text().strip()
+                name_text = cols[2].get_text().strip()
+                title_text = cols[3].get_text().strip()
+                
+                # Check link
+                pdf_link = None
+                a_tag = cols[3].find('a')
+                if a_tag:
+                    pdf_link = "https://www.release.tdnet.info/inbs/" + a_tag['href']
+                
+                # Filter for "Upward Revision" or generally "Revision of Forecast"
+                # Keywords: 業績予想の修正, 修正に関するお知らせ
+                if "業績予想の修正" in title_text or "差異" in title_text:
+                    ticker = code_text[:4] # 12340 -> 1234
+                    
+                    print(f"  Found Revision: {ticker} {name_text} - {title_text}")
+                    
+                    # Store in DB (MVP: Just the event, numbers need PDF parsing)
+                    # We flag is_upward=NULL initially, logic needs to fill it later
+                    # via XBRL usage or manual check or AI parsing
+                    
+                    c.execute("""
+                        INSERT OR IGNORE INTO revisions 
+                        (ticker, company_name, revision_date, source_url, quarter)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (
+                        ticker, 
+                        name_text, 
+                        target_date.strftime('%Y-%m-%d'),
+                        pdf_link,
+                        "Unknown" 
+                    ))
+                    
+                    if c.rowcount > 0:
+                        count += 1
+                        print(f"    -> New! Sending Alert...")
+                        
+                        # Prepare Message
+                        msg = f"🔔 【業績修正】\n{name_text} ({ticker})\n{title_text}\n{pdf_link or 'No Link'}"
+                        
+                        try:
+                            from send_line import send_line_message
+                            send_line_message(msg)
+                        except ImportError:
+                            print("    (LINE Alert skipped: send_line module not found)")
+                        except Exception as ex:
+                            print(f"    (LINE Send Error: {ex})")
+                    
+                    # count += 1 # Moved inside if block to only count new ones
+            
+            except Exception as e:
+                # print(f"  Row parse error: {e}")
+                continue
+            
+        conn.commit()
+        conn.close()
+        print(f"  Saved {count} revision events.")
+        
+    except Exception as e:
+        print(f"Error fetching TDnet: {e}")
+
+if __name__ == "__main__":
+    # Test run
+    fetch_tdnet_revisions()

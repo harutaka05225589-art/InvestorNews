@@ -127,6 +127,11 @@ export default function CalendarPage() {
         });
     };
 
+    const [ipoStart, setIpoStart] = useState<string>('');
+    const [ipoEnd, setIpoEnd] = useState<string>('');
+
+    // ...
+
     // Unified Fetch Logic
     React.useEffect(() => {
         const required = getRequiredMonths(currentMonth);
@@ -138,7 +143,7 @@ export default function CalendarPage() {
                 // We will fetch efficiently.
                 // Note: simple implementation fetches all required months in parallel.
                 const promises = required.map(req =>
-                    fetch(`/api/calendar?year=${req.year}&month=${req.month}`).then(r => r.json())
+                    fetch(`/api/calendar?year=${req.year}&month=${req.month}&listing_start=${ipoStart}&listing_end=${ipoEnd}`).then(r => r.json())
                 );
 
                 const results = await Promise.all(promises);
@@ -175,7 +180,7 @@ export default function CalendarPage() {
         };
 
         fetchAll();
-    }, [viewYear, viewMonth]); // Re-run when view changes. Note: weekDays is constant relative to "Today", so no dependency needed unless day changes (rare).
+    }, [viewYear, viewMonth, ipoStart, ipoEnd]); // Re-run when filters change
 
     // ... (Navigation Handlers remain same)
 
@@ -215,6 +220,33 @@ export default function CalendarPage() {
                 <Link href="/alerts" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'underline' }}>
                     &rarr; こちらから銘柄を登録する (ウォッチリスト)
                 </Link>
+            </div>
+
+            {/* IPO Year Filter */}
+            <div className={styles.filterSection} style={{ justifyContent: 'center', marginBottom: '1rem', gap: '0.5rem', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>上場年:</span>
+                <select
+                    value={ipoStart}
+                    onChange={(e) => setIpoStart(e.target.value)}
+                    style={{ padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--border)' }}
+                >
+                    <option value="">指定なし</option>
+                    {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option key={y} value={y}>{y}年</option>
+                    ))}
+                    <option value="2010">2010年以前</option>
+                </select>
+                <span>～</span>
+                <select
+                    value={ipoEnd}
+                    onChange={(e) => setIpoEnd(e.target.value)}
+                    style={{ padding: '0.3rem', borderRadius: '4px', border: '1px solid var(--border)' }}
+                >
+                    <option value="">指定なし</option>
+                    {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                        <option key={y} value={y}>{y}年</option>
+                    ))}
+                </select>
             </div>
 
             {/* Market Filters */}

@@ -1,0 +1,152 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.subtitle {
+    color: var(--secondary);
+    font-size: 0.95rem;
+}
+
+/* Stats Cards */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 3rem;
+}
+
+.statCard {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.statLabel {
+    color: var(--secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.statValue {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--foreground);
+}
+
+.statChange {
+    font-size: 0.85rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.positive {
+    color: var(--profit);
+}
+
+.negative {
+    color: var(--loss);
+}
+
+/* Revisions List */
+.sectionTitle {
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    border-left: 4px solid var(--accent);
+    padding-left: 1rem;
+}
+
+.tableContainer {
+    overflow-x: auto;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 800px;
+}
+
+.table th,
+.table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+.table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.table tr:last-child td {
+    border-bottom: none;
+}
+
+.tickerLink {
+    color: var(--primary);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.tickerLink:hover {
+    text-decoration: underline;
+}
+
+.upwardTag,
+.downwardTag {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.upwardTag {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+}
+
+.downwardTag {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.pdfLink {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.dummyDataNotice {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px dashed #f59e0b;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: #f59e0b;
+}

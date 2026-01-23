@@ -139,6 +139,93 @@ export default function SettingsPage() {
             </section>
 
             <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>プラン設定</h2>
+                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <div>
+                            <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.9rem', marginBottom: '0.3rem' }}>現在のプラン</label>
+                            <div style={{ fontSize: '1.2rem', fontWeight: 'bold', color: user.plan === 'pro' ? '#fbbf24' : '#fff' }}>
+                                {user.plan === 'pro' ? '🏆 Pro Plan' : 'Free Plan'}
+                            </div>
+                        </div>
+                        {user.plan !== 'pro' && (
+                            <span style={{ fontSize: '0.8rem', background: '#334155', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                無料
+                            </span>
+                        )}
+                    </div>
+
+                    {user.plan !== 'pro' && (
+                        <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #334155' }}>
+                            <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>招待コードをお持ちの方</label>
+                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                                招待コードを入力すると、Pro機能を無料で利用できます。
+                            </p>
+                            <form onSubmit={async (e) => {
+                                e.preventDefault();
+                                const form = e.target as HTMLFormElement;
+                                const input = form.elements.namedItem('inviteCode') as HTMLInputElement;
+                                const code = input.value;
+
+                                if (!code) return;
+
+                                if (!confirm('招待コードを適用しますか？')) return;
+
+                                try {
+                                    const res = await fetch('/api/settings/upgrade', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ code })
+                                    });
+
+                                    const data = await res.json();
+
+                                    if (res.ok) {
+                                        alert(data.message);
+                                        window.location.reload();
+                                    } else {
+                                        alert(data.error || 'コードの適用に失敗しました');
+                                    }
+                                } catch (err) {
+                                    alert('エラーが発生しました');
+                                }
+                            }}>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input
+                                        name="inviteCode"
+                                        type="text"
+                                        placeholder="例: ABC12345"
+                                        style={{
+                                            flex: 1,
+                                            padding: '0.6rem',
+                                            borderRadius: '4px',
+                                            border: '1px solid #475569',
+                                            background: '#0f172a',
+                                            color: '#fff'
+                                        }}
+                                    />
+                                    <button
+                                        type="submit"
+                                        style={{
+                                            background: '#fbbf24',
+                                            color: '#000',
+                                            border: 'none',
+                                            borderRadius: '4px',
+                                            padding: '0 1rem',
+                                            fontWeight: 'bold',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        適用
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#ff6b6b' }}>危険なエリア</h2>
                 <div style={{ border: '1px solid #ef4444', background: 'rgba(239, 68, 68, 0.1)', padding: '1.5rem', borderRadius: '8px' }}>
                     <h3 style={{ fontSize: '1rem', color: '#ef4444', marginBottom: '0.5rem', marginTop: 0 }}>アカウント削除</h3>

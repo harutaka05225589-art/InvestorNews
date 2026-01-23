@@ -30,18 +30,38 @@ export async function GET(request: NextRequest) {
         // Also include a buffer? No, let's just fetch the month.
         // Actually, user wants "Past Year" so maybe the frontend fetches specific months on demand.
 
-        const stmt = db.prepare(`
-      SELECT id, ticker, company_name as name, event_date as date, event_type as type, market 
-      FROM ir_events 
-      WHERE event_date BETWEEN ? AND ?
-      ORDER BY event_date ASC
-    `);
+        const listingStart = searchParams.get('listing_start');
+        const listingEnd = searchParams.get('listing_end');
 
-        const events = stmt.all(startStr, endStr);
+        try {
+            const db = new Database(DB_PATH, { readonly: true });
 
-        return NextResponse.json({ events });
-    } catch (error) {
-        console.error('Database Error:', error);
-        return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
+            // Base Query
+            let sql = `
+            SELECT id, ticker, company_name as name, event_date as date, event_type as type, market 
+            FROM ir_events 
+            WHERE event_date BETWEEN ? AND ?
+        `;
+            const params: any[] = [startStr, endStr];
+
+            // Apply Listing Year Filter
+            if (listingStart) {
+                sql += ` AND listing_year >= ?`;
+                params.push(parseInt(listingStart));
+            }
+            if (listingEnd) {
+                sql += ` AND listing_year <= ?`;
+                params.push(parseInt(listingEnd));
+            }
+
+            sql += ` ORDER BY event_date ASC`;
+
+            const stmt = db.prepare(sql);
+            const events = stmt.all(...params);
+
+            return NextResponse.json({ events });
+        } catch (error) {
+            console.error('Database Error:', error);
+            return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
+        }
     }
-}
