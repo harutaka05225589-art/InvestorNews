@@ -173,20 +173,7 @@ export default function SettingsPage() {
                             />
                         </div>
 
-                        {/* 4. Email (Legacy/Backup) */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #334155', paddingTop: '1.5rem' }}>
-                            <div>
-                                <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>メール配信</label>
-                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
-                                    LINE通知の内容をメールでも受け取る
-                                </p>
-                            </div>
-                            <Toggle
-                                checked={settings.emailNotifications}
-                                onChange={() => toggleSetting('emailNotifications')}
-                                disabled={settingLoading}
-                            />
-                        </div>
+                        {/* Email settings removed by user request */}
 
                         {/* Save Button */}
                         <div style={{ marginTop: '2rem', textAlign: 'right' }}>
