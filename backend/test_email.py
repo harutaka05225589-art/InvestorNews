@@ -1,5 +1,8 @@
 from send_email import send_alert_email
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Config from env is used by send_email
 recipient = os.environ.get("SENDER_EMAIL") # Send to self for test
