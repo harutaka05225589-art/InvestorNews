@@ -66,7 +66,7 @@ export default function RevisionsPage() {
                                 <th>日付</th>
                                 <th>コード</th>
                                 <th>銘柄名</th>
-                                <th>修正内容（種別）</th>
+                                {/* <th>修正内容（種別）</th> */}
                                 <th>開示詳細</th>
                             </tr>
                         </thead>
@@ -81,13 +81,19 @@ export default function RevisionsPage() {
                                                 {rev.ticker}
                                             </a>
                                         </td>
-                                        <td>{rev.company_name}</td>
+                                        <td>
+                                            {rev.company_name}
+                                            <span style={{ marginLeft: '0.5rem' }} className={`${styles.badge} ${styles[type]}`}>
+                                                {type === 'up' ? '↗' : type === 'down' ? '↘' : ''}
+                                            </span>
+                                        </td>
+                                        {/* 
                                         <td>
                                             <span className={`${styles.badge} ${styles[type]}`}>
                                                 {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '修正'}
                                             </span>
-                                            {/* Show title tooltip or small text if needed, but badge is main */}
-                                        </td>
+                                        </td> 
+                                        */}
                                         <td>
                                             {rev.source_url ? (
                                                 <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
