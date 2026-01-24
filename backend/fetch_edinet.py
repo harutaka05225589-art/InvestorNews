@@ -81,6 +81,23 @@ def save_document(doc, investor_name):
     return True
 
 def run_check():
+    import sys
+    test_mode = "--test" in sys.argv
+    
+    if test_mode:
+        print("--- EDINET API TEST MODE ---")
+        print(f"Using API Key: {API_KEY}")
+        d_str = datetime.date.today().strftime('%Y-%m-%d')
+        print(f"Fetching list for {d_str}...")
+        docs = fetch_edinet_list(d_str)
+        if docs:
+            print(f"Success! Retrieved {len(docs)} documents.")
+            print(f"First document: {docs[0].get('filerName')} - {docs[0].get('docDescription')}")
+        else:
+            print("Failed to retrieve any documents. Check Key or Server connectivity.")
+        return
+
+    # Normal Mode
     # Check yesterday and today (in case running mid-day)
     # EDINET updates happen throughout the day
     dates_to_check = [
