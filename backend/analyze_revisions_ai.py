@@ -33,6 +33,29 @@ def analyze_revision_pdf(pdf_path, title):
             time.sleep(2)
             sample_file = genai.get_file(sample_file.name)
             
+        # Define Prompt
+        prompt = f"""
+        あなたはプロの証券アナリストです。
+        添付のPDF資料（企業の適時開示情報：{title}）を分析し、以下の情報をJSON形式で抽出してください。
+
+        1. is_upward: 今回の修正が「上方修正」なら true、「下方修正」なら false。「配当のみ修正」や「ニュートラル」な場合は null。
+           - 売上高、営業利益、経常利益、純利益のいずれかが前回予想より増額されていれば true とみなす。
+           - 全て減額なら false。
+        2. revision_rate_op: 営業利益(Operating Profit)の修正率（%）。
+           - (今回予想 - 前回予想) / 前回予想 * 100
+           - 営業利益の記載がない場合や、黒字転換/赤字転落で計算できない場合は 0.0 とする。
+           - 小数点第1位まで（例: 12.5, -5.0）
+        3. summary: 修正の理由を「30文字以内」で簡潔に要約。
+           - 例: 「海外販売が好調で円安も寄与」「原材料高騰により利益圧迫」など。
+
+        Output Format (JSON only):
+        {{
+            "is_upward": true,
+            "revision_rate_op": 10.5,
+            "summary": "北米の好調により増益"
+        }}
+        """
+
         # Try multiple model names in order of preference
         candidate_models = [
             "gemini-1.5-flash",
