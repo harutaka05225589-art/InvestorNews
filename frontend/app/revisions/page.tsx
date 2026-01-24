@@ -140,7 +140,7 @@ export default function RevisionsPage() {
                                     </tr>
                                 );
                             })}
-                            })}
+
 
                             {loading && (
                                 <tr>
