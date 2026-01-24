@@ -49,9 +49,10 @@ def check_alerts():
 
             if is_hit:
                 # Get User settings
-                user = c.execute("SELECT email, email_notifications, line_user_id FROM users WHERE id = ?", (user_id,)).fetchone()
+                # Ensure we also check notify_price here or in the SQL above if possible, but alerting logic loops alerts first
+                user = c.execute("SELECT email, email_notifications, line_user_id, notify_price FROM users WHERE id = ?", (user_id,)).fetchone()
                 
-                if user:
+                if user and user['notify_price'] == 1: # Check preference
                     # LINE Notification (Priority)
                     if user['line_user_id']:
                         from send_line import send_line_push

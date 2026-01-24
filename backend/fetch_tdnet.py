@@ -108,7 +108,7 @@ def fetch_tdnet_revisions(target_date=None):
                             SELECT u.id, u.line_user_id, u.email, u.email_notifications 
                             FROM alerts a
                             JOIN users u ON a.user_id = u.id
-                            WHERE a.ticker = ?
+                            WHERE a.ticker = ? AND u.notify_revisions = 1
                         """, (ticker,)).fetchall()
                         
                         if watchers:
