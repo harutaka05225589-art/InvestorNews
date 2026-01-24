@@ -60,18 +60,16 @@ export async function POST(req: NextRequest) {
                 const user = stmt.get(text) as { id: number, nickname: string } | undefined;
 
                 if (user) {
+                    console.log(`[LINE Webhook] Link success for user ${user.id}`);
                     // Match found! Link logic
                     const update = db.prepare("UPDATE users SET line_user_id = ?, line_link_nonce = NULL WHERE id = ?");
                     update.run(userId, user.id);
 
                     await replyMessage(replyToken, `連携が完了しました！\nこんにちは、${user.nickname}さん。\n今後は重要な通知をこちらにお届けします。`);
                 } else {
-                    // Default bot behavior (Echo or Help)
-                    // Only reply if it looks like a command, otherwise stay silent or simple help
-                    if (text === 'ヘルプ' || text === 'Help') {
-                        await replyMessage(replyToken, 'サイトのアカウント設定画面に表示される「連携コード」を送信してください。');
-                    }
-                    // Do nothing for random chat to avoid spam
+                    console.log(`[LINE Webhook] Code mismatch: ${text}`);
+                    // Debug Reply (Temporary: Remove later if spammy)
+                    await replyMessage(replyToken, 'コードが見つかりません。\n設定画面で「コードを発行」し、6桁の数字を正確に入力してください。');
                 }
             }
         }
