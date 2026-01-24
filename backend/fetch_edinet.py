@@ -127,7 +127,8 @@ def run_check():
         # skipped_debug = 0
         
         for doc in docs:
-            doc_code = doc.get('docTypeCode', '')
+            # Handle None (null in JSON) by converting to empty string
+            doc_code = str(doc.get('docTypeCode') or '')
             
             # 120, 130, 140 range imply ownership reports
             if not (doc_code.startswith('120') or doc_code.startswith('130') or doc_code.startswith('140')):
