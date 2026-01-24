@@ -1,8 +1,10 @@
-from send_email import send_alert_email
 import os
 from dotenv import load_dotenv
 
+# Load env BEFORE importing modules that use it
 load_dotenv()
+
+from send_email import send_alert_email
 
 # Config from env is used by send_email
 recipient = os.environ.get("SENDER_EMAIL") # Send to self for test
