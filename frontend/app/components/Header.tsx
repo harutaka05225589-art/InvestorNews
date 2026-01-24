@@ -166,6 +166,17 @@ export default function Header() {
 
             {/* Backdrop for menu */}
             {menuOpen && <div className={styles.backdrop} onClick={() => setMenuOpen(false)}></div>}
+
+            {/* Transparent Backdrop for Dropdowns (Profile/Notif) */}
+            {(profileOpen || notifOpen) && (
+                <div
+                    className={styles.transparentBackdrop}
+                    onClick={() => {
+                        setProfileOpen(false);
+                        setNotifOpen(false);
+                    }}
+                ></div>
+            )}
         </header>
     );
 }
