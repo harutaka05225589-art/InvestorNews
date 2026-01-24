@@ -83,3 +83,46 @@ export function getLatestEdinetDocs(limit: number = 3) {
         return [];
     }
 }
+
+export function getRevisions(limit: number = 100) {
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM revisions 
+            ORDER BY revision_date DESC, id DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getRevisionsByDateRange(startDate: string, endDate: string) {
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM revisions 
+            WHERE revision_date BETWEEN ? AND ?
+            ORDER BY revision_date DESC, id DESC
+        `);
+        return stmt.all(startDate, endDate) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getRevisionRanking(limit: number = 20) {
+    // Rank companies by number of revisions (Active Revisers)
+    // Since we don't have rate data yet, frequency is a good proxy for "Volatile/Active" stocks
+    try {
+        const stmt = db.prepare(`
+            SELECT ticker, company_name, COUNT(*) as count 
+            FROM revisions 
+            GROUP BY ticker, company_name 
+            ORDER BY count DESC 
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
