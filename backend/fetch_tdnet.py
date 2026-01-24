@@ -95,18 +95,40 @@ def fetch_tdnet_revisions(target_date=None):
                     
                     if c.rowcount > 0:
                         count += 1
-                        print(f"    -> New! Sending Alert...")
+                        print(f"    -> New Revision Saved. Checking alerts...")
                         
-                        # Prepare Message
-                        msg = f"🔔 【業績修正】\n{name_text} ({ticker})\n{title_text}\n{pdf_link or 'No Link'}"
+                        # Check for Watchlist Matches (Alerts table)
+                        # We select users who have this ticker in their alerts
+                        # (Target Price doesn't matter for Revision alerts, imply pure watchlist)
+                        # Or maybe we strictly follow "Alerts" logic?
+                        # User logic: "Notification when revision comes for registered stock"
+                        # -> Implies ANY registration.
                         
-                        try:
-                            from send_line import send_line_message
-                            send_line_message(msg)
-                        except ImportError:
-                            print("    (LINE Alert skipped: send_line module not found)")
-                        except Exception as ex:
-                            print(f"    (LINE Send Error: {ex})")
+                        watchers = c.execute("""
+                            SELECT u.id, u.line_user_id, u.email, u.email_notifications 
+                            FROM alerts a
+                            JOIN users u ON a.user_id = u.id
+                            WHERE a.ticker = ?
+                        """, (ticker,)).fetchall()
+                        
+                        if watchers:
+                            print(f"    -> Found {len(watchers)} watchers for {ticker}")
+                            msg = f"🔔 【業績修正】\n{name_text} ({ticker})\n{title_text}\n{pdf_link or 'No Link'}\n\n詳細: https://rich-investor-news.com/revisions"
+                            
+                            from send_line import send_line_push
+                            
+                            for w in watchers:
+                                # Send LINE
+                                if w[1]: # line_user_id
+                                    send_line_push(w[1], msg)
+                                    
+                                # Send Email (if enabled)
+                                # (Optional, user focused on LINE mainly)
+                        
+                        # Stop generic broadcast to avoid spamming everyone for every revision
+                        # Unless it's a "Super Important" one, but we don't know yet.
+                        # Maybe broadcast only "Featured Investors" stocks?
+                        # For now, disable generic broadcast.
                     
                     # count += 1 # Moved inside if block to only count new ones
             
