@@ -39,14 +39,46 @@ def send_line_message(message):
         ]
     }
     
+    
     try:
         res = requests.post(url, headers=headers, data=json.dumps(data))
         if res.status_code == 200:
-            print("LINE Message sent!")
+            print("LINE Messag (Broadcast) sent!")
         else:
-            print(f"Failed to send LINE: {res.status_code} {res.text}")
+            print(f"Failed to send LINE Broadcast: {res.status_code} {res.text}")
     except Exception as e:
-        print(f"Error sending LINE: {e}")
+        print(f"Error sending LINE Broadcast: {e}")
+
+def send_line_push(line_user_id, message):
+    """
+    Sends a push message to a specific user.
+    """
+    if not line_user_id:
+        return
+        
+    url = "https://api.line.me/v2/bot/message/push"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {LINE_ACCESS_TOKEN}"
+    }
+    data = {
+        "to": line_user_id,
+        "messages": [
+            {
+                "type": "text",
+                "text": message
+            }
+        ]
+    }
+    
+    try:
+        res = requests.post(url, headers=headers, data=json.dumps(data))
+        if res.status_code == 200:
+            print(f"LINE Push sent to {line_user_id}!")
+        else:
+            print(f"Failed to send LINE Push: {res.status_code} {res.text}")
+    except Exception as e:
+        print(f"Error sending LINE Push: {e}")
 
 if __name__ == "__main__":
     # Test

@@ -48,22 +48,31 @@ def check_alerts():
                 is_hit = True
 
             if is_hit:
-                # Check if user wants email
-                user = c.execute("SELECT email, email_notifications FROM users WHERE id = ?", (user_id,)).fetchone()
-                if user and user['email'] and user['email_notifications'] == 1:
-                    subject = f"【アラート】{ticker}が目標価格に到達しました"
-                    body = f"""
-                    <h2>目標価格到達のお知らせ</h2>
-                    <p>登録していた銘柄が条件を満たしました。</p>
-                    <ul>
-                        <li>銘柄: {ticker}</li>
-                        <li>現在値: {current_price}円</li>
-                        <li>目標値: {target_price}円 ({'以上' if condition == 'above' else '以下'})</li>
-                    </ul>
-                    <a href="https://rich-investor-news.com/alerts">アラート設定を確認する</a>
-                    """
-                    send_alert_email(user['email'], subject, body)
-                    print(f"Alert sent to {user['email']} for {ticker}")
+                # Get User settings
+                user = c.execute("SELECT email, email_notifications, line_user_id FROM users WHERE id = ?", (user_id,)).fetchone()
+                
+                if user:
+                    # LINE Notification (Priority)
+                    if user['line_user_id']:
+                        from send_line import send_line_push
+                        line_msg = f"【アラート】{ticker}が目標価格({target_price}円)に到達しました。\n現在値: {current_price}円"
+                        send_line_push(user['line_user_id'], line_msg)
+                        
+                    # Email Notification
+                    if user['email'] and user['email_notifications'] == 1:
+                        subject = f"【アラート】{ticker}が目標価格に到達しました"
+                        body = f"""
+                        <h2>目標価格到達のお知らせ</h2>
+                        <p>登録していた銘柄が条件を満たしました。</p>
+                        <ul>
+                            <li>銘柄: {ticker}</li>
+                            <li>現在値: {current_price}円</li>
+                            <li>目標値: {target_price}円 ({'以上' if condition == 'above' else '以下'})</li>
+                        </ul>
+                        <a href="https://rich-investor-news.com/alerts">アラート設定を確認する</a>
+                        """
+                        send_alert_email(user['email'], subject, body)
+                        print(f"Alert emailed to {user['email']} for {ticker}")
 
     except Exception as e:
         print(f"Error checking alerts: {e}")
