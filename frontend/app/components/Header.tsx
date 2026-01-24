@@ -156,6 +156,8 @@ export default function Header() {
                     <Link href="/reports" onClick={() => setMenuOpen(false)}>速報リスト</Link>
                     <Link href="/calendar" onClick={() => setMenuOpen(false)}>IRカレンダー</Link>
                     <Link href="/revisions" onClick={() => setMenuOpen(false)}>業績修正</Link>
+                    <Link href="/plans" onClick={() => setMenuOpen(false)}>プラン</Link>
+                    <Link href="/guide" onClick={() => setMenuOpen(false)}>使い方ガイド</Link>
                     <Link href="/introduction" onClick={() => setMenuOpen(false)}>投資家紹介</Link>
                     <Link href="/alerts" onClick={() => setMenuOpen(false)}>登録銘柄</Link>
                     <Link href="/inquiry" onClick={() => setMenuOpen(false)}>お問い合わせ</Link>
