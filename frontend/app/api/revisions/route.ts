@@ -1,24 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import Database from 'better-sqlite3';
-import path from 'path';
+import { getRevisions, getRevisionsByDateRange } from '../../../lib/db';
 
 export const dynamic = 'force-dynamic';
 
-const DB_PATH = path.join(process.cwd(), 'investor_news.db');
-
 export async function GET(request: NextRequest) {
     try {
-        const db = new Database(DB_PATH, { readonly: true });
+        const { searchParams } = new URL(request.url);
+        const filter = searchParams.get('filter'); // 'today', 'month'
 
-        // Fetch recent revisions (limit 50)
-        // Order by revision_date DESC, then created_at DESC
-        const stmt = db.prepare(`
-            SELECT * FROM revisions 
-            ORDER BY revision_date DESC, id DESC 
-            LIMIT 50
-        `);
+        let revisions = [];
 
-        const revisions = stmt.all();
+        if (filter === 'today') {
+            // JST Today
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${y}-${m}-${d}`;
+            revisions = getRevisionsByDateRange(dateStr, dateStr);
+        } else if (filter === 'month') {
+            // JST Month Start
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            // This month: YYYY-MM-01 to YYYY-MM-31 (or just > YYYY-MM-01)
+            const startDate = `${y}-${m}-01`;
+            const endDate = `${y}-${m}-31`; // Loose end date
+            revisions = getRevisionsByDateRange(startDate, endDate);
+        } else {
+            revisions = getRevisions(50);
+        }
 
         return NextResponse.json({ revisions });
     } catch (error) {
