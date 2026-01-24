@@ -9,7 +9,12 @@ export default function SettingsPage() {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState(false);
-    const [emailEnabled, setEmailEnabled] = useState(false);
+    const [settings, setSettings] = useState({
+        emailNotifications: false,
+        notifyRevisions: true,
+        notifyEarnings: true,
+        notifyPrice: true
+    });
     const [settingLoading, setSettingLoading] = useState(true);
 
     useEffect(() => {
@@ -21,7 +26,12 @@ export default function SettingsPage() {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        setEmailEnabled(!!data.emailNotifications);
+                        setSettings({
+                            emailNotifications: !!data.emailNotifications,
+                            notifyRevisions: data.notifyRevisions !== 0,
+                            notifyEarnings: data.notifyEarnings !== 0,
+                            notifyPrice: data.notifyPrice !== 0
+                        });
                     }
                     setSettingLoading(false);
                 })
@@ -32,22 +42,45 @@ export default function SettingsPage() {
         }
     }, [user, loading, router]);
 
-    const toggleEmail = async () => {
-        const newValue = !emailEnabled;
-        setEmailEnabled(newValue); // Optimistic update
+    const toggleSetting = async (key: keyof typeof settings) => {
+        const newValue = !settings[key];
+        setSettings(prev => ({ ...prev, [key]: newValue })); // Optimistic
 
         try {
             await fetch('/api/settings/notifications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user?.id, emailNotifications: newValue })
+                body: JSON.stringify({ userId: user?.id, [key]: newValue })
             });
         } catch (e) {
             console.error(e);
-            setEmailEnabled(!newValue); // Revert
+            setSettings(prev => ({ ...prev, [key]: !newValue })); // Revert
             alert("設定の保存に失敗しました");
         }
     };
+
+    // Helper Component for Toggle
+    const Toggle = ({ checked, onChange, disabled }: { checked: boolean, onChange: () => void, disabled: boolean }) => (
+        <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '28px' }}>
+            <input
+                type="checkbox"
+                checked={checked}
+                onChange={onChange}
+                disabled={disabled}
+                style={{ opacity: 0, width: 0, height: 0 }}
+            />
+            <span style={{
+                position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                backgroundColor: checked ? '#3b82f6' : '#ccc', borderRadius: '34px', transition: '.4s'
+            }}>
+                <span style={{
+                    position: 'absolute', content: '""', height: '20px', width: '20px', left: '4px', bottom: '4px',
+                    backgroundColor: 'white', borderRadius: '50%', transition: '.4s',
+                    transform: checked ? 'translateX(22px)' : 'translateX(0)'
+                }}></span>
+            </span>
+        </label>
+    );
 
     if (loading || !user) return <div style={{ padding: '2rem' }}>Loading...</div>;
 
@@ -97,44 +130,71 @@ export default function SettingsPage() {
             <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>通知設定</h2>
                 <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                        <div>
-                            <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>メール通知</label>
-                            <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
-                                登録したアラート条件にヒットした際、メールを受け取る
-                            </p>
+
+                    {/* Settings List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+
+                        {/* 1. Revisions */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>業績修正アラート</label>
+                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
+                                    登録銘柄が上方/下方修正を発表したときに通知
+                                </p>
+                            </div>
+                            <Toggle
+                                checked={settings.notifyRevisions}
+                                onChange={() => toggleSetting('notifyRevisions')}
+                                disabled={settingLoading}
+                            />
                         </div>
-                        <div>
-                            <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '50px', height: '28px' }}>
-                                <input
-                                    type="checkbox"
-                                    checked={emailEnabled}
-                                    onChange={toggleEmail}
-                                    disabled={settingLoading || !user.email}
-                                    style={{ opacity: 0, width: 0, height: 0 }}
-                                />
-                                <span style={{
-                                    position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
-                                    backgroundColor: emailEnabled ? '#3b82f6' : '#ccc', borderRadius: '34px', transition: '.4s'
-                                }}>
-                                    <span style={{
-                                        position: 'absolute', content: '""', height: '20px', width: '20px', left: '4px', bottom: '4px',
-                                        backgroundColor: 'white', borderRadius: '50%', transition: '.4s',
-                                        transform: emailEnabled ? 'translateX(22px)' : 'translateX(0)'
-                                    }}></span>
-                                </span>
-                            </label>
+
+                        {/* 2. Earnings Date */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>決算発表日アラート</label>
+                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
+                                    登録銘柄の決算発表日が近づいたら通知 (前日など)
+                                </p>
+                            </div>
+                            <Toggle
+                                checked={settings.notifyEarnings}
+                                onChange={() => toggleSetting('notifyEarnings')}
+                                disabled={settingLoading}
+                            />
                         </div>
+
+                        {/* 3. Price Target */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>目標株価アラート</label>
+                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
+                                    指定した目標株価に到達したら通知
+                                </p>
+                            </div>
+                            <Toggle
+                                checked={settings.notifyPrice}
+                                onChange={() => toggleSetting('notifyPrice')}
+                                disabled={settingLoading}
+                            />
+                        </div>
+
+                        {/* 4. Email (Legacy/Backup) */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #334155', paddingTop: '1.5rem' }}>
+                            <div>
+                                <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>メール配信</label>
+                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
+                                    LINE通知の内容をメールでも受け取る
+                                </p>
+                            </div>
+                            <Toggle
+                                checked={settings.emailNotifications}
+                                onChange={() => toggleSetting('emailNotifications')}
+                                disabled={settingLoading}
+                            />
+                        </div>
+
                     </div>
-                    {user.email ? (
-                        <div style={{ fontSize: '0.9rem', color: '#94a3b8', marginTop: '0.5rem' }}>
-                            送信先: <span style={{ color: '#cbd5e1' }}>{user.email}</span>
-                        </div>
-                    ) : (
-                        <div style={{ fontSize: '0.9rem', color: '#ef4444', marginTop: '0.5rem' }}>
-                            ※ メールアドレスが未登録です。再ログインまたは登録が必要です。
-                        </div>
-                    )}
                 </div>
             </section>
 
@@ -147,7 +207,31 @@ export default function SettingsPage() {
                         </p>
 
                         <div style={{ background: '#0f172a', padding: '1rem', borderRadius: '4px', border: '1px dashed #475569' }}>
-                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>連携手順</h3>
+                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 1. 友達追加</h3>
+                            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                                <a
+                                    href="https://line.me/R/ti/p/@087ghrdt"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                        display: 'inline-block',
+                                        background: '#06c755',
+                                        color: 'white',
+                                        textDecoration: 'none',
+                                        padding: '0.6rem 1.2rem',
+                                        fontWeight: 'bold',
+                                        borderRadius: '4px'
+                                    }}
+                                >
+                                    LINEで友達追加する
+                                </a>
+                            </div>
+
+                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 2. 連携（重要）</h3>
+                            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
+                                友達追加しただけでは、あなた専用の通知（登録銘柄のアラート）が届きません。<br />
+                                以下の手順でシステムと連携させてください。
+                            </p>
                             <ol style={{ paddingLeft: '1.5rem', color: '#cbd5e1', fontSize: '0.9rem', margin: 0 }}>
                                 <li style={{ marginBottom: '0.5rem' }}>下の「コードを発行」ボタンを押す</li>
                                 <li style={{ marginBottom: '0.5rem' }}>表示された6桁の数字をコピー</li>

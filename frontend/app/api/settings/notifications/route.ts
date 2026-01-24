@@ -8,7 +8,7 @@ const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { userId, emailNotifications } = body;
+        const { userId, ...settings } = body;
 
         if (!userId) {
             return NextResponse.json({ error: 'User ID required' }, { status: 400 });
@@ -16,11 +16,34 @@ export async function POST(request: NextRequest) {
 
         const db = new Database(DB_PATH);
 
-        // Update setting
-        const stmt = db.prepare('UPDATE users SET email_notifications = ? WHERE id = ?');
-        stmt.run(emailNotifications ? 1 : 0, userId);
+        // Dynamic update based on provided fields
+        const fields = [];
+        const values = [];
 
-        return NextResponse.json({ success: true, emailNotifications });
+        if (settings.emailNotifications !== undefined) {
+            fields.push('email_notifications = ?');
+            values.push(settings.emailNotifications ? 1 : 0);
+        }
+        if (settings.notifyRevisions !== undefined) {
+            fields.push('notify_revisions = ?');
+            values.push(settings.notifyRevisions ? 1 : 0);
+        }
+        if (settings.notifyEarnings !== undefined) {
+            fields.push('notify_earnings = ?');
+            values.push(settings.notifyEarnings ? 1 : 0);
+        }
+        if (settings.notifyPrice !== undefined) {
+            fields.push('notify_price = ?');
+            values.push(settings.notifyPrice ? 1 : 0);
+        }
+
+        if (fields.length > 0) {
+            values.push(userId);
+            const sql = `UPDATE users SET ${fields.join(', ')} WHERE id = ?`;
+            db.prepare(sql).run(...values);
+        }
+
+        return NextResponse.json({ success: true, settings });
     } catch (error) {
         console.error('Settings Update Error:', error);
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
@@ -35,9 +58,18 @@ export async function GET(request: NextRequest) {
 
     try {
         const db = new Database(DB_PATH, { readonly: true });
-        const user = db.prepare('SELECT email_notifications FROM users WHERE id = ?').get(userId) as any;
+        // Select all notification cols
+        const user = db.prepare('SELECT email_notifications, notify_revisions, notify_earnings, notify_price FROM users WHERE id = ?').get(userId) as any;
 
-        return NextResponse.json({ success: true, emailNotifications: user ? user.email_notifications : 0 });
+        if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+        return NextResponse.json({
+            success: true,
+            emailNotifications: user.email_notifications,
+            notifyRevisions: user.notify_revisions,
+            notifyEarnings: user.notify_earnings,
+            notifyPrice: user.notify_price
+        });
     } catch (error) {
         return NextResponse.json({ error: 'Failed' }, { status: 500 });
     }
