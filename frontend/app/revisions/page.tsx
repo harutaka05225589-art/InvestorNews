@@ -49,6 +49,30 @@ export default function RevisionsPage() {
                 <p className={styles.subtitle}>
                     TDnetからリアルタイムで「業績予想の修正」に関する開示情報を自動収集・一覧化しています。
                 </p>
+
+                {/* Quick Links */}
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                    <Link href="/revisions/today" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
+                            <span>📅</span> 今日の修正
+                        </div>
+                    </Link>
+                    <Link href="/revisions/this-month" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
+                            <span>🗓️</span> 今月の修正
+                        </div>
+                    </Link>
+                    <Link href="/revisions/ranking" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
+                            <span>🏆</span> ランキング
+                        </div>
+                    </Link>
+                    <Link href="/plans" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: 'transparent', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px dashed #475569' }}>
+                            <span>ℹ️</span> 機能プランについて
+                        </div>
+                    </Link>
+                </div>
             </header>
 
             {/* Stats Overview (Mock for now) */}
