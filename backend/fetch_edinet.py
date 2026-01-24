@@ -69,12 +69,18 @@ def save_document(doc, investor_name):
     
     pdf_link = f"https://disclosure.edinet-fsa.go.jp/api/v2/documents/{doc_id}?type=2&Subscription-Key={API_KEY}"
     
+    # Calculate investor_id
+    investor_id = None
+    if investor_name:
+        c.execute("SELECT id FROM investors WHERE name = ? LIMIT 1", (investor_name,))
+        row = c.fetchone()
+        if row:
+            investor_id = row[0]
+
     c.execute("""
         INSERT INTO edinet_documents (id, submitter_name, subject_edinet_code, doc_description, submitted_at, pdf_link, investor_id)
-        VALUES (?, ?, ?, ?, ?, ?, 
-            (SELECT id FROM investors WHERE name = ? LIMIT 1)
-        )
-    """, (doc_id, submitter, subject_code, desc, submitted_at, pdf_link, investor_name))
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (doc_id, submitter, subject_code, desc, submitted_at, pdf_link, investor_id))
     
     conn.commit()
     conn.close()
@@ -123,22 +129,43 @@ def run_check():
             if not (doc_code.startswith('120') or doc_code.startswith('130') or doc_code.startswith('140')):
                 continue
                 
+    print(f"Tracking {len(investors)} investors for matching purposes (Capturing ALL reports)...")
+    
+    total_saved = 0
+    
+    for d in dates_to_check:
+        d_str = d.strftime('%Y-%m-%d')
+        docs = fetch_edinet_list(d_str)
+        
+        # Filter Logic
+        for doc in docs:
+            doc_code = doc.get('docCode', '')
+            # 120, 130, 140 range usually implies ownership reports
+            # 120-129: Large Shareholding (Mass Possession)
+            # 130-139: Change Report
+            if not (doc_code.startswith('120') or doc_code.startswith('130') or doc_code.startswith('140')):
+                continue
+                
             filer = doc.get('filerName', '')
             if not filer: continue
             filer = filer.replace('　', ' ').strip() # Normalize space
             
-            # Check against monitored investors
+            # Identify Investor (Optional)
+            matched_investor = None
             for inv in investors:
                 for target in inv['targets']:
-                    # Simple inclusion check (e.g. "井村俊哉" in "井村 俊哉")
-                    # Remove spaces for robust matching
                     clean_filer = filer.replace(' ', '')
                     clean_target = target.replace(' ', '')
-                    
                     if clean_target in clean_filer:
-                        saved = save_document(doc, inv['name'])
-                        if saved: total_saved += 1
-                        break # Found match, stop checking other investors for this doc
+                        matched_investor = inv['name']
+                        break
+                if matched_investor:
+                    break
+            
+            # Save Document (All 120/130/140 reports)
+            # Pass matched_investor (can be None)
+            saved = save_document(doc, matched_investor)
+            if saved: total_saved += 1
 
     print(f"EDINET Check Complete. Saved {total_saved} new reports.")
 
