@@ -119,6 +119,9 @@ def run_check():
         docs = fetch_edinet_list(d_str)
         print(f"  > Retrieved {len(docs)} raw documents for {d_str}")
         
+        if len(docs) > 0:
+             print(f"  [DEBUG] First Doc Keys: {list(docs[0].keys())}")
+        
         # Filter Logic
         saved_count = 0
         skipped_debug = 0
