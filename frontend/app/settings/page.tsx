@@ -139,6 +139,92 @@ export default function SettingsPage() {
             </section>
 
             <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>LINE連携</h2>
+                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                            公式アカウントと連携すると、あなただけの重要なお知らせ（ウォッチリスト通知など）を受け取れるようになります。
+                        </p>
+
+                        <div style={{ background: '#0f172a', padding: '1rem', borderRadius: '4px', border: '1px dashed #475569' }}>
+                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>連携手順</h3>
+                            <ol style={{ paddingLeft: '1.5rem', color: '#cbd5e1', fontSize: '0.9rem', margin: 0 }}>
+                                <li style={{ marginBottom: '0.5rem' }}>下の「コードを発行」ボタンを押す</li>
+                                <li style={{ marginBottom: '0.5rem' }}>表示された6桁の数字をコピー</li>
+                                <li>LINE公式アカウントのトーク画面で、その数字だけを送信</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                        <button
+                            onClick={async () => {
+                                const btn = document.getElementById('line-code-btn') as HTMLButtonElement;
+                                const display = document.getElementById('line-code-display');
+                                if (!btn || !display) return;
+
+                                btn.disabled = true;
+                                btn.innerText = '発行中...';
+
+                                try {
+                                    const res = await fetch('/api/settings/line_code', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ userId: user.id })
+                                    });
+                                    const data = await res.json();
+
+                                    if (data.success) {
+                                        display.innerText = data.code;
+                                        display.style.display = 'block';
+                                        btn.style.display = 'none';
+                                    } else {
+                                        alert('エラーが発生しました');
+                                        btn.disabled = false;
+                                        btn.innerText = 'コードを発行';
+                                    }
+                                } catch (e) {
+                                    alert('通信エラー');
+                                    btn.disabled = false;
+                                    btn.innerText = 'コードを発行';
+                                }
+                            }}
+                            id="line-code-btn"
+                            style={{
+                                background: '#22c55e', // LINE Green
+                                color: '#fff',
+                                border: 'none',
+                                padding: '0.8rem 1.5rem',
+                                borderRadius: '30px',
+                                fontWeight: 'bold',
+                                cursor: 'pointer',
+                                fontSize: '1rem'
+                            }}
+                        >
+                            LINE連携コードを発行する
+                        </button>
+
+                        <div
+                            id="line-code-display"
+                            style={{
+                                display: 'none',
+                                fontSize: '2.5rem',
+                                fontWeight: 'bold',
+                                color: '#fbbf24',
+                                letterSpacing: '0.5rem',
+                                marginTop: '1rem'
+                            }}
+                        >
+                            ------
+                        </div>
+                        <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
+                            ※ コードの有効期限は一時的です。すぐに送信してください。
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>プラン設定</h2>
                 <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
