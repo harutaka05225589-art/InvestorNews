@@ -210,7 +210,7 @@ export default function SettingsPage() {
                             <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 1. 友達追加</h3>
                             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
                                 <a
-                                    href="https://line.me/R/ti/p/@087ghrdt"
+                                    href="https://lin.ee/cMLZ4jD"
                                     target="_blank"
                                     rel="noreferrer"
                                     style={{
