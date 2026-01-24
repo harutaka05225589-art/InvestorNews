@@ -62,6 +62,48 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.5,
         },
         {
+            url: `${BASE_URL}/revisions`,
+            lastModified: new Date(),
+            changeFrequency: 'hourly' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/revisions/ranking`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.8,
+        },
+        {
+            url: `${BASE_URL}/revisions/today`,
+            lastModified: new Date(),
+            changeFrequency: 'hourly' as const,
+            priority: 0.8,
+        },
+        {
+            url: `${BASE_URL}/revisions/this-month`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.8,
+        },
+        {
+            url: `${BASE_URL}/plans`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.8,
+        },
+        {
+            url: `${BASE_URL}/reports`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.8,
+        },
+        {
+            url: `${BASE_URL}/settings`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.5,
+        },
+        {
             url: `${BASE_URL}/privacy`,
             lastModified: new Date(),
             changeFrequency: 'yearly' as const,
