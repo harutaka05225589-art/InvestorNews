@@ -224,6 +224,7 @@ export default function SettingsPage() {
                 </div>
             </section>
 
+            {/* 
             <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>プラン設定</h2>
                 <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
@@ -310,6 +311,7 @@ export default function SettingsPage() {
                     )}
                 </div>
             </section>
+*/}
 
             <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#ff6b6b' }}>危険なエリア</h2>
