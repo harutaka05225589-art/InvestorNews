@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRevisions, getRevisionsByDateRange } from '../../../lib/db';
+import { getRevisions, getRevisionsByDateRange } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import styles from '../../revisions.module.css';
+import styles from '../revisions.module.css';
 
 interface Revision {
     id: number;

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRevisionRanking } from '../../../lib/db';
+import { getRevisionRanking } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
