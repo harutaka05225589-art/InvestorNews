@@ -124,17 +124,16 @@ def run_check():
         
         # Filter Logic
         saved_count = 0
-        skipped_debug = 0
+        # skipped_debug = 0
         
         for doc in docs:
-            doc_code = doc.get('docCode', '')
+            doc_code = doc.get('docTypeCode', '')
             
-            # Debug: Print first few skipped codes to verify they are indeed irrelevant
-            # 120, 130, 140 range usually implies ownership reports
+            # 120, 130, 140 range imply ownership reports
             if not (doc_code.startswith('120') or doc_code.startswith('130') or doc_code.startswith('140')):
-                if skipped_debug < 10:
-                    print(f"    [SKIP] Code: {doc_code}, Desc: {doc.get('docDescription')}")
-                    skipped_debug += 1
+                # if skipped_debug < 10:
+                #     print(f"    [SKIP] Code: {doc_code}, Desc: {doc.get('docDescription')}")
+                #     skipped_debug += 1
                 continue
                 
             filer = doc.get('filerName', '')
