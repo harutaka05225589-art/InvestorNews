@@ -104,31 +104,12 @@ def run_check():
         return
 
     # Normal Mode
-    # Check yesterday and today (in case running mid-day)
-    # EDINET updates happen throughout the day
     dates_to_check = [
         datetime.date.today(),
         datetime.date.today() - datetime.timedelta(days=1)
     ]
     
     investors = get_tracked_investors()
-    print(f"Tracking {len(investors)} investors for Large Shareholding Reports...")
-    
-    total_saved = 0
-    
-    for d in dates_to_check:
-        d_str = d.strftime('%Y-%m-%d')
-        docs = fetch_edinet_list(d_str)
-        
-        # Filter Logic
-        for doc in docs:
-            doc_code = doc.get('docCode', '')
-            # 120, 130, 140 range usually implies ownership reports
-            # 120-129: Large Shareholding (Mass Possession)
-            # 130-139: Change Report
-            if not (doc_code.startswith('120') or doc_code.startswith('130') or doc_code.startswith('140')):
-                continue
-                
     print(f"Tracking {len(investors)} investors for matching purposes (Capturing ALL reports)...")
     
     total_saved = 0
@@ -136,13 +117,13 @@ def run_check():
     for d in dates_to_check:
         d_str = d.strftime('%Y-%m-%d')
         docs = fetch_edinet_list(d_str)
+        print(f"  > Retrieved {len(docs)} raw documents for {d_str}")
         
         # Filter Logic
+        saved_count = 0
         for doc in docs:
             doc_code = doc.get('docCode', '')
             # 120, 130, 140 range usually implies ownership reports
-            # 120-129: Large Shareholding (Mass Possession)
-            # 130-139: Change Report
             if not (doc_code.startswith('120') or doc_code.startswith('130') or doc_code.startswith('140')):
                 continue
                 
