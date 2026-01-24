@@ -42,20 +42,29 @@ export default function SettingsPage() {
         }
     }, [user, loading, router]);
 
-    const toggleSetting = async (key: keyof typeof settings) => {
-        const newValue = !settings[key];
-        setSettings(prev => ({ ...prev, [key]: newValue })); // Optimistic
+    const toggleSetting = (key: keyof typeof settings) => {
+        setSettings(prev => ({ ...prev, [key]: !prev[key] }));
+    };
 
+    const handleSave = async () => {
+        setSettingLoading(true);
         try {
-            await fetch('/api/settings/notifications', {
+            const res = await fetch('/api/settings/notifications', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: user?.id, [key]: newValue })
+                body: JSON.stringify({ userId: user?.id, ...settings })
             });
+            const data = await res.json();
+            if (data.success) {
+                alert('設定を保存しました');
+            } else {
+                alert('保存に失敗しました');
+            }
         } catch (e) {
             console.error(e);
-            setSettings(prev => ({ ...prev, [key]: !newValue })); // Revert
-            alert("設定の保存に失敗しました");
+            alert('エラーが発生しました');
+        } finally {
+            setSettingLoading(false);
         }
     };
 
@@ -177,6 +186,26 @@ export default function SettingsPage() {
                                 onChange={() => toggleSetting('emailNotifications')}
                                 disabled={settingLoading}
                             />
+                        </div>
+
+                        {/* Save Button */}
+                        <div style={{ marginTop: '2rem', textAlign: 'right' }}>
+                            <button
+                                onClick={handleSave}
+                                disabled={settingLoading}
+                                style={{
+                                    background: '#3b82f6',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '0.8rem 2rem',
+                                    borderRadius: '6px',
+                                    fontWeight: 'bold',
+                                    cursor: settingLoading ? 'wait' : 'pointer',
+                                    opacity: settingLoading ? 0.7 : 1
+                                }}
+                            >
+                                {settingLoading ? '保存中...' : '設定を保存する'}
+                            </button>
                         </div>
 
                     </div>
