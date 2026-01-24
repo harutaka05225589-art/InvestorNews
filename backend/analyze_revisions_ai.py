@@ -33,39 +33,39 @@ def analyze_revision_pdf(pdf_path, title):
             time.sleep(2)
             sample_file = genai.get_file(sample_file.name)
             
-        if sample_file.state.name == "FAILED":
-            print("  Gemini File processing failed.")
+        # Try multiple model names in order of preference
+        candidate_models = [
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-001",
+            "gemini-1.5-flash-002",
+            "gemini-1.5-pro",
+            "gemini-pro"
+        ]
+        
+        response = None
+        used_model = None
+        
+        for model_name in candidate_models:
+            try:
+                print(f"  Trying model: {model_name}...")
+                model = genai.GenerativeModel(model_name=model_name)
+                response = model.generate_content([sample_file, prompt])
+                used_model = model_name
+                break # Success
+            except Exception as e:
+                # 404 means model not found, keep trying. Other errors might be fatal but let's try next anyway.
+                if "404" in str(e) or "not found" in str(e).lower():
+                    continue
+                else:
+                    print(f"  Model {model_name} error: {e}")
+                    # If it's not a 404, maybe quota or other issue? Continue just in case.
+                    continue
+        
+        if not response:
+            print("  All model attempts failed.")
             return None
 
-        # model = genai.GenerativeModel(model_name="gemini-1.5-flash") # Cost effective
-        model = genai.GenerativeModel(model_name="gemini-2.0-flash-exp") # Latest if available, or 1.5-flash
-        # Fallback to 1.5-flash for stability
-        model = genai.GenerativeModel(model_name="gemini-1.5-flash")
-
-        prompt = f"""
-        あなたはプロの証券アナリストです。
-        添付のPDF資料（企業の適時開示情報：{title}）を分析し、以下の情報をJSON形式で抽出してください。
-
-        1. is_upward: 今回の修正が「上方修正」なら true、「下方修正」なら false。「配当のみ修正」や「ニュートラル」な場合は null。
-           - 売上高、営業利益、経常利益、純利益のいずれかが前回予想より増額されていれば true とみなす。
-           - 全て減額なら false。
-        2. revision_rate_op: 営業利益(Operating Profit)の修正率（%）。
-           - (今回予想 - 前回予想) / 前回予想 * 100
-           - 営業利益の記載がない場合や、黒字転換/赤字転落で計算できない場合は 0.0 とする。
-           - 小数点第1位まで（例: 12.5, -5.0）
-        3. summary: 修正の理由を「30文字以内」で簡潔に要約。
-           - 例: 「海外販売が好調で円安も寄与」「原材料高騰により利益圧迫」など。
-
-        Output Format (JSON only):
-        {{
-            "is_upward": true,
-            "revision_rate_op": 10.5,
-            "summary": "為替差益と北米の好調により増益"
-        }}
-        """
-
-        print("  Sending to Gemini...")
-        response = model.generate_content([sample_file, prompt])
+        print(f"  Success using {used_model}")
         
         # Extract JSON
         text = response.text
