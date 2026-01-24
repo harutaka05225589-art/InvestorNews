@@ -140,7 +140,25 @@ export default function RevisionsPage() {
                                     </tr>
                                 );
                             })}
-                        </section>
-                    </main>
-                    );
+                            })}
+
+                            {loading && (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
+                                </tr>
+                            )}
+
+                            {!loading && revisions.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
+                                        表示できるデータがありません
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    );
 }
