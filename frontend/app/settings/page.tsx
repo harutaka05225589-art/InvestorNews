@@ -164,21 +164,6 @@ export default function SettingsPage() {
                             />
                         </div>
 
-                        {/* 3. Price Target */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <div>
-                                <label style={{ display: 'block', color: '#f8fafc', fontSize: '1rem', fontWeight: 'bold' }}>目標株価アラート</label>
-                                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.3rem' }}>
-                                    指定した目標株価に到達したら通知
-                                </p>
-                            </div>
-                            <Toggle
-                                checked={settings.notifyPrice}
-                                onChange={() => toggleSetting('notifyPrice')}
-                                disabled={settingLoading}
-                            />
-                        </div>
-
                         {/* 4. Email (Legacy/Backup) */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #334155', paddingTop: '1.5rem' }}>
                             <div>
