@@ -43,7 +43,7 @@ export default function Sidebar() {
                 </nav>
 
                 <div className={styles.footer}>
-                    <Link href="/inquiry" className={styles.requestBtn}>
+                    <Link href="/request" className={styles.requestBtn}>
                         + 投資家リクエスト
                     </Link>
                 </div>

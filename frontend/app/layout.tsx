@@ -94,7 +94,13 @@ export default function RootLayout({
             {children}
           </main>
         </div>
-        <footer style={{ marginTop: '4rem', padding: '2rem 0', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.9rem' }}>
+        <footer style={{ marginTop: '4rem', padding: '2rem 1rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.85rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+            <Link href="/introduction" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>投資家一覧</Link>
+            <Link href="/request" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>追加リクエスト</Link>
+            <Link href="/inquiry" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>お問い合わせ</Link>
+            <Link href="/privacy" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>プライバシーポリシー</Link>
+          </div>
           <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
         </footer>
       </body>
