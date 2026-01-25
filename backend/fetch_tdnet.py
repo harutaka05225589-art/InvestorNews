@@ -118,29 +118,35 @@ def fetch_tdnet_revisions(target_date=None):
                             from send_line import send_line_push
                             
                             for w in watchers:
-                                # Send LINE
-                                if w[1]: # line_user_id
-                                    send_line_push(w[1], msg)
-                                    
-                        # --- Post to X (Twitter) ---
-                        # To save quota, we currently only post if it contains "上方修正" or "増配" or similar positive keywords
-                        # OR if we decide to post ALL. Given 1500/mo limit, we must filter.
-                        # For now, let's post ALL but catch errors (limit reached).
-                        # Actually, let's prioritize readability.
-                        
-                        try:
-                            from send_x import post_to_x
-                            
-                            # Construct engaging tweet
-                            x_msg = f"📊 【業績修正】\n{name_text} ({ticker})\n\n{title_text}\n\n📄 {pdf_link or ''}\n#決算速報 #株 #日本株 #InvestorNews"
-                            
-                            # Deduplicate check (if needed) or just fire
-                            post_to_x(x_msg)
-                            
-                        except Exception as e:
-                            print(f"    [X Post Failed] {e}")
+                                if w[1]: send_line_push(w[1], msg)
 
-                    # count += 1 # Moved inside if block to only count new ones
+                        # --- Post to X (Twitter) ---
+                        # Strategy: Filter for "Positive" keywords in TITLE to save quota (approx 50/day limit).
+                        # Keywords: 上方 (Upward), 増配 (Div Increase), 復配 (Div Resume), 黒字 (Profit)
+                        # This avoids posting "Downward revisions" or "Generic" ones that might flood the quota.
+                        
+                        is_positive = any(k in title_text for k in ["上方", "増配", "復配", "黒字", "最高益"])
+                        
+                        # User requested "B only" (Upward/Positive).
+                        if is_positive:
+                            try:
+                                from send_x import post_to_x
+                                
+                                # 宣伝テキスト (Promo)
+                                promo = "💡 著名投資家の保有銘柄や、毎日の決算スケジュールも無料公開中！\n👉 https://rich-investor-news.com"
+                                
+                                # Shorten title if too long to fit promo
+                                clean_title = title_text[:50] + "..." if len(title_text) > 50 else title_text
+                                
+                                x_msg = f"📈 【好材料】\n{name_text} ({ticker})\n{clean_title}\n\n📄 {pdf_link or ''}\n\n{promo}\n#株 #上方修正 #決算速報"
+                                
+                                post_to_x(x_msg)
+                            except Exception as e:
+                                print(f"    [X Post Failed] {e}")
+                        else:
+                            print(f"    [X Skip] Not explicitly positive: {title_text}")
+
+                    # count += 1 
             
             except Exception as e:
                 # print(f"  Row parse error: {e}")
