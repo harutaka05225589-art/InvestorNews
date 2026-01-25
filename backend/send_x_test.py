@@ -21,8 +21,16 @@ def test_post_x():
     access_token = os.getenv("X_ACCESS_TOKEN")
     access_secret = os.getenv("X_ACCESS_SECRET")
 
-    print(f"🔑 API Key: {mask_key(api_key)}")
-    print(f"🔑 Token  : {mask_key(access_token)}")
+    print(f"🔑 API Key: {mask_key(api_key)} (Len: {len(api_key) if api_key else 0})")
+    print(f"🔑 API Sec: {mask_key(api_secret)} (Len: {len(api_secret) if api_secret else 0})")
+    print(f"🔑 Token  : {mask_key(access_token)} (Len: {len(access_token) if access_token else 0})")
+    print(f"🔑 Tok Sec: {mask_key(access_secret)} (Len: {len(access_secret) if access_secret else 0})")
+
+    # Check for hidden characters
+    if api_key and api_key != api_key.strip(): print("⚠️ WARNING: API Key has bad spaces!")
+    if api_secret and api_secret != api_secret.strip(): print("⚠️ WARNING: API Secret has bad spaces!")
+    if access_token and access_token != access_token.strip(): print("⚠️ WARNING: Token has bad spaces!")
+    if access_secret and access_secret != access_secret.strip(): print("⚠️ WARNING: Token Secret has bad spaces!")
     if not api_key or not access_token:
         print("❌ Error: Keys are empty! Check .env formatting (no spaces around =).")
         return
