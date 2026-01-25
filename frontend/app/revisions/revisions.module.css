@@ -167,3 +167,78 @@
     color: #cbd5e1;
     border: 1px solid #64748b;
 }
+
+/* Mobile Responsive: Card Layout */
+@media (max-width: 768px) {
+    .table thead {
+        display: none;
+    }
+
+    .table,
+    .table tbody,
+    .table tr,
+    .table td {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .table tr {
+        background: var(--card-bg);
+        margin-bottom: 1rem;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .table td {
+        padding: 0.3rem 0;
+        border: none;
+        text-align: left;
+    }
+
+    /* Adjust specific columns for card look */
+    /* Date */
+    .table td:nth-child(1) {
+        font-size: 0.8rem;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    /* Ticker */
+    .table td:nth-child(2) {
+        display: inline-block;
+        font-size: 1.1rem;
+        margin-right: 0.5rem;
+    }
+
+    /* Name */
+    .table td:nth-child(3) {
+        display: block;
+        /* Full width */
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    /* AI Summary in Name Column */
+    .table td:nth-child(3) p {
+        background: #1e293b;
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin-top: 0.5rem;
+    }
+
+    /* Verdict (Up/Down) */
+    .table td:nth-child(4) {
+        display: flex;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    /* Link */
+    .table td:nth-child(5) {
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+}
