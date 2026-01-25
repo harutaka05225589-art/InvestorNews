@@ -93,7 +93,7 @@ def save_document(doc, investor_name):
             # Format: "🚨 Big News! [Investor] submitted [Report] for [Code]"
             # subject_code might be just code "12340".
             
-            x_msg = f"🚨 【大量保有・変更報告】\n\n著名投資家: {investor_name}\n提出者: {submitter}\n\n{desc}\n\n📄 {pdf_link}\n#著名投資家 #大量保有報告書 #株"
+            x_msg = f"🚨 【大量保有・変更報告】\n\n著名投資家: {investor_name}\n提出者: {submitter}\n\n{desc}\n\n📄 {pdf_link}\n#著名投資家 #大量保有報告書 #日本株 #投資家さんと繋がりたい #イナゴ #株"
             post_to_x(x_msg)
             print(f"    -> Posted to X: {submitter} - {desc}")
         except Exception as e:

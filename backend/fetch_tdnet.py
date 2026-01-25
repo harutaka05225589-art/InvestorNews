@@ -138,7 +138,7 @@ def fetch_tdnet_revisions(target_date=None):
                                 # Shorten title if too long to fit promo
                                 clean_title = title_text[:50] + "..." if len(title_text) > 50 else title_text
                                 
-                                x_msg = f"📈 【好材料】\n{name_text} ({ticker})\n{clean_title}\n\n📄 {pdf_link or ''}\n\n{promo}\n#株 #上方修正 #決算速報"
+                                x_msg = f"📈 【好材料】\n{name_text} ({ticker})\n{clean_title}\n\n📄 {pdf_link or ''}\n\n{promo}\n#決算速報 #上方修正 #日本株 #投資家さんと繋がりたい #日経平均 #株"
                                 
                                 post_to_x(x_msg)
                             except Exception as e:
