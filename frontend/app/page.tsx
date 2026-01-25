@@ -12,13 +12,32 @@ export default function Home() {
 
   // Get Today's Date in JST (Robust against Server Timezone)
   const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
-  const y = jstNow.getFullYear();
-  const m = String(jstNow.getMonth() + 1).padStart(2, '0');
-  const d = String(jstNow.getDate()).padStart(2, '0');
-  const todayStr = `${y}-${m}-${d}`;
-  const todayLabel = `${jstNow.getMonth() + 1}/${jstNow.getDate()}`;
 
-  const { count, events } = getDailyIREvents(todayStr);
+  // Logic: If Weekend, show Next Business Day (Monday)
+  let targetDate = new Date(jstNow);
+  const dayOfWeek = targetDate.getDay();
+  let isNextBizDay = false;
+
+  if (dayOfWeek === 6) { // Saturday -> Monday
+    targetDate.setDate(targetDate.getDate() + 2);
+    isNextBizDay = true;
+  } else if (dayOfWeek === 0) { // Sunday -> Monday
+    targetDate.setDate(targetDate.getDate() + 1);
+    isNextBizDay = true;
+  }
+
+  const y = targetDate.getFullYear();
+  const m = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const d = String(targetDate.getDate()).padStart(2, '0');
+  const targetDateStr = `${y}-${m}-${d}`;
+
+  // Label: "1/27の決算" or "本日の決算" (User requested specific date always, or just when next biz day?)
+  // User said: "Instead of Today's Earnings, write the date of next business day".
+  // Let's always show the date for clarity, e.g. "1/27(月) の決算"
+  const days = ['日', '月', '火', '水', '木', '金', '土'];
+  const displayLabel = `${targetDate.getMonth() + 1}/${targetDate.getDate()}(${days[targetDate.getDay()]}) の決算`;
+
+  const { count, events } = getDailyIREvents(targetDateStr);
 
   return (
     <div className={styles.container}>
@@ -84,7 +103,7 @@ export default function Home() {
           {/* Dashboard Widget */}
           <section className={styles.widget}>
             <h2 className={styles.widgetTitle}>
-              📅 本日の決算
+              📅 {displayLabel}
             </h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'baseline' }}>
