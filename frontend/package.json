@@ -12,6 +12,7 @@
     "@vercel/og": "^0.8.6",
     "bcryptjs": "^2.4.3",
     "better-sqlite3": "^12.5.0",
+    "japanese-holidays": "^1.0.10",
     "jose": "^5.2.0",
     "next": "16.1.1",
     "react": "19.2.3",
@@ -20,6 +21,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/better-sqlite3": "^7.6.13",
+    "@types/japanese-holidays": "^1.0.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

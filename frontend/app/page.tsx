@@ -6,24 +6,30 @@ import styles from './home.module.css';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+import { isHoliday } from 'japanese-holidays';
+
 export default function Home() {
   const investors = getInvestors() as Investor[];
   const edinetDocs = getLatestEdinetDocs(5);
 
-  // Get Today's Date in JST (Robust against Server Timezone)
+  // Get Today's Date in JST
   const jstNow = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
 
-  // Logic: If Weekend, show Next Business Day (Monday)
+  // Logic: Find Next Business Day (Skip Weekend AND Holidays)
   let targetDate = new Date(jstNow);
-  const dayOfWeek = targetDate.getDay();
-  let isNextBizDay = false;
 
-  if (dayOfWeek === 6) { // Saturday -> Monday
-    targetDate.setDate(targetDate.getDate() + 2);
-    isNextBizDay = true;
-  } else if (dayOfWeek === 0) { // Sunday -> Monday
-    targetDate.setDate(targetDate.getDate() + 1);
-    isNextBizDay = true;
+  // Safety bracket: max 10 days lookahead to prevent infinite loop
+  for (let i = 0; i < 10; i++) {
+    const day = targetDate.getDay();
+    // Check if it's weekend (0=Sun, 6=Sat) or Public Holiday
+    // isHoliday returns string name (e.g. "元日") or undefined
+    if (day === 0 || day === 6 || isHoliday(targetDate)) {
+      // Move to next day
+      targetDate.setDate(targetDate.getDate() + 1);
+    } else {
+      // Found business day
+      break;
+    }
   }
 
   const y = targetDate.getFullYear();
@@ -31,9 +37,6 @@ export default function Home() {
   const d = String(targetDate.getDate()).padStart(2, '0');
   const targetDateStr = `${y}-${m}-${d}`;
 
-  // Label: "1/27の決算" or "本日の決算" (User requested specific date always, or just when next biz day?)
-  // User said: "Instead of Today's Earnings, write the date of next business day".
-  // Let's always show the date for clarity, e.g. "1/27(月) の決算"
   const days = ['日', '月', '火', '水', '木', '金', '土'];
   const displayLabel = `${targetDate.getMonth() + 1}/${targetDate.getDate()}(${days[targetDate.getDay()]}) の決算`;
 
