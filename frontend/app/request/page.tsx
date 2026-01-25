@@ -7,22 +7,36 @@ export default function RequestPage() {
     return (
         <div>
             <h1>投資家追加リクエスト</h1>
-            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                <iframe
-                    src={targetUrl}
-                    width="100%"
-                    height="800"
-                    frameBorder="0"
-                    marginHeight={0}
-                    marginWidth={0}
-                    style={{ background: 'var(--background)' }}
-                >
-                    読み込んでいます…
-                </iframe>
+            <div className="card" style={{ padding: '3rem', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+                <div style={{ fontSize: '3rem' }}>📝</div>
+                <p>
+                    追加してほしい投資家や、情報の訂正などはこちらのフォームからお知らせください。<br />
+                    皆様のリクエストをもとに、より良いメディアにしていきます。
+                </p>
 
-                <div style={{ padding: '1rem', textAlign: 'center', fontSize: '0.9rem' }}>
-                    <p>フォームが表示されない場合は <a href={targetUrl} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>こちら</a> から直接開いてください。</p>
-                </div>
+                <a
+                    href={targetUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="primary-button"
+                    style={{
+                        textDecoration: 'none',
+                        display: 'inline-block',
+                        padding: '1rem 2rem',
+                        fontSize: '1.1rem',
+                        borderRadius: '8px',
+                        background: 'var(--primary)',
+                        color: '#000',
+                        fontWeight: 'bold',
+                        marginTop: '1rem'
+                    }}
+                >
+                    リクエストフォームを開く ↗
+                </a>
+
+                <p style={{ fontSize: '0.85rem', color: 'var(--secondary)', marginTop: '1rem' }}>
+                    ※ Googleフォームが新しいタブで開きます
+                </p>
             </div>
         </div>
     );
