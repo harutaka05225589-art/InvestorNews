@@ -122,14 +122,24 @@ def fetch_tdnet_revisions(target_date=None):
                                 if w[1]: # line_user_id
                                     send_line_push(w[1], msg)
                                     
-                                # Send Email (if enabled)
-                                # (Optional, user focused on LINE mainly)
+                        # --- Post to X (Twitter) ---
+                        # To save quota, we currently only post if it contains "上方修正" or "増配" or similar positive keywords
+                        # OR if we decide to post ALL. Given 1500/mo limit, we must filter.
+                        # For now, let's post ALL but catch errors (limit reached).
+                        # Actually, let's prioritize readability.
                         
-                        # Stop generic broadcast to avoid spamming everyone for every revision
-                        # Unless it's a "Super Important" one, but we don't know yet.
-                        # Maybe broadcast only "Featured Investors" stocks?
-                        # For now, disable generic broadcast.
-                    
+                        try:
+                            from send_x import post_to_x
+                            
+                            # Construct engaging tweet
+                            x_msg = f"📊 【業績修正】\n{name_text} ({ticker})\n\n{title_text}\n\n📄 {pdf_link or ''}\n#決算速報 #株 #日本株 #InvestorNews"
+                            
+                            # Deduplicate check (if needed) or just fire
+                            post_to_x(x_msg)
+                            
+                        except Exception as e:
+                            print(f"    [X Post Failed] {e}")
+
                     # count += 1 # Moved inside if block to only count new ones
             
             except Exception as e:
