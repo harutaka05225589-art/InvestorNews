@@ -1,37 +1,57 @@
 import os
 import tweepy
+import time
+from datetime import datetime
 from dotenv import load_dotenv
 
 # Load environment variables
-load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+dotenv_path = os.path.join(os.path.dirname(__file__), '..', '.env')
+load_dotenv(dotenv_path)
+
+def mask_key(k):
+    if not k or len(k) < 8: return "MISSING or SHORT"
+    return f"{k[:4]}...{k[-4:]}"
 
 def test_post_x():
+    print(f"🕒 Server Time: {datetime.now()}")
+    print(f"📂 Loading .env from: {dotenv_path}")
+
     api_key = os.getenv("X_API_KEY")
     api_secret = os.getenv("X_API_SECRET")
     access_token = os.getenv("X_ACCESS_TOKEN")
     access_secret = os.getenv("X_ACCESS_SECRET")
 
-    if not all([api_key, api_secret, access_token, access_secret]):
-        print("❌ Error: Missing X API credentials in .env")
+    print(f"🔑 API Key: {mask_key(api_key)}")
+    print(f"🔑 Token  : {mask_key(access_token)}")
+    if not api_key or not access_token:
+        print("❌ Error: Keys are empty! Check .env formatting (no spaces around =).")
         return
 
+    # --- Test 1: OAuth 1.1 (Verify Credentials) ---
+    print("\n📡 Testing v1.1 Authentication...")
     try:
-        # Authenticate with X API v2
+        auth = tweepy.OAuth1UserHandler(api_key, api_secret, access_token, access_secret)
+        api = tweepy.API(auth)
+        user = api.verify_credentials()
+        print(f"✅ v1.1 Success! Logged in as: @{user.screen_name}")
+    except Exception as e:
+        print(f"❌ v1.1 Failed: {e}")
+
+    # --- Test 2: API v2 (Posting) ---
+    print("\n🚀 Testing v2 Posting...")
+    try:
         client = tweepy.Client(
             consumer_key=api_key,
             consumer_secret=api_secret,
             access_token=access_token,
             access_token_secret=access_secret
         )
-
-        message = "これは自動投稿のテストです。\n億り人・決算速報システムからの送信 #InvestorNews"
         
+        message = f"システム接続テスト {int(time.time())}\n#InvestorNews"
         response = client.create_tweet(text=message)
-        print("✅ Success! Tweet sent.")
-        print(f"Tweet ID: {response.data['id']}")
-        
+        print(f"✅ v2 Success! Tweet sent. ID: {response.data['id']}")
     except Exception as e:
-        print(f"❌ Failed to send tweet: {e}")
+        print(f"❌ v2 Failed: {e}")
 
 if __name__ == "__main__":
     test_post_x()
