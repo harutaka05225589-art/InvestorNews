@@ -101,14 +101,34 @@ def send_ranking_tweet():
     # Sort by performance DESC
     sorted_perf = sorted(perf_map.items(), key=lambda x: x[1], reverse=True)
     
-    # Take Top 5
+    # Take Top 20 for Website, Top 5 for Tweet
+    top_20 = sorted_perf[:20]
     top_5 = sorted_perf[:5]
     
     if not top_5:
         print("No valid performance data.")
         return
 
-    # Build Tweet
+    # --- Save to JSON for Frontend ---
+    import json
+    json_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'public', 'data', 'weekly_ranking.json')
+    os.makedirs(os.path.dirname(json_path), exist_ok=True)
+    
+    ranking_data = []
+    for rank, (ticker, pct) in enumerate(top_20, 1):
+        ranking_data.append({
+            "rank": rank,
+            "ticker": ticker,
+            "name": ticker_map.get(ticker, "Unknown"),
+            "change_pct": round(pct, 1)
+        })
+    
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump({"updated_at": datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), "ranking": ranking_data}, f, ensure_ascii=False, indent=2)
+    
+    print(f"Saved ranking data to {json_path}")
+
+    # --- Build Tweet ---
     # 📊 今週の上方修正ランキング TOP5
     msg = "📊 今週の決算・上方修正 爆上げランキング TOP5\n\n"
     
@@ -118,7 +138,7 @@ def send_ranking_tweet():
         sign = "+" if pct > 0 else ""
         msg += f"{i}. {name} ({sign}{pct:.1f}%)\n"
     
-    msg += "\n▶ 全件ランキング\nhttps://rich-investor-news.com/ranking\n#日本株 #決算速報 #株式投資 #投資家さんと繋がりたい"
+    msg += "\n▶ 全件ランキング\nhttps://rich-investor-news.com/revisions/ranking\n#日本株 #決算速報 #株式投資 #投資家さんと繋がりたい"
     
     print("--- Tweet Content ---")
     print(msg)
