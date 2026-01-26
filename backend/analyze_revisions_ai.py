@@ -202,10 +202,13 @@ def process_revisions():
                         # Construct Tweet with AI Summary
                         x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n{clean_title}\n\n📄 PDF: {url}\n\n{promo}\n#日本株 #決算速報 #上方修正 #株式投資 #投資家さんと繋がりたい"
                         
-                        post_to_x(x_msg)
-                        print("  -> Posted to X successfully.")
+                        tweet_id = post_to_x(x_msg)
+                        if tweet_id:
+                            print(f"  -> Posted to X successfully: {tweet_id}")
+                        else:
+                            print("  -> Failed to post to X (Check logs)")
                     except Exception as e:
-                        print(f"  -> Failed to post to X: {e}")
+                        print(f"  -> Exception posting to X: {e}")
                 else:
                     print(f"  -> Skip X post (Verdict: {'Down' if is_upward is False else 'Neutral'})")
                 print("  Analysis returned No Data.")
