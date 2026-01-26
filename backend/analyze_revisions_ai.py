@@ -38,13 +38,14 @@ def analyze_revision_pdf(pdf_path, title):
         あなたはプロの証券アナリストです。
         添付のPDF資料（企業の適時開示情報：{title}）を分析し、以下の情報をJSON形式で抽出してください。
         
-        【重要ルール】
-        1. is_upward: 「投資家にとってポジティブな上方修正」か判定。
-           - 営業利益(Operating Profit)が前回予想より増額されている場合は true。
-           - 営業利益が減額されている場合は、売上が増えていても false (下方修正扱い)。
+        【重要ルール 判断基準】
+        1. is_upward: 「投資家にとってポジティブな上方修正」かを厳格に判定。
+           - **営業利益(Operating Profit)が前回予想より増額されている場合は true (必須)。**
+           - **営業利益が減額されている場合は、売上が増えていても false (下方修正扱い)。**
            - 黒字転換は true。赤字転落・赤字拡大は false。
            - 配当修正のみで業績が変わらない場合は null (ニュートラル)。
            - **営業利益の修正率がマイナスなのに true にすることは絶対に禁止。**
+           - **逆に、営業利益の修正率がプラス（増益）なら、原則として true (上方修正) とする。**
            
         2. revision_rate_op: 営業利益の修正率（%）。
            - 計算式: (今回予想 - 前回予想) / |前回予想| * 100
@@ -52,7 +53,7 @@ def analyze_revision_pdf(pdf_path, title):
            - 小数点第1位まで（例: 12.5, -5.0）。
            
         3. summary: 修正の理由を「必ず」30文字以内で要約。
-           - 空欄は禁止。理由が明確でない場合は「業績動向を踏まえ修正」としてください。
+           - 空欄や「なし」は禁止。理由が明確でない場合は「業績動向を踏まえ修正」としてください。
            - 例: 「海外販売が好調で円安も寄与」「原材料高騰により利益圧迫」
            - 冒頭に「〜のため」と書くこと。
 
@@ -84,12 +85,20 @@ def analyze_revision_pdf(pdf_path, title):
                 used_model = model_name
                 break # Success
             except Exception as e:
-                # 404 means model not found, keep trying. Other errors might be fatal but let's try next anyway.
-                if "404" in str(e) or "not found" in str(e).lower():
+                err_str = str(e).lower()
+                if "429" in err_str or "quota" in err_str:
+                    print(f"  !! QUOTA EXCEEDED for {model_name} !!")
+                    # If this is the last model, we should propagate this error to stop the script
+                    if model_name == candidate_models[-1]:
+                        raise Exception("QUOTA_EXCEEDED")
+                    time.sleep(2) # Brief pause before next model
+                    continue
+                
+                # 404 means model not found, keep trying.
+                if "404" in err_str or "not found" in err_str:
                     continue
                 else:
                     print(f"  Model {model_name} error: {e}")
-                    # If it's not a 404, maybe quota or other issue? Continue just in case.
                     continue
         
         if not response:
@@ -100,16 +109,17 @@ def analyze_revision_pdf(pdf_path, title):
         
         # Extract JSON
         text = response.text
-        # Remove definition block ```json ... ```
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
-        elif "```" in text: # Just code block
+        elif "```" in text:
             text = text.split("```")[1].split("```")[0]
             
         data = json.loads(text.strip())
         return data
 
     except Exception as e:
+        if "QUOTA_EXCEEDED" in str(e):
+            raise e # Create fatal error to stop script
         print(f"  Gemini Analysis Error: {e}")
         return None
 
@@ -117,9 +127,7 @@ def process_revisions():
     conn = get_db_connection()
     c = conn.cursor()
     
-    # Select unanalyzed revisions that have a source URL (PDF)
-    # Limit to 5 per run to respect Rate Limits (Free tier: 15 RPM, 1500 RPD)
-    # Or just run slowly.
+    # Select unanalyzed revisions
     rows = c.execute("""
         SELECT id, ticker, company_name, title, source_url 
         FROM revisions 
@@ -150,13 +158,11 @@ def process_revisions():
             res = requests.get(url, timeout=15)
             if res.status_code != 200:
                 print(f"  Download failed: {res.status_code}")
-                # Mark as analyzed (but failed) to skip next time? 
-                # Or keep 0 to retry? Let's Mark as analyzed with ERROR summary to avoid loop
-                c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'PDF Download Failed' WHERE id = ?", (rev_id,))
+                # Mark as 2 (Failed) to skip
+                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'PDF Download Failed' WHERE id = ?", (rev_id,))
                 conn.commit()
                 continue
                 
-            # Save to temp file
             with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
                 tmp.write(res.content)
                 tmp_path = tmp.name
@@ -164,18 +170,15 @@ def process_revisions():
             # Analyze
             result = analyze_revision_pdf(tmp_path, title)
             
-            # Cleanup temp file
             os.remove(tmp_path)
             
             if result:
-                is_upward = result.get('is_upward') # bool or None
+                is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
                 
                 print(f"  Result: Up={is_upward}, Rate={rate}%, Sum={summary}")
                 
-                # Update DB
-                # Convert python bool to sqlite integer (1/0)
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
                 c.execute("""
@@ -189,17 +192,12 @@ def process_revisions():
                 conn.commit()
                 print("  Saved to DB.")
 
-                # --- Post to X (If Upward) ---
+                # Post to X
                 if is_upward:
                     try:
                         from send_x import post_to_x
-                        # Shorten title
                         clean_title = title[:40] + "..." if len(title) > 40 else title
-                        
-                        # Promo text
                         promo = "💡 注目銘柄のランキングや大量保有報告もチェック！\n👉 https://rich-investor-news.com/revisions"
-
-                        # Construct Tweet with AI Summary
                         x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n{clean_title}\n\n📄 PDF: {url}\n\n{promo}\n#日本株 #決算速報 #上方修正 #株式投資 #投資家さんと繋がりたい"
                         
                         tweet_id = post_to_x(x_msg)
@@ -211,15 +209,31 @@ def process_revisions():
                         print(f"  -> Exception posting to X: {e}")
                 else:
                     print(f"  -> Skip X post (Verdict: {'Down' if is_upward is False else 'Neutral'})")
+                
+            else:
                 print("  Analysis returned No Data.")
-                c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'Analysis Failed' WHERE id = ?", (rev_id,))
+                # Mark as 2 (Failed)
+                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Analysis Failed' WHERE id = ?", (rev_id,))
                 conn.commit()
                 
-            # Sleep to respect rate limits (Gemini Free: 2 RPM? No 15 RPM. 4 sec delay is safe)
-            time.sleep(5)
+            # Sleep longer to be safe (15s)
+            print("  Sleeping 15s to respect Rate Limits...")
+            time.sleep(15)
             
         except Exception as e:
+            if "QUOTA_EXCEEDED" in str(e):
+                print("\n!!! CRITICAL: QUOTA EXCEEDED (429) !!!")
+                print("Stopping script immediately to allow quota recovery.")
+                print("Do NOT mark current row as failed, so it can be retried later.")
+                conn.close()
+                exit(1) # Exit with error code
+
             print(f"  Error processing row: {e}")
+            try:
+                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Processing Error' WHERE id = ?", (rev_id,))
+                conn.commit()
+            except:
+                pass
             
     conn.close()
 
