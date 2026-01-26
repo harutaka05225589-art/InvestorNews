@@ -155,6 +155,15 @@ def fetch_tdnet_revisions(target_date=None):
         conn.commit()
         conn.close()
         print(f"  Saved {count} revision events.")
+
+        # --- Trigger AI Analysis ---
+        try:
+            from analyze_revisions_ai import process_revisions
+            print("--- Starting AI Analysis for new revisions ---")
+            process_revisions()
+            print("--- AI Analysis Completed ---")
+        except Exception as e:
+            print(f"Error during AI Analysis trigger: {e}")
         
     except Exception as e:
         print(f"Error fetching TDnet: {e}")
