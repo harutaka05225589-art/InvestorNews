@@ -111,42 +111,22 @@ def fetch_tdnet_revisions(target_date=None):
                             WHERE a.ticker = ? AND u.notify_revisions = 1
                         """, (ticker,)).fetchall()
                         
-                        if watchers:
-                            print(f"    -> Found {len(watchers)} watchers for {ticker}")
-                            msg = f"🔔 【業績修正】\n{name_text} ({ticker})\n{title_text}\n{pdf_link or 'No Link'}\n\n詳細: https://rich-investor-news.com/revisions"
-                            
-                            from send_line import send_line_push
-                            
-                            for w in watchers:
-                                if w[1]: send_line_push(w[1], msg)
-
-                        # --- Post to X (Twitter) ---
-                        # Strategy: Filter for "Positive" keywords in TITLE to save quota (approx 50/day limit).
-                        # Keywords: 上方 (Upward), 増配 (Div Increase), 復配 (Div Resume), 黒字 (Profit)
-                        # This avoids posting "Downward revisions" or "Generic" ones that might flood the quota.
+                        # --- Post to X / LINE Logic MOVED to AI Analysis ---
+                        # Previously we posted here based on keywords, but now we rely on AI result.
+                        # This avoids "Generic Title" ignores and provides better context.
+                        #
+                        # The AI Analysis is triggered at the end of this script.
                         
-                        is_positive = any(k in title_text for k in ["上方", "増配", "復配", "黒字", "最高益"])
+                        # (Optional) We could still send LINE here if we want instant alerts for ALL?
+                        # But let's unify to AI for quality control.
                         
-                        # User requested "B only" (Upward/Positive).
-                        if is_positive:
-                            try:
-                                from send_x import post_to_x
-                                
-                                # 宣伝テキスト (Promo)
-                                promo = "💡 著名投資家の保有銘柄や、毎日の決算スケジュールも無料公開中！\n👉 https://rich-investor-news.com"
-                                
-                                # Shorten title if too long to fit promo
-                                clean_title = title_text[:50] + "..." if len(title_text) > 50 else title_text
-                                
-                                x_msg = f"📈 【好材料】\n{name_text} ({ticker})\n{clean_title}\n\n📄 {pdf_link or ''}\n\n{promo}\n#決算速報 #上方修正 #日本株 #投資家さんと繋がりたい #日経平均 #株"
-                                
-                                post_to_x(x_msg)
-                            except Exception as e:
-                                print(f"    [X Post Failed] {e}")
-                        else:
-                            print(f"    [X Skip] Not explicitly positive: {title_text}")
+                        pass
 
                     # count += 1 
+            
+            except Exception as e:
+                # print(f"  Row parse error: {e}")
+                continue 
             
             except Exception as e:
                 # print(f"  Row parse error: {e}")

@@ -180,8 +180,26 @@ def process_revisions():
                 """, (is_up_int, rate, summary, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
-                
-            else:
+
+                # --- Post to X (If Upward) ---
+                if is_upward:
+                    try:
+                        from send_x import post_to_x
+                        # Shorten title
+                        clean_title = title[:40] + "..." if len(title) > 40 else title
+                        
+                        # Promo text
+                        promo = "💡 注目銘柄のランキングや大量保有報告もチェック！\n👉 https://rich-investor-news.com/revisions"
+
+                        # Construct Tweet with AI Summary
+                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n{clean_title}\n\n📄 PDF: {url}\n\n{promo}\n#日本株 #決算速報 #上方修正 #株式投資 #投資家さんと繋がりたい"
+                        
+                        post_to_x(x_msg)
+                        print("  -> Posted to X successfully.")
+                    except Exception as e:
+                        print(f"  -> Failed to post to X: {e}")
+                else:
+                    print(f"  -> Skip X post (Verdict: {'Down' if is_upward is False else 'Neutral'})")
                 print("  Analysis returned No Data.")
                 c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'Analysis Failed' WHERE id = ?", (rev_id,))
                 conn.commit()
