@@ -1,12 +1,12 @@
 import tweepy
 
-# Hardcoded keys from User Chat
-API_KEY = "Ob2ds5kejFj90xkMG3RqUoAlB"
-API_SECRET = "Q9GNTZTxotwZPZ3ierZ7vl805DUdAJqemhxcopefM1QLRDkzuD"
-ACCESS_TOKEN = "1189819570426527745-6MVMpgxOchtYNaTtswVHUBnun0Qg9Q"
-ACCESS_SECRET = "iQEik9ibroLMUTjYGRTTu2QNjx7LoV2sGGAqSq7yLnAFe"
+# Hardcoded keys from User Chat (Text Paste)
+API_KEY = "ATbbzVYfqfezKryamEnMt5LO3"
+API_SECRET = "FrjOszR7o4H5SFnl5ilJz7AsqNuorGvjJRwnO55Dx5mEfd7gNw"
+ACCESS_TOKEN = "1189819570426527745-mKLKXFaaK49sWMfl5iziYS0WxrjzAe"
+ACCESS_SECRET = "B4TQUeH3TygaD0jICo9JSViT5gg4WNnRQsw0PDzncTfdF"
 
-print("Testing with HARDCODED keys...")
+print("Testing with HARDCODED keys (Text Paste)...")
 print(f"Key: {API_KEY[:5]}...")
 
 try:
@@ -17,7 +17,7 @@ try:
         access_token_secret=ACCESS_SECRET
     )
     
-    response = client.create_tweet(text="Hardcode Test #InvestorNews")
+    response = client.create_tweet(text="Text Paste Test #InvestorNews")
     print(f"✅ Posted! ID: {response.data['id']}")
     
 except Exception as e:
