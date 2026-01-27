@@ -22,6 +22,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
         openGraph: {
             title: `${investor.name} - 投資家ニュース`,
             description: `${investor.name}の最新情報をチェック。`,
+            images: [
+                {
+                    url: `/api/og?title=${encodeURIComponent(investor.name)}&subtitle=${encodeURIComponent(investor.style_description.substring(0, 30))}&type=profile`,
+                    width: 1200,
+                    height: 630,
+                },
+            ],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `${investor.name}のニュース・評判`,
+            description: `${investor.name}の最新情報をチェック。`,
+            images: [`/api/og?title=${encodeURIComponent(investor.name)}&subtitle=${encodeURIComponent(investor.style_description.substring(0, 30))}&type=profile`],
         },
     };
 }

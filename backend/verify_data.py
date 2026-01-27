@@ -34,6 +34,11 @@ def verify():
     r_count = c.fetchone()[0]
     print(f"Total Revisions: {r_count}")
 
+    print("\n--- EDINET Documents ---")
+    c.execute("SELECT count(*) FROM edinet_documents")
+    e_count = c.fetchone()[0]
+    print(f"Total EDINET Docs: {e_count}")
+
     conn.close()
 
 if __name__ == "__main__":
