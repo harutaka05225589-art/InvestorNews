@@ -167,6 +167,7 @@
 
 .userMenu {
     position: relative;
+    z-index: 201;
 }
 
 .avatarBtn {
@@ -196,6 +197,7 @@
     padding: 1rem;
     margin-top: 0.5rem;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    z-index: 200;
 }
 
 .userInfo {
