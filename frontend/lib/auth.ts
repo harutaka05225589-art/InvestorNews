@@ -12,14 +12,16 @@ export async function verifyPassword(password: string, hash: string) {
     return await bcrypt.compare(password, hash);
 }
 
-export async function createSession(userId: number, nickname: string, email: string, plan: string = 'free') {
+export async function createSession(userId: number, nickname: string, email: string, plan: string = 'free', isAdmin: boolean = false) {
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
     const sessionData = {
         id: userId, // Standardize as 'id'
         userId,
         nickname,
         email,
-        plan
+
+        plan,
+        isAdmin
     };
 
     // @ts-ignore
