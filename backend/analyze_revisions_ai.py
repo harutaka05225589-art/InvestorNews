@@ -196,9 +196,9 @@ def process_revisions():
                 if is_upward:
                     try:
                         from send_x import post_to_x
-                        clean_title = title[:40] + "..." if len(title) > 40 else title
-                        promo = "💡 注目銘柄のランキングや大量保有報告もチェック！\n👉 https://rich-investor-news.com/revisions"
-                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n{clean_title}\n\n📄 PDF: {url}\n\n{promo}\n#日本株 #決算速報 #上方修正 #株式投資 #投資家さんと繋がりたい"
+                        clean_title = title[:30] + "..." if len(title) > 30 else title
+                        promo = "👉 https://rich-investor-news.com/revisions"
+                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n{clean_title}\n\n📄 PDF: {url}\n\n{promo}\n#株 #決算 #上方修正"
                         
                         tweet_id = post_to_x(x_msg)
                         if tweet_id:
