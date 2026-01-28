@@ -298,6 +298,7 @@
 .notifWrapper {
     position: relative;
     margin-right: 1rem;
+    z-index: 201;
 }
 
 .notifBtn {
