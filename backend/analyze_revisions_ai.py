@@ -193,7 +193,8 @@ def process_revisions():
                 print("  Saved to DB.")
 
                 # Post to X
-                if is_upward:
+                # Only post if upward AND revision rate >= 5%
+                if is_upward and rate >= 5.0:
                     try:
                         from send_x import post_to_x
                         
