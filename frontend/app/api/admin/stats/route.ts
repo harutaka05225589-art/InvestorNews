@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
         const db = new Database(DB_PATH, { readonly: true });
 
         // Retrieve userId from payload (it's directly in the session, not in session.user)
-        const user = db.prepare('SELECT is_admin FROM users WHERE account_id = ?').get(payload.userId) as { is_admin: number };
+        const user = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(payload.userId) as { is_admin: number };
 
         if (!user || user.is_admin !== 1) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
