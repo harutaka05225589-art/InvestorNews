@@ -34,19 +34,33 @@ function getRevisionType(rev: Revision) {
 
 export default function RevisionsPage() {
     const [revisions, setRevisions] = useState<Revision[]>([]);
+
+
     const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState(''); // Search State
 
     useEffect(() => {
-        fetch('/api/revisions')
-            .then(res => res.json())
-            .then(data => {
-                if (data.revisions) {
-                    setRevisions(data.revisions);
-                }
-            })
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false));
-    }, []);
+        const fetchRevisions = () => {
+            setLoading(true);
+            const url = searchQuery ? `/api/revisions?q=${encodeURIComponent(searchQuery)}` : '/api/revisions';
+            fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.revisions) {
+                        setRevisions(data.revisions);
+                    }
+                })
+                .catch(err => console.error(err))
+                .finally(() => setLoading(false));
+        };
+
+        // Debounce search
+        const timeoutId = setTimeout(() => {
+            fetchRevisions();
+        }, 500);
+
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]); // Re-run when searchQuery changes
 
     return (
         <main className={styles.container}>
@@ -78,6 +92,30 @@ export default function RevisionsPage() {
                     </Link>
                 </div>
             </header>
+
+            {/* Search Bar */}
+            <div style={{ maxWidth: '600px', margin: '0 auto 2rem auto', position: 'relative' }}>
+                <input
+                    type="text"
+                    placeholder="銘柄コードまたは社名で検索 (例: トヨタ, 7203)..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: '1rem 1.2rem',
+                        background: '#1e293b',
+                        border: '1px solid #334155',
+                        borderRadius: '30px',
+                        color: '#fff',
+                        fontSize: '1rem',
+                        outline: 'none',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                    }}
+                />
+                <div style={{ position: 'absolute', right: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
+                    🔍
+                </div>
+            </div>
 
             <div className={styles.statsGrid}></div>
 

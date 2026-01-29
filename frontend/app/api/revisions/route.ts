@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRevisions, getRevisionsByDateRange } from '@/lib/db';
+import { getRevisions, getRevisionsByDateRange, searchRevisions } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,7 +28,12 @@ export async function GET(request: NextRequest) {
             const endDate = `${y}-${m}-31`; // Loose end date
             revisions = getRevisionsByDateRange(startDate, endDate);
         } else {
-            revisions = getRevisions(50);
+            const search = searchParams.get('q');
+            if (search) {
+                revisions = searchRevisions(search);
+            } else {
+                revisions = getRevisions(50);
+            }
         }
 
         return NextResponse.json({ revisions });

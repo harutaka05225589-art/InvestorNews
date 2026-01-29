@@ -145,3 +145,20 @@ export function getRevisionsByTicker(ticker: string, limit: number = 5, excludeI
         return [];
     }
 }
+
+export function searchRevisions(query: string, limit: number = 50) {
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM revisions 
+            WHERE ticker LIKE ? OR company_name LIKE ? 
+            ORDER BY revision_date DESC, id DESC 
+            LIMIT ?
+        `);
+        const searchPattern = `%${query}%`;
+        return stmt.all(searchPattern, searchPattern, limit) as any[];
+    } catch (e) {
+        console.error("Search revisions error:", e);
+        return [];
+    }
+}
+
