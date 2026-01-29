@@ -3,11 +3,14 @@ import Database from 'better-sqlite3';
 import path from 'path';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { getRevisionsByTicker } from '@/lib/db'; // Import helper
 
 // Function to get DB connection (reused logic)
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
 function getRevision(id: string) {
+    // We strictly use the local DB logic here or can reuse lib/db if we exported a getter by ID.
+    // For now, keep existing local logic for ID, but use lib for related.
     try {
         const db = new Database(DB_PATH, { readonly: true });
         const stmt = db.prepare('SELECT * FROM revisions WHERE id = ?');
@@ -151,6 +154,73 @@ export default async function RevisionPage({ params }: Props) {
                     </div>
                 </div>
             </article>
+
+            {/* Related Revisions */}
+            <div style={{ marginTop: '4rem' }}>
+                <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '0.5rem' }}>
+                    📈 {revision.company_name} の過去の修正履歴
+                </h3>
+                {getRevisionsByTicker(revision.ticker, 5, revision.id).length > 0 ? (
+                    <div style={{ display: 'grid', gap: '1rem' }}>
+                        {getRevisionsByTicker(revision.ticker, 5, revision.id).map((rel: any) => (
+                            <Link href={`/revisions/${rel.id}`} key={rel.id} style={{ textDecoration: 'none' }}>
+                                <div style={{
+                                    background: '#1e293b', padding: '1.2rem', borderRadius: '8px',
+                                    border: '1px solid #334155', transition: 'transform 0.2s', display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+                                }} className="hover:translate-x-1">
+                                    <div>
+                                        <div style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.3rem' }}>{new Date(rel.revision_date).toLocaleDateString()}</div>
+                                        <div style={{ color: '#e2e8f0', fontWeight: 'bold' }}>{rel.quarter || '業績修正'}</div>
+                                    </div>
+                                    <div style={{
+                                        color: rel.is_upward === 1 ? '#4ade80' : '#f87171',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.95rem',
+                                        background: rel.is_upward === 1 ? 'rgba(74, 222, 128, 0.1)' : 'rgba(248, 113, 113, 0.1)',
+                                        padding: '0.3rem 0.8rem', borderRadius: '20px'
+                                    }}>
+                                        {rel.is_upward === 1 ? '上方修正' : '下方修正'}
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ) : (
+                    <p style={{ color: '#64748b' }}>過去の履歴はありません。</p>
+                )}
+            </div>
+
+            {/* Breadcrumbs JSON-LD */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "BreadcrumbList",
+                        "itemListElement": [
+                            {
+                                "@type": "ListItem",
+                                "position": 1,
+                                "name": "ホーム",
+                                "item": "https://rich-investor-news.com"
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 2,
+                                "name": "修正速報",
+                                "item": "https://rich-investor-news.com/revisions"
+                            },
+                            {
+                                "@type": "ListItem",
+                                "position": 3,
+                                "name": `${revision.company_name} (${revision.ticker})`,
+                                "item": `https://rich-investor-news.com/revisions/${id}`
+                            }
+                        ]
+                    })
+                }}
+            />
+
 
             <div style={{ marginTop: '3rem', textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
                 <p>※ AIによる自動解析結果であり、内容の正確性を保証するものではありません。必ず一次情報をご確認ください。</p>

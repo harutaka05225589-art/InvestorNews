@@ -126,3 +126,22 @@ export function getRevisionRanking(limit: number = 20) {
         return [];
     }
 }
+export function getRevisionsByTicker(ticker: string, limit: number = 5, excludeId: number | null = null) {
+    try {
+        let query = 'SELECT * FROM revisions WHERE ticker = ?';
+        const params: any[] = [ticker];
+
+        if (excludeId) {
+            query += ' AND id != ?';
+            params.push(excludeId);
+        }
+
+        query += ' ORDER BY revision_date DESC, id DESC LIMIT ?';
+        params.push(limit);
+
+        const stmt = db.prepare(query);
+        return stmt.all(...params) as any[];
+    } catch (e) {
+        return [];
+    }
+}
