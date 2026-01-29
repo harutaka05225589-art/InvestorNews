@@ -1,4 +1,4 @@
-import { getInvestors } from '@/lib/db';
+import { getInvestors, getRevisions } from '@/lib/db';
 import { Investor } from '@/lib/types';
 import { MetadataRoute } from 'next';
 
@@ -6,6 +6,9 @@ const BASE_URL = 'https://rich-investor-news.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const investors = getInvestors() as Investor[];
+    // Get last 1000 revisions to ensure recent content is indexed
+    // SEO Strategy: We want these specific pages to be found
+    const revisions = getRevisions(1000);
 
     // Dynamic Routes: Investor News Page
     const investorNewsUrls = investors.map((investor) => ({
@@ -13,6 +16,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: new Date(),
         changeFrequency: 'daily' as const,
         priority: 0.8,
+    }));
+
+    // Dynamic Routes: Revisions Page
+    const revisionUrls = revisions.map((rev: any) => ({
+        url: `${BASE_URL}/revisions/${rev.id}`,
+        lastModified: new Date(rev.revision_date), // Use revision date as last modified
+        changeFrequency: 'never' as const, // Revision content rarely changes once published
+        priority: 0.7,
     }));
 
     // Dynamic Routes: Investor Introduction Article Page
@@ -121,5 +132,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         ...staticRoutes,
         ...investorIntroUrls,
         ...investorNewsUrls,
+        ...revisionUrls,
     ];
 }
