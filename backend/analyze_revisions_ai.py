@@ -205,28 +205,18 @@ def process_revisions():
                         og_subtitle = summary
                         og_url = f"https://rich-investor-news.com/api/og?title={requests.utils.quote(og_title)}&subtitle={requests.utils.quote(og_subtitle)}&type=alert"
                         
-                        image_path = None
-                        try:
-                            # Download OGP Image
-                            print(f"  Downloading OGP: {og_url}")
-                            img_res = requests.get(og_url, timeout=10)
-                            if img_res.status_code == 200:
-                                with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as img_tmp:
-                                    img_tmp.write(img_res.content)
-                                    image_path = img_tmp.name
-                            else:
-                                print(f"  OGP Download Failed: {img_res.status_code}")
-                        except Exception as img_e:
-                            print(f"  OGP Fetch Error: {img_e}")
-
+                        # New Logic: Clickable OGP Card
+                        # Post URL to the detail page, which has the OGP meta tags
+                        detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
+                        
                         clean_title = title[:30] + "..." if len(title) > 30 else title
-                        promo = "👉 https://rich-investor-news.com/revisions"
-                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n{clean_title}\n\n📄 PDF: {url}\n\n{promo}\n#株 #決算 #上方修正"
                         
-                        tweet_id = post_to_x(x_msg, media_path=image_path)
+                        # Message must NOT have media attached for the card to show up
+                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n#株 #決算 #上方修正"
                         
-                        if image_path and os.path.exists(image_path):
-                            os.remove(image_path)
+                        # Post without media (pass None)
+                        # The URL in text will automatically be cardified by X
+                        tweet_id = post_to_x(x_msg, media_path=None)
 
                         if tweet_id:
                             print(f"  -> Posted to X successfully: {tweet_id}")
