@@ -96,7 +96,9 @@ def analyze_revision_pdf(pdf_path, title):
                     # If this is the last model, we should propagate this error to stop the script
                     if model_name == candidate_models[-1]:
                         raise Exception("QUOTA_EXCEEDED")
-                    time.sleep(2) # Brief pause before next model
+                    
+                    print("  -> Sleeping 20s to recover quota...")
+                    time.sleep(20) # Wait 20s before next model
                     continue
                 
                 # 404 means model not found, keep trying.
