@@ -81,7 +81,7 @@ export default function RevisionRankingPage() {
                                     </td>
                                     <td>{item.name}</td>
                                     <td style={{ fontWeight: 'bold', color: item.change_pct > 0 ? '#4ade80' : '#f87171' }}>
-                                        {item.change_pct > 0 ? '+' : ''}{item.change_pct}%
+                                        {item.change_pct > 0 ? '+' : ''}{Number(item.change_pct).toFixed(2)}%
                                     </td>
                                 </tr>
                             ))}

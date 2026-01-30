@@ -11,8 +11,8 @@ def weekly_job():
 if __name__ == "__main__":
     print("IR Scheduler started. Running every Sunday at 01:00 AM.")
     
-    # Schedule for Sunday night (Monday morning 01:00)
-    schedule.every().sunday.at("01:00").do(weekly_job)
+    # Schedule for Daily check at 01:00 AM
+    schedule.every().day.at("01:00").do(weekly_job)
     
     # Also run once on startup to ensure data is fresh? 
     # Maybe not, as it takes time. Let's just wait for schedule.

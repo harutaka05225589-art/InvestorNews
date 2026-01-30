@@ -89,7 +89,12 @@ export default function TodayRevisionsPage() {
                                         </td>
                                         <td style={{ minWidth: '250px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span style={{ fontWeight: 600 }}>{rev.company_name}</span>
+                                                {/* Link to Detail Page */}
+                                                <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                    <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}>
+                                                        {rev.company_name}
+                                                    </span>
+                                                </Link>
                                             </div>
                                             {/* AI Summary */}
                                             {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
@@ -103,14 +108,16 @@ export default function TodayRevisionsPage() {
                                                 <span className={`${styles.badge} ${styles[type]}`}>
                                                     {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
                                                 </span>
-                                                {rate !== undefined && rate !== 0 && (
+                                                {rate !== undefined && rate !== null && rate !== 0 ? (
                                                     <span style={{
                                                         fontSize: '0.85rem',
                                                         fontWeight: 'bold',
                                                         color: rate > 0 ? '#4ade80' : '#f87171'
                                                     }}>
-                                                        {rate > 0 ? '+' : ''}{rate}%
+                                                        {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
                                                     </span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
                                                 )}
                                             </div>
                                         </td>

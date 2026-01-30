@@ -168,14 +168,16 @@ export default function RevisionsPage() {
                                                 <span className={`${styles.badge} ${styles[type]}`}>
                                                     {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
                                                 </span>
-                                                {rate !== undefined && rate !== 0 && (
+                                                {rate !== undefined && rate !== null && rate !== 0 ? (
                                                     <span style={{
                                                         fontSize: '0.85rem',
                                                         fontWeight: 'bold',
                                                         color: rate > 0 ? '#4ade80' : '#f87171'
                                                     }}>
-                                                        {rate > 0 ? '+' : ''}{rate}%
+                                                        {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
                                                     </span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
                                                 )}
                                             </div>
                                         </td>
