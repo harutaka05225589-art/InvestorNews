@@ -62,12 +62,13 @@ def process_backlog(limit=50):
                 is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
+                quarter = result.get('quarter', None)
                 forecast_data = result.get('forecast_data', None)
                 
                 # Encode JSON safely
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
                 
-                print(f"  Result: Up={is_upward}, Rate={rate}%, Table={'Yes' if forecast_data else 'No'}")
+                print(f"  Result: Up={is_upward}, Rate={rate}%, Q={quarter}")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
@@ -78,9 +79,10 @@ def process_backlog(limit=50):
                         revision_rate_op = ?,
                         ai_summary = ?,
                         forecast_data = ?,
+                        quarter = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, quarter, rev_id))
                 conn.commit()
                 
             else:
