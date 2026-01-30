@@ -43,26 +43,31 @@ def analyze_revision_pdf(pdf_path, title):
            - **営業利益(Operating Profit)が前回予想より増額されている場合は true (必須)。**
            - **営業利益が減額されている場合は、売上が増えていても false (下方修正扱い)。**
            - 黒字転換は true。赤字転落・赤字拡大は false。
-           - 配当修正のみで業績が変わらない場合は null (ニュートラル)。
-           - **営業利益の修正率がマイナスなのに true にすることは絶対に禁止。**
-           - **逆に、営業利益の修正率がプラス（増益）なら、原則として true (上方修正) とする。**
            
         2. revision_rate_op: 営業利益の修正率（%）。
            - 計算式: (今回予想 - 前回予想) / |前回予想| * 100
-           - 前回予想がゼロや記載なしの場合は 0.0。
-           - 小数点第1位まで（例: 12.5, -5.0）。
            
-        3. summary: 修正の理由を「必ず」30文字以内で要約。
-           - 空欄や「なし」は禁止。理由が明確でない場合は「業績動向を踏まえ修正」としてください。
-           - 例: 「海外販売が好調で円安も寄与」「原材料高騰により利益圧迫」
-           - 冒頭に「〜のため」と書くこと。
+        3. forecast_data: 以下の数値を抽出してJSONオブジェクトとして格納してください。
+           - 単位は「百万円」や「円」など、記載されている数値をそのまま（文字列でも可、できれば数値）入れてください。
+           - 項目がない場合は null。
+           - "previous": 前回予想, "revised": 今回修正予想
+           - "sales": 売上高
+           - "op": 営業利益 (Operating Profit)
+           - "ordinary": 経常利益 (Ordinary Profit)
+           - "net": 親会社株主に帰属する当期純利益 (Net Income)
+           - "dividend": 配当 (あれば)
 
         Output Format (JSON only):
-        {{
+        {
             "is_upward": true,
             "revision_rate_op": 10.5,
-            "summary": "北米の好調により増益"
-        }}
+            "summary": "北米の好調により増益",
+            "forecast_data": {
+                "previous": { "sales": 1000, "op": 100, "ordinary": 100, "net": 70 },
+                "revised": { "sales": 1200, "op": 120, "ordinary": 120, "net": 90 },
+                "unit": "百万円"
+            }
+        }
         """
 
         # Try multiple model names in order of preference (Based on user's available list)
@@ -177,6 +182,9 @@ def process_revisions():
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
                 
+                forecast_data = result.get('forecast_data', None)
+                forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
+
                 print(f"  Result: Up={is_upward}, Rate={rate}%, Sum={summary}")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
@@ -186,9 +194,10 @@ def process_revisions():
                     SET is_upward = ?, 
                         revision_rate_op = ?,
                         ai_summary = ?,
+                        forecast_data = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
 

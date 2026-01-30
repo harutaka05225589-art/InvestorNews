@@ -5,6 +5,12 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { getRevisionsByTicker } from '@/lib/db'; // Import helper
 
+// Helper to format currency
+const formatNum = (num: any) => {
+    if (num === null || num === undefined) return '-';
+    return Number(num).toLocaleString();
+};
+
 // Function to get DB connection (reused logic)
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
@@ -128,8 +134,61 @@ export default async function RevisionPage({ params }: Props) {
                             <span>種別</span>
                             <span>{revision.quarter || '通期予想'}</span>
                         </div>
-                        {/* Add more details if available in DB */}
                     </div>
+
+                    {/* Forecast Table (New) */}
+                    {revision.forecast_data && (
+                        <div style={{ marginTop: '2rem', overflowX: 'auto' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#94a3b8' }}>修正数値の詳細 ({JSON.parse(revision.forecast_data).unit || '単位: 百万円'})</h3>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', color: '#e2e8f0' }}>
+                                <thead>
+                                    <tr style={{ background: '#334155' }}>
+                                        <th style={{ padding: '0.8rem', textAlign: 'left' }}>項目</th>
+                                        <th style={{ padding: '0.8rem', textAlign: 'right' }}>前回予想</th>
+                                        <th style={{ padding: '0.8rem', textAlign: 'right', fontWeight: 'bold' }}>今回修正</th>
+                                        <th style={{ padding: '0.8rem', textAlign: 'right' }}>増減</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {(() => {
+                                        const fd = JSON.parse(revision.forecast_data);
+                                        const prev = fd.previous || {};
+                                        const rev = fd.revised || {};
+
+                                        const rows = [
+                                            { label: '売上高', k: 'sales' },
+                                            { label: '営業利益', k: 'op' },
+                                            { label: '経常利益', k: 'ordinary' },
+                                            { label: '純利益', k: 'net' },
+                                        ];
+
+                                        return rows.map(r => {
+                                            const p = prev[r.k];
+                                            const v = rev[r.k];
+                                            // Diff only if both exist and are numbers
+                                            let diff = null;
+                                            let diffClass = '';
+                                            if (typeof p === 'number' && typeof v === 'number') {
+                                                diff = v - p;
+                                                diffClass = diff > 0 ? '#4ade80' : diff < 0 ? '#f87171' : '#cbd5e1';
+                                            }
+
+                                            return (
+                                                <tr key={r.k} style={{ borderBottom: '1px solid #334155' }}>
+                                                    <td style={{ padding: '0.8rem' }}>{r.label}</td>
+                                                    <td style={{ padding: '0.8rem', textAlign: 'right' }}>{formatNum(p)}</td>
+                                                    <td style={{ padding: '0.8rem', textAlign: 'right', fontWeight: 'bold', background: 'rgba(255,255,255,0.05)' }}>{formatNum(v)}</td>
+                                                    <td style={{ padding: '0.8rem', textAlign: 'right', color: diffClass }}>
+                                                        {diff !== null ? (diff > 0 ? `+${formatNum(diff)}` : formatNum(diff)) : '-'}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        });
+                                    })()}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
 
                     <div style={{ marginTop: '3rem', textAlign: 'center' }}>
                         <a
