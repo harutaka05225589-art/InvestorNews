@@ -58,16 +58,16 @@ def analyze_revision_pdf(pdf_path, title):
            - "dividend": 配当 (あれば)
 
         Output Format (JSON only):
-        {
+        {{
             "is_upward": true,
             "revision_rate_op": 10.5,
             "summary": "北米の好調により増益",
-            "forecast_data": {
-                "previous": { "sales": 1000, "op": 100, "ordinary": 100, "net": 70 },
-                "revised": { "sales": 1200, "op": 120, "ordinary": 120, "net": 90 },
+            "forecast_data": {{
+                "previous": {{ "sales": 1000, "op": 100, "ordinary": 100, "net": 70 }},
+                "revised": {{ "sales": 1200, "op": 120, "ordinary": 120, "net": 90 }},
                 "unit": "百万円"
-            }
-        }
+            }}
+        }}
         """
 
         # Try multiple model names in order of preference (Based on user's available list)
