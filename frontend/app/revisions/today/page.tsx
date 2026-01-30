@@ -23,6 +23,10 @@ interface Revision {
 function getRevisionType(rev: Revision) {
     // 1. AI Analysis result (Priority)
     if (rev.ai_analyzed && rev.is_upward !== null && rev.is_upward !== undefined) {
+        // If the rate is 0 or null, consider it neutral (not downward)
+        if (!rev.revision_rate_op || rev.revision_rate_op === 0) {
+            return 'neutral';
+        }
         return rev.is_upward === 1 ? 'up' : 'down';
     }
 

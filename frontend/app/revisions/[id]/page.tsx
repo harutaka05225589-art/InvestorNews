@@ -116,8 +116,12 @@ export default async function RevisionPage({ params }: Props) {
                     </h1>
 
                     <div style={{ display: 'inline-block', padding: '0.5rem 1rem', borderRadius: '30px', background: bgColor, border: `1px solid ${borderColor}`, color: textColor, fontWeight: 'bold' }}>
-                        {isUpward ? '📈 上方修正' : '📉 下方修正'}
+                        {(() => {
+                            if (!revision.revision_rate_op || revision.revision_rate_op === 0) return '― 修正なし (0%)';
+                            return isUpward ? '📈 上方修正' : '📉 下方修正';
+                        })()}
                         {isUpward && revision.revision_rate_op > 0 && ` (+${Number(revision.revision_rate_op).toFixed(2)}%)`}
+                        {!isUpward && revision.revision_rate_op < 0 && ` (${Number(revision.revision_rate_op).toFixed(2)}%)`}
                     </div>
                 </div>
 
