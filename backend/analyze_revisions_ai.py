@@ -56,12 +56,15 @@ def analyze_revision_pdf(pdf_path, title):
            - "ordinary": 経常利益 (Ordinary Profit)
            - "net": 親会社株主に帰属する当期純利益 (Net Income)
            - "dividend": 配当 (あれば)
+        
+        4. quarter: 修正対象の期間（例: "第2四半期", "通期", "その他"）
 
         Output Format (JSON only):
         {{
             "is_upward": true,
             "revision_rate_op": 10.5,
             "summary": "北米の好調により増益",
+            "quarter": "通期",
             "forecast_data": {{
                 "previous": {{ "sales": 1000, "op": 100, "ordinary": 100, "net": 70 }},
                 "revised": {{ "sales": 1200, "op": 120, "ordinary": 120, "net": 90 }},
@@ -183,23 +186,26 @@ def process_revisions():
                 is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
+                quarter = result.get('quarter', None) # Extract quarter
                 
                 forecast_data = result.get('forecast_data', None)
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
 
-                print(f"  Result: Up={is_upward}, Rate={rate}%, Sum={summary}")
+                print(f"  Result: Up={is_upward}, Rate={rate}%, Q={quarter}")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
+                # Update DB including quarter
                 c.execute("""
                     UPDATE revisions 
                     SET is_upward = ?, 
                         revision_rate_op = ?,
                         ai_summary = ?,
                         forecast_data = ?,
+                        quarter = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, quarter, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
 

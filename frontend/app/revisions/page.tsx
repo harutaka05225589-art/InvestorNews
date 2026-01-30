@@ -148,7 +148,8 @@ export default function RevisionsPage() {
                                         </td>
                                         <td style={{ minWidth: '250px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <Link href={`/revisions?q=${rev.ticker}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                {/* Link to Detail Page */}
+                                                <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                     <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}
                                                         className={styles.companyLink}>
                                                         {rev.company_name}
@@ -180,16 +181,12 @@ export default function RevisionsPage() {
                                         </td>
                                         <td>
                                             <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none' }}>
-                                                    <span style={{ background: '#334155', color: '#fff', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.85rem' }}>
-                                                        詳細
-                                                    </span>
-                                                </Link>
+                                                {/* Detail button removed as requested, company name is now the link */}
                                                 {rev.source_url ? (
                                                     <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
                                                         📄 PDF
                                                     </a>
-                                                ) : null}
+                                                ) : '-'}
                                             </div>
                                         </td>
                                     </tr>
