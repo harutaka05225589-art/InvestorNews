@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from '../revisions.module.css';
 
 // Type definition (Shared ideally, but duplicating for speed)
