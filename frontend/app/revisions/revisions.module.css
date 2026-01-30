@@ -180,108 +180,104 @@
     .table td {
         display: block;
         width: 100%;
-        min-width: 0;
     }
 
-    /* Mobile Card Layout Improvements */
+    /* Card container */
     .table tr {
         background: var(--card-bg);
-        margin-bottom: 1.2rem;
-        /* More space between cards */
+        margin-bottom: 1rem;
         border: 1px solid var(--border);
         border-radius: 12px;
-        /* Softer corners */
-        padding: 1.2rem;
-        /* More internal breathing room */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
-        /* Stronger depth */
+        padding: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        position: relative;
     }
 
     .table td {
-        padding: 0.5rem 0;
-        /* More vertical separation */
-        border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-        /* Subtle separator */
+        padding: 0;
+        border: none;
+        margin-bottom: 0.5rem;
     }
 
-    .table td:last-child {
-        border-bottom: none;
-    }
-
-    /* Date */
+    /* 1. Date (Top Right or Top) */
     .table td:nth-child(1) {
-        font-size: 0.85rem;
-        color: #94a3b8;
-        margin-bottom: 0.2rem;
+        font-size: 0.8rem;
+        color: var(--secondary);
+        margin-bottom: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 0.5rem;
     }
 
-    /* Ticker & Name Container */
-    /* Rename these children to be clearer if possible, but strict nth-child is brittle. 
-       Assuming order: Date, Code, Name(Summary), Verdict, Link */
-
+    /* 2. Code (Small badge) */
     .table td:nth-child(2) {
         display: inline-block;
-        font-size: 1.2rem;
-        /* Larger code */
-        font-weight: 700;
-        margin-right: 0.8rem;
-        color: var(--primary);
+        margin-right: 0.5rem;
+        margin-bottom: 0;
     }
 
+    .table td:nth-child(2) a {
+        background: #334155;
+        color: #fff;
+        padding: 0.1rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
+        text-decoration: none;
+    }
+
+    /* 3. Company Name & AI Summary */
     .table td:nth-child(3) {
-        display: block;
-        font-size: 1.15rem;
-        /* Larger Company Name */
-        font-weight: 600;
-        margin-top: 0.2rem;
-        margin-bottom: 0.8rem;
+        margin-bottom: 1rem;
     }
 
-    /* AI Summary Box */
+    /* Company Name Link */
+    .table td:nth-child(3) a span {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--foreground);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    /* AI Summary Text */
     .table td:nth-child(3) p {
-        background: rgba(30, 41, 59, 0.8);
+        background: rgba(30, 41, 59, 0.5);
         padding: 0.8rem;
         border-radius: 8px;
-        margin-top: 0.8rem;
         font-size: 0.9rem !important;
-        /* Force readable size */
-        color: #e2e8f0 !important;
         line-height: 1.6;
-        border: 1px solid #334155;
+        color: #cbd5e1 !important;
+        margin-top: 0.5rem;
     }
 
-    /* Verdict */
+    /* 4. Verdict Badge */
     .table td:nth-child(4) {
         display: flex;
         align-items: center;
-        margin-top: 0.5rem;
-        justify-content: space-between;
-        /* Use full width */
+        margin-bottom: 1rem;
     }
 
-    .table td:nth-child(4)::before {
-        content: "AI判定:";
-        font-size: 0.8rem;
-        color: #94a3b8;
-        margin-right: 0.5rem;
-    }
-
-    /* Link */
+    /* 5. PDF Link (Full width button) */
     .table td:nth-child(5) {
-        text-align: right;
-        margin-top: 0.8rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-        padding-top: 0.8rem;
+        margin-top: 0.5rem;
     }
 
     .pdfLink {
-        display: inline-block;
+        display: block;
         width: 100%;
         text-align: center;
         background: #334155;
-        padding: 0.6rem 0;
+        padding: 0.8rem;
         border-radius: 6px;
-        color: white;
+        color: #e2e8f0;
         font-weight: bold;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+
+    .pdfLink:active {
+        background: #475569;
     }
 }
