@@ -1,10 +1,23 @@
-// DB Helper v3
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
 import { Investor, NewsItem } from './types';
 
-// DB is in the root of frontend usually, or explicitly set.
-const dbPath = path.join(process.cwd(), 'investor_news.db');
+// Robust DB Path Resolution
+const possiblePaths = [
+    path.join(process.cwd(), 'investor_news.db'),
+    path.join(process.cwd(), 'frontend', 'investor_news.db')
+];
+
+// Prefer the one that exists and has data
+let dbPath = possiblePaths[0]; // Default
+for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+        dbPath = p;
+        break;
+    }
+}
+console.log(`[DB] Using database at: ${dbPath}`);
 
 let db: ReturnType<typeof Database>;
 
@@ -12,7 +25,7 @@ try {
     db = new Database(dbPath, { verbose: console.log });
     db.pragma('journal_mode = WAL');
 } catch (error) {
-    console.error("Failed to connect to database at (v4)", dbPath, error);
+    console.error("Failed to connect to database at", dbPath, error);
     throw error;
 }
 
