@@ -71,19 +71,38 @@ export function deletePortfolioTransaction(transactionId: number, userId: number
 
 // --- Dividend Helpers ---
 
-export function getLatestDividend(ticker: string): number {
+export interface DividendInfo {
+    amount: number;
+    rightsMonth: number | null;
+    paymentMonth: number | null;
+}
+
+export function getLatestDividend(ticker: string): DividendInfo {
     try {
         const stmt = db.prepare(`
-            SELECT dividend_forecast_annual 
+            SELECT dividend_forecast_annual, dividend_rights_month, dividend_payment_month
             FROM revisions 
             WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL 
             ORDER BY revision_date DESC 
             LIMIT 1
         `);
-        const row = stmt.get(ticker) as { dividend_forecast_annual: number } | undefined;
-        return row ? row.dividend_forecast_annual : 0;
+        const row = stmt.get(ticker) as {
+            dividend_forecast_annual: number,
+            dividend_rights_month: number | null,
+            dividend_payment_month: number | null
+        } | undefined;
+
+        if (row) {
+            return {
+                amount: row.dividend_forecast_annual,
+                rightsMonth: row.dividend_rights_month,
+                paymentMonth: row.dividend_payment_month
+            };
+        }
+        return { amount: 0, rightsMonth: null, paymentMonth: null };
     } catch (e) {
-        return 0;
+        console.error("Get latest dividend error:", e);
+        return { amount: 0, rightsMonth: null, paymentMonth: null };
     }
 }
 

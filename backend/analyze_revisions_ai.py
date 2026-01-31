@@ -57,11 +57,13 @@ def analyze_revision_pdf(pdf_path, title):
            - "net": 親会社株主に帰属する当期純利益 (Net Income)
            - "dividend": 配当 (あれば)
         
-        5. dividend: 配当予想の修正がある場合、以下の情報を抽出してください。
+        6. dividend: 配当予想の修正がある場合、以下の情報を抽出してください。
            - "annual_forecast": 修正後の年間配当予想額（円単位、数値のみ）。合計欄がない場合は第2四半期末+期末などで計算してください。
            - "is_hike": 前回予想または前期実績と比較して「増配」である場合は true。
+           - "rights_month": 配当の権利確定月 (例: 3, 9)。複数ある場合は、期末配当の月を優先。
+           - "payment_month": 配当の支払開始月 (例: 6, 12)。記載がない場合は null。
         
-        6. quarter: 修正対象の期間（例: "第2四半期", "通期", "その他"）
+        7. quarter: 修正対象の期間（例: "第2四半期", "通期", "その他"）
 
         Output Format (JSON only):
         {{
@@ -71,7 +73,9 @@ def analyze_revision_pdf(pdf_path, title):
             "quarter": "通期",
             "dividend": {{
                 "annual_forecast": 120.0,
-                "is_hike": true
+                "is_hike": true,
+                "rights_month": 3,
+                "payment_month": 6
             }},
             "forecast_data": {{
                 "previous": {{ "sales": 1000, "op": 100, "ordinary": 100, "net": 70, "dividend": 100 }},
@@ -109,11 +113,13 @@ def analyze_revision_pdf(pdf_path, title):
                 div_data = result.get('dividend', {})
                 div_forecast = div_data.get('annual_forecast', None)
                 is_div_hike = 1 if div_data.get('is_hike') else 0
+                rights_month = div_data.get('rights_month', None)
+                payment_month = div_data.get('payment_month', None)
 
                 forecast_data = result.get('forecast_data', None)
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
 
-                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Hike={is_div_hike})")
+                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Hike={is_div_hike}, Rights={rights_month})")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
@@ -127,9 +133,11 @@ def analyze_revision_pdf(pdf_path, title):
                         quarter = ?,
                         dividend_forecast_annual = ?,
                         is_dividend_hike = ?,
+                        dividend_rights_month = ?,
+                        dividend_payment_month = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, is_div_hike, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, is_div_hike, rights_month, payment_month, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
 

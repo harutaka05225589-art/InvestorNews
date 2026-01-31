@@ -23,12 +23,18 @@ export async function GET(req: Request) {
 
         // Enhance with Dividend Data
         const txWithDiv = transactions.map(tx => {
-            const div = getLatestDividend(tx.ticker);
-            return { ...tx, latest_dividend: div };
+            const divInfo = getLatestDividend(tx.ticker);
+            return {
+                ...tx,
+                latest_dividend: divInfo.amount,
+                dividend_rights_month: divInfo.rightsMonth,
+                dividend_payment_month: divInfo.paymentMonth
+            };
         });
 
         return NextResponse.json({ transactions: txWithDiv });
     } catch (error) {
+        console.error("Portfolio GET Error:", error);
         return NextResponse.json({ error: 'Failed to fetch portfolio' }, { status: 500 });
     }
 }
@@ -37,9 +43,12 @@ export async function POST(req: Request) {
     try {
         const userId = await getUserId(req);
         const body = await req.json();
+        console.log("Portfolio POST Body:", body, "UserID:", userId);
+
         const { ticker, shares, price, date, accountType } = body;
 
         if (!ticker || shares === undefined || price === undefined) {
+            console.error("Missing fields:", body);
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
@@ -51,10 +60,11 @@ export async function POST(req: Request) {
             date || null,
             accountType || 'general'
         );
+        console.log(`Portfolio Add Success: ID=${result.lastInsertRowid}`);
 
         return NextResponse.json({ success: true, id: result.lastInsertRowid });
     } catch (error) {
-        console.error(error);
+        console.error("Portfolio POST Error:", error);
         return NextResponse.json({ error: 'Failed to add transaction' }, { status: 500 });
     }
 }

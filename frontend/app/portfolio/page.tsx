@@ -14,6 +14,8 @@ interface Transaction {
     transaction_date: string | null;
     account_type: 'nisa' | 'general';
     latest_dividend?: number; // From API
+    dividend_rights_month?: number | null;
+    dividend_payment_month?: number | null;
 }
 
 interface Holding {
@@ -23,6 +25,8 @@ interface Holding {
     totalInvested: number;
     projectedDividend: number;
     netDividend: number;
+    rightsMonth?: number | null;
+    paymentMonth?: number | null;
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a855f7', '#ec4899', '#6366f1'];
@@ -31,7 +35,6 @@ export default function PortfolioPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [holdings, setHoldings] = useState<Holding[]>([]);
     const [monthlyData, setMonthlyData] = useState<any[]>([]);
-    const [chartMode, setChartMode] = useState<'payment' | 'rights'>('payment'); // 'payment' (支払月) or 'rights' (権利月)
 
     // Form State
     const [formTicker, setFormTicker] = useState('');
@@ -113,7 +116,9 @@ export default function PortfolioPage() {
                 averagePrice: 0,
                 totalInvested: 0,
                 projectedDividend: 0,
-                netDividend: 0
+                netDividend: 0,
+                rightsMonth: tx.dividend_rights_month,
+                paymentMonth: tx.dividend_payment_month
             };
 
             // WAvg Price Calc
@@ -128,10 +133,32 @@ export default function PortfolioPage() {
 
             map.set(tx.ticker, current);
 
-            // Monthly Calc (Simulation: Assuming 3/9 rights -> 6/12 payment for now)
+            // Monthly Calc
+            // Logic: Distribute netDiv into 2 payments
+            // 1. Use actual Payment Month if available
+            // 2. Or Estimate from Rights Month (+3 months)
+            // 3. Fallback to 6/12 (June/Dec)
+
+            let payMonth1 = 6; // Default June
+
+            if (tx.dividend_payment_month) {
+                payMonth1 = tx.dividend_payment_month;
+            } else if (tx.dividend_rights_month) {
+                payMonth1 = (tx.dividend_rights_month + 3);
+                if (payMonth1 > 12) payMonth1 -= 12;
+            }
+
+            let payMonth2 = payMonth1 + 6;
+            if (payMonth2 > 12) payMonth2 -= 12;
+
             const halfNet = netDiv / 2;
-            montlyMap[5].amount += halfNet; // June (Index 5)
-            montlyMap[11].amount += halfNet; // Dec (Index 11)
+
+            // Allow for non-standard months by ensuring index 0-11
+            const idx1 = (payMonth1 - 1) % 12;
+            const idx2 = (payMonth2 - 1) % 12;
+
+            montlyMap[idx1].amount += halfNet;
+            montlyMap[idx2].amount += halfNet;
         });
 
         setHoldings(Array.from(map.values()));
@@ -141,7 +168,6 @@ export default function PortfolioPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Logic to support direct typing or selection
         let targetTicker = formTicker;
         if (!targetTicker && query) {
             const match = query.match(/^([0-9]{4})/);
@@ -300,7 +326,13 @@ export default function PortfolioPage() {
                                             <td style={{ padding: '0.5rem' }}>{tx.shares}株</td>
                                             <td style={{ padding: '0.5rem' }}>@{tx.price.toLocaleString()}</td>
                                             <td style={{ padding: '0.5rem' }}>
-                                                {tx.latest_dividend ? <span style={{ color: '#4ade80' }}>配当:{tx.latest_dividend}円</span> : <span style={{ color: '#64748b' }}>配当不明</span>}
+                                                {tx.latest_dividend ?
+                                                    <span style={{ color: '#4ade80' }}>
+                                                        配当:{tx.latest_dividend}円
+                                                        {tx.dividend_payment_month && <span style={{ fontSize: '0.8em', color: '#94a3b8', marginLeft: '4px' }}>({tx.dividend_payment_month}月払)</span>}
+                                                    </span> :
+                                                    <span style={{ color: '#64748b' }}>配当不明</span>
+                                                }
                                             </td>
                                             <td>
                                                 <button onClick={() => handleDelete(tx.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
@@ -358,7 +390,7 @@ export default function PortfolioPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h2 style={{ fontSize: '1.2rem' }}>月別 配当金 (予測)</h2>
                             <div style={{ fontSize: '0.8rem', background: '#334155', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                                3月/9月決算と仮定
+                                権利/支払月から推定
                             </div>
                         </div>
                         <div style={{ height: '250px' }}>
