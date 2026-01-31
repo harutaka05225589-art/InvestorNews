@@ -46,22 +46,26 @@ export async function POST(req: Request) {
         const body = await req.json();
         console.log("Portfolio POST Body:", body, "UserID:", userId);
 
-        const { ticker, shares, price, date, accountType } = body;
+        const { ticker, shares, price, date, accountType, type } = body;
 
         if (!ticker || shares === undefined || price === undefined) {
             console.error("Missing fields:", body);
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
         }
 
+        // Handle Sell: specific logic or just negative shares?
+        // We will store 'Sell' as negative shares in the DB to avoid schema migration
+        const finalShares = type === 'sell' ? -1 * Math.abs(Number(shares)) : Math.abs(Number(shares));
+
         const result = addPortfolioTransaction(
             userId,
             ticker,
-            Number(shares),
+            finalShares,
             Number(price),
             date || null,
             accountType || 'general'
         );
-        console.log(`Portfolio Add Success: ID=${result.lastInsertRowid}`);
+        console.log(`Portfolio Add Success: ID=${result.lastInsertRowid}, Type=${type}, Shares=${finalShares}`);
 
         return NextResponse.json({ success: true, id: result.lastInsertRowid });
     } catch (error) {

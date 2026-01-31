@@ -129,9 +129,10 @@ def process_revisions():
                     pdf_path = f.name
                 
                 result = analyze_revision_pdf(pdf_path, title)
-                
                 if os.path.exists(pdf_path):
-                    os.remove(pdf_path)            if result:
+                    os.remove(pdf_path)
+            
+            if result:
                 is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
