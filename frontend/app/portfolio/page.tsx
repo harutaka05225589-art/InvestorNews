@@ -9,22 +9,24 @@ import {
 interface Transaction {
     id: number;
     ticker: string;
-    company_name?: string; // Added
+    company_name?: string;
     shares: number;
     price: number;
     transaction_date: string | null;
     account_type: 'nisa' | 'general';
-    latest_dividend?: number; // From API
+    latest_dividend?: number;
     dividend_rights_month?: number | null;
     dividend_payment_month?: number | null;
 }
 
 interface Holding {
+    id: string; // Unique key (ticker + account)
     ticker: string;
-    name?: string; // Added
+    name?: string;
+    accountType: 'nisa' | 'general';
     totalShares: number;
     averagePrice: number;
-    totalInvested: number;
+    totalInvested: number; // Acquisition Cost
     projectedDividend: number;
     netDividend: number;
     rightsMonth?: number | null;
@@ -44,6 +46,7 @@ export default function PortfolioPage() {
     const [formPrice, setFormPrice] = useState('');
     const [formDate, setFormDate] = useState('');
     const [formAccount, setFormAccount] = useState<'nisa' | 'general'>('general');
+    const [formType, setFormType] = useState<'buy' | 'sell'>('buy');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Search State
@@ -91,8 +94,14 @@ export default function PortfolioPage() {
             const res = await fetch('/api/portfolio');
             const data = await res.json();
             if (data.transactions) {
-                setTransactions(data.transactions);
-                calculate(data.transactions);
+                // Sort by date ascending for correct AVG price calc
+                const sorted = data.transactions.sort((a: Transaction, b: Transaction) => {
+                    const da = a.transaction_date ? new Date(a.transaction_date).getTime() : 0;
+                    const db = b.transaction_date ? new Date(b.transaction_date).getTime() : 0;
+                    return da - db;
+                });
+                setTransactions(sorted);
+                calculate(sorted);
             }
         } catch (error) {
             console.error("Failed to fetch portfolio", error);
@@ -101,73 +110,106 @@ export default function PortfolioPage() {
 
     const calculate = (txs: Transaction[]) => {
         const map = new Map<string, Holding>();
+        const uniqueKeys: string[] = [];
 
-        // Monthly Aggregation (Initialize 1-12)
-        const montlyMap = new Array(12).fill(0).map((_, i) => ({ month: i + 1, amount: 0 }));
-
+        // Group by Ticker + AccountType
+        // Logic: Group transactions to calculate holdings
         txs.forEach(tx => {
-            const divPerShare = tx.latest_dividend || 0;
-            const grossDiv = tx.shares * divPerShare;
-            const taxRate = tx.account_type === 'nisa' ? 0 : 0.20315;
-            const netDiv = grossDiv * (1 - taxRate);
-
-            // Update Holdings Map
-            const current = map.get(tx.ticker) || {
-                ticker: tx.ticker,
-                name: tx.company_name || '', // Use Name
-                totalShares: 0,
-                averagePrice: 0,
-                totalInvested: 0,
-                projectedDividend: 0,
-                netDividend: 0,
-                rightsMonth: tx.dividend_rights_month,
-                paymentMonth: tx.dividend_payment_month
-            };
-
-            // WAvg Price Calc
-            const newTotalShares = current.totalShares + tx.shares;
-            const newTotalInvested = current.totalInvested + (tx.shares * tx.price);
-
-            current.totalShares = newTotalShares;
-            current.totalInvested = newTotalInvested;
-            current.averagePrice = newTotalInvested > 0 ? newTotalInvested / newTotalShares : 0;
-            current.projectedDividend += grossDiv;
-            current.netDividend += netDiv;
-            // Ensure name is set if we encountered it later
-            if (!current.name && tx.company_name) current.name = tx.company_name;
-
-            map.set(tx.ticker, current);
-
-            // Monthly Calc
-            // Logic: Distribute netDiv into 2 payments
-            // 1. Use actual Payment Month if available
-            // 2. Or Estimate from Rights Month (+3 months)
-            // 3. Fallback to 6/12 (June/Dec)
-
-            let payMonth1 = 6; // Default June
-
-            if (tx.dividend_payment_month) {
-                payMonth1 = tx.dividend_payment_month;
-            } else if (tx.dividend_rights_month) {
-                payMonth1 = (tx.dividend_rights_month + 3);
-                if (payMonth1 > 12) payMonth1 -= 12;
+            const key = `${tx.ticker}-${tx.account_type}`;
+            if (!map.has(key)) {
+                map.set(key, {
+                    id: key,
+                    ticker: tx.ticker,
+                    name: tx.company_name || '',
+                    accountType: tx.account_type,
+                    totalShares: 0,
+                    averagePrice: 0,
+                    totalInvested: 0,
+                    projectedDividend: 0,
+                    netDividend: 0,
+                    rightsMonth: tx.dividend_rights_month,
+                    paymentMonth: tx.dividend_payment_month
+                });
+                uniqueKeys.push(key);
             }
 
-            let payMonth2 = payMonth1 + 6;
-            if (payMonth2 > 12) payMonth2 -= 12;
+            const current = map.get(key)!;
 
-            const halfNet = netDiv / 2;
+            // Name Update
+            if (!current.name && tx.company_name) current.name = tx.company_name;
 
-            // Allow for non-standard months by ensuring index 0-11
-            const idx1 = (payMonth1 - 1) % 12;
-            const idx2 = (payMonth2 - 1) % 12;
+            // Buy/Sell Logic
+            if (tx.shares > 0) {
+                // BUY
+                const cost = tx.shares * tx.price;
+                const newTotalShares = current.totalShares + tx.shares;
+                const newTotalInvested = current.totalInvested + cost;
 
-            montlyMap[idx1].amount += halfNet;
-            montlyMap[idx2].amount += halfNet;
+                current.totalShares = newTotalShares;
+                current.totalInvested = newTotalInvested;
+                current.averagePrice = newTotalShares > 0 ? newTotalInvested / newTotalShares : 0;
+
+            } else {
+                // SELL (shares is negative)
+                const soldShares = Math.abs(tx.shares);
+                // Reduce shares
+                current.totalShares -= soldShares;
+                // Reduce invested amount proportionally (Average Price stays same)
+                current.totalInvested = current.totalShares * current.averagePrice;
+
+                if (current.totalShares <= 0) {
+                    current.totalShares = 0;
+                    current.totalInvested = 0;
+                    current.averagePrice = 0;
+                }
+            }
         });
 
-        setHoldings(Array.from(map.values()));
-        setMonthlyData(montlyMap);
+        // Calculate Dividends for current holdings
+        const holdingsList: Holding[] = [];
+        const monthlyMap = new Array(12).fill(0).map((_, i) => ({ month: i + 1, amount: 0 }));
+
+        map.forEach(h => {
+            if (h.totalShares > 0) {
+                // Find dividend info (simplest: find latest tx for this ticker)
+                const tx = txs.find(t => t.ticker === h.ticker);
+                const divPerShare = tx?.latest_dividend || 0;
+
+                const grossDiv = h.totalShares * divPerShare;
+                const taxRate = h.accountType === 'nisa' ? 0 : 0.20315;
+                const netDiv = grossDiv * (1 - taxRate);
+
+                h.projectedDividend = grossDiv;
+                h.netDividend = netDiv;
+
+                holdingsList.push(h);
+
+                // Add to Monthly
+                let payMonth1 = 6;
+                const payM = h.paymentMonth;
+                const rightM = h.rightsMonth;
+
+                if (payM) {
+                    payMonth1 = payM;
+                } else if (rightM) {
+                    payMonth1 = (rightM + 3);
+                    if (payMonth1 > 12) payMonth1 -= 12;
+                }
+
+                let payMonth2 = payMonth1 + 6;
+                if (payMonth2 > 12) payMonth2 -= 12;
+
+                const halfNet = netDiv / 2;
+                const idx1 = (payMonth1 - 1) % 12;
+                const idx2 = (payMonth2 - 1) % 12;
+
+                monthlyMap[idx1].amount += halfNet;
+                monthlyMap[idx2].amount += halfNet;
+            }
+        });
+
+        setHoldings(holdingsList);
+        setMonthlyData(monthlyMap);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -190,12 +232,16 @@ export default function PortfolioPage() {
 
         setIsSubmitting(true);
         try {
+            // If Sell, make shares negative
+            const sharesNum = Number(formShares);
+            const finalShares = formType === 'sell' ? -sharesNum : sharesNum;
+
             const res = await fetch('/api/portfolio', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     ticker: targetTicker.toUpperCase(),
-                    shares: Number(formShares),
+                    shares: finalShares,
                     price: Number(formPrice),
                     date: formDate || null,
                     accountType: formAccount
@@ -235,19 +281,50 @@ export default function PortfolioPage() {
     const totalNetDividend = holdings.reduce((sum, h) => sum + h.netDividend, 0);
 
     return (
-        <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+        <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem', overflowX: 'hidden' }}>
             <header style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 マイ・ポートフォリオ</h1>
                 <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
             </header>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
+            {/* Responsive Grid: Changed minmax to 100% on small screens */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '2rem',
+                width: '100%'
+            }}>
 
                 {/* Left Column: Input Form & Transactions */}
-                <div>
+                <div style={{ minWidth: 0 }}>
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>➕ 取引の登録</h2>
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+
+                            {/* New: Transaction Type Toggle */}
+                            <div style={{ display: 'flex', gap: '1rem', marginBottom: '0.5rem' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                    <input
+                                        type="radio"
+                                        name="type"
+                                        checked={formType === 'buy'}
+                                        onChange={() => setFormType('buy')}
+                                        style={{ marginRight: '5px' }}
+                                    />
+                                    <span style={{ color: '#4ade80', fontWeight: 'bold' }}>買い (Buy)</span>
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                                    <input
+                                        type="radio"
+                                        name="type"
+                                        checked={formType === 'sell'}
+                                        onChange={() => setFormType('sell')}
+                                        style={{ marginRight: '5px' }}
+                                    />
+                                    <span style={{ color: '#ef4444', fontWeight: 'bold' }}>売り (Sell)</span>
+                                </label>
+                            </div>
+
                             <div style={{ position: 'relative' }}>
                                 <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>銘柄 (コード または 社名)</label>
                                 <input
@@ -296,8 +373,8 @@ export default function PortfolioPage() {
                                     <input type="number" value={formShares} onChange={e => setFormShares(e.target.value)} placeholder="100" style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }} required />
                                 </div>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>取得単価 (円)</label>
-                                    <input type="number" value={formPrice} onChange={e => setFormPrice(e.target.value)} placeholder="2000" style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }} required />
+                                    <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>単価 (円)</label>
+                                    <input type="number" value={formPrice} onChange={e => setFormPrice(e.target.value)} placeholder={formType === 'sell' ? "売却単価" : "取得単価"} style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }} required />
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -313,23 +390,33 @@ export default function PortfolioPage() {
                                     </select>
                                 </div>
                             </div>
-                            <button type="submit" disabled={isSubmitting} style={{ marginTop: '0.5rem', background: 'var(--accent)', color: '#000', padding: '0.8rem', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', border: 'none' }}>
-                                {isSubmitting ? '登録中...' : '登録する'}
+                            <button type="submit" disabled={isSubmitting}
+                                style={{
+                                    marginTop: '0.5rem',
+                                    background: formType === 'sell' ? '#ef4444' : 'var(--accent)',
+                                    color: '#000',
+                                    padding: '0.8rem',
+                                    borderRadius: '6px',
+                                    fontWeight: 'bold',
+                                    cursor: 'pointer',
+                                    border: 'none'
+                                }}>
+                                {isSubmitting ? '処理中...' : (formType === 'sell' ? '売却を登録' : '購入を登録')}
                             </button>
                         </form>
                     </section>
 
                     {/* Holdings Table (Aggregated) */}
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📊 保有銘柄 (合算)</h2>
+                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📊 保有銘柄 (口座別)</h2>
                         <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', minWidth: '600px' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '2px solid #334155', color: '#94a3b8' }}>
                                         <th style={{ padding: '0.5rem', textAlign: 'left' }}>銘柄</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>口座</th>
                                         <th style={{ padding: '0.5rem', textAlign: 'right' }}>保有株数</th>
                                         <th style={{ padding: '0.5rem', textAlign: 'right' }}>平均取得単価</th>
-                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>投資額</th>
                                         <th style={{ padding: '0.5rem', textAlign: 'right' }}>予想配当(年)</th>
                                     </tr>
                                 </thead>
@@ -338,7 +425,7 @@ export default function PortfolioPage() {
                                         <tr><td colSpan={5} style={{ padding: '1rem', textAlign: 'center', color: '#64748b' }}>データがありません</td></tr>
                                     ) : (
                                         holdings.map(h => (
-                                            <tr key={h.ticker} style={{ borderBottom: '1px solid #334155' }}>
+                                            <tr key={h.id} style={{ borderBottom: '1px solid #334155' }}>
                                                 <td style={{ padding: '0.8rem 0.5rem', fontWeight: 'bold' }}>
                                                     {h.name ? (
                                                         <>
@@ -349,9 +436,19 @@ export default function PortfolioPage() {
                                                         h.ticker
                                                     )}
                                                 </td>
+                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>
+                                                    <span style={{
+                                                        padding: '2px 6px',
+                                                        borderRadius: '4px',
+                                                        fontSize: '0.8em',
+                                                        background: h.accountType === 'nisa' ? '#ef4444' : '#64748b',
+                                                        color: '#fff'
+                                                    }}>
+                                                        {h.accountType === 'nisa' ? 'NISA' : '特定'}
+                                                    </span>
+                                                </td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{h.totalShares.toLocaleString()}株</td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>@{Math.round(h.averagePrice).toLocaleString()}</td>
-                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{Math.round(h.totalInvested).toLocaleString()}</td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right', color: '#4ade80' }}>
                                                     {Math.round(h.projectedDividend).toLocaleString()}
                                                     <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(税引前)</span>
@@ -366,21 +463,20 @@ export default function PortfolioPage() {
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
                         <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📜 取引履歴</h2>
                         <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', minWidth: '500px' }}>
                                 <tbody>
-                                    {transactions.map(tx => (
+                                    {transactions.slice(0).reverse().map(tx => (
                                         <tr key={tx.id} style={{ borderBottom: '1px solid #334155' }}>
-                                            <td style={{ padding: '0.5rem' }}>{tx.ticker}</td>
-                                            <td style={{ padding: '0.5rem' }}>{tx.shares}株</td>
+                                            <td style={{ padding: '0.5rem' }}>
+                                                <div>{tx.ticker}</div>
+                                                <div style={{ fontSize: '0.8em', color: tx.shares > 0 ? '#4ade80' : '#ef4444' }}>
+                                                    {tx.shares > 0 ? '買い' : '売り'}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: '0.5rem' }}>{Math.abs(tx.shares)}株</td>
                                             <td style={{ padding: '0.5rem' }}>@{tx.price.toLocaleString()}</td>
                                             <td style={{ padding: '0.5rem' }}>
-                                                {tx.latest_dividend ?
-                                                    <span style={{ color: '#4ade80' }}>
-                                                        配当:{tx.latest_dividend}円
-                                                        {tx.dividend_payment_month && <span style={{ fontSize: '0.8em', color: '#94a3b8', marginLeft: '4px' }}>({tx.dividend_payment_month}月払)</span>}
-                                                    </span> :
-                                                    <span style={{ color: '#64748b' }}>配当不明</span>
-                                                }
+                                                {tx.account_type === 'nisa' ? 'NISA' : '特定'}
                                             </td>
                                             <td>
                                                 <button onClick={() => handleDelete(tx.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
@@ -394,7 +490,7 @@ export default function PortfolioPage() {
                 </div>
 
                 {/* Right Column: Visualizations */}
-                <div>
+                <div style={{ minWidth: 0 }}>
                     {/* Summary Card */}
                     <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #334155' }}>
                         <h3 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>年間受取配当金 (手取り)</h3>
