@@ -17,6 +17,58 @@ try {
 }
 
 
+export default db;
+
+// --- Portfolio Helpers ---
+
+export interface PortfolioTransaction {
+    id: number;
+    user_id: number;
+    ticker: string;
+    shares: number;
+    price: number;
+    transaction_date: string | null;
+    account_type: 'nisa' | 'general';
+    created_at: string;
+}
+
+export function addPortfolioTransaction(userId: number, ticker: string, shares: number, price: number, date: string | null, accountType: string) {
+    try {
+        const stmt = db.prepare(`
+            INSERT INTO portfolio_transactions (user_id, ticker, shares, price, transaction_date, account_type)
+            VALUES (?, ?, ?, ?, ?, ?)
+        `);
+        return stmt.run(userId, ticker, shares, price, date, accountType);
+    } catch (e) {
+        console.error("Add transaction error:", e);
+        throw e;
+    }
+}
+
+export function getPortfolioTransactions(userId: number): PortfolioTransaction[] {
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM portfolio_transactions
+            WHERE user_id = ?
+            ORDER BY transaction_date DESC, created_at DESC
+        `);
+        return stmt.all(userId) as PortfolioTransaction[];
+    } catch (e) {
+        console.error("Get transactions error:", e);
+        return [];
+    }
+}
+
+export function deletePortfolioTransaction(transactionId: number, userId: number) {
+    try {
+        const stmt = db.prepare('DELETE FROM portfolio_transactions WHERE id = ? AND user_id = ?');
+        return stmt.run(transactionId, userId);
+    } catch (e) {
+        console.error("Delete transaction error:", e);
+        throw e;
+    }
+}
+
 // --- Dividend Helpers ---
 
 export function getLatestDividend(ticker: string): number {
