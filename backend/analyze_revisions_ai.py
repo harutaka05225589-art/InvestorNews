@@ -35,41 +35,36 @@ def analyze_revision_pdf(pdf_path, title):
             
         # Define Prompt
         prompt = f"""
-        あなたはプロの証券アナリストです。
-        添付のPDF資料（企業の適時開示情報：{title}）を分析し、以下の情報をJSON形式で抽出してください。
+        あなたの任務は、添付のPDF資料（企業の適時開示情報：{title}）から「業績予想」または「配当予想」の数値を抽出し、JSON形式で出力することです。
         
         【重要ルール 判断基準】
-        1. is_upward: 「投資家にとってポジティブな上方修正」かを厳格に判定。
-           - **営業利益(Operating Profit)が前回予想より増額されている場合は true (必須)。**
-           - **営業利益が減額されている場合は、売上が増えていても false (下方修正扱い)。**
+        1. is_upward: 「投資家にとってポジティブな修正」か？
+           - **営業利益(Operating Profit)が前回予想より増額されている場合は true。**
+           - **営業利益の記載がなく、配当が増額（増配）されている場合も true。**
+           - **営業利益も配当も変更なし、または減額/減配の場合は false。**
            - 黒字転換は true。赤字転落・赤字拡大は false。
            
         2. revision_rate_op: 営業利益の修正率（%）。
-           - 計算式: (今回予想 - 前回予想) / |前回予想| * 100
+           - 営業利益の記載がない場合やゼロの場合は 0.0 とする。
            
-        3. forecast_data: 以下の数値を抽出してJSONオブジェクトとして格納してください。
-           - 単位は「百万円」や「円」など、記載されている数値をそのまま（文字列でも可、できれば数値）入れてください。
-           - 項目がない場合は null。
+        3. forecast_data: 業績予想の数値を抽出（修正がない場合は null でも可だが、あれば抽出）。
            - "previous": 前回予想, "revised": 今回修正予想
-           - "sales": 売上高
-           - "op": 営業利益 (Operating Profit)
-           - "ordinary": 経常利益 (Ordinary Profit)
-           - "net": 親会社株主に帰属する当期純利益 (Net Income)
-           - "dividend": 配当 (あれば)
+           - "sales": 売上高, "op": 営業利益, "ordinary": 経常利益, "net": 純利益
         
-        6. dividend: 配当予想の修正がある場合、以下の情報を抽出してください。
-           - "annual_forecast": 修正後の年間配当予想額（円単位、数値のみ）。合計欄がない場合は第2四半期末+期末などで計算してください。
-           - "is_hike": 前回予想または前期実績と比較して「増配」である場合は true。
-           - "rights_month": 配当の権利確定月 (例: 3, 9)。複数ある場合は、期末配当の月を優先。
-           - "payment_month": 配当の支払開始月 (例: 6, 12)。記載がない場合は null。
+        4. dividend: **配当情報の抽出（最重要）**。
+           - 配当予想の修正、剰余金の処分、配当決定などのニュースから、**「年間配当等の総額（１株当たり）」**を抽出してください。
+           - "annual_forecast": 修正後の年間配当予想額（円単位、数値）。合計欄がない場合は四半期ごとの合算値を入れる。不明な場合は null。
+           - "is_hike": 前回予想または前期実績と比較して「増配」である場合は true。減配や維持は false。
+           - "rights_month": 配当の権利確定月 (例: 3, 9)。期末配当の月を優先。
+           - "payment_month": 配当の支払開始月 (例: 6, 12)。記載がなければ null。
         
-        7. quarter: 修正対象の期間（例: "第2四半期", "通期", "その他"）
+        5. quarter: 対象期間（例: "通期", "第2四半期"）
 
         Output Format (JSON only):
         {{
             "is_upward": true,
-            "revision_rate_op": 10.5,
-            "summary": "北米の好調により増益",
+            "revision_rate_op": 0.0,
+            "summary": "業績修正なしかつ増配を発表",
             "quarter": "通期",
             "dividend": {{
                 "annual_forecast": 120.0,
@@ -77,11 +72,7 @@ def analyze_revision_pdf(pdf_path, title):
                 "rights_month": 3,
                 "payment_month": 6
             }},
-            "forecast_data": {{
-                "previous": {{ "sales": 1000, "op": 100, "ordinary": 100, "net": 70, "dividend": 100 }},
-                "revised": {{ "sales": 1200, "op": 120, "ordinary": 120, "net": 90, "dividend": 120 }},
-                "unit": "百万円"
-            }}
+            "forecast_data": null
         }}
         """
 

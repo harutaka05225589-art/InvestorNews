@@ -61,9 +61,9 @@ def fetch_tdnet_revisions(target_date=None):
                 if a_tag:
                     pdf_link = "https://www.release.tdnet.info/inbs/" + a_tag['href']
                 
-                # Filter for "Upward Revision" or generally "Revision of Forecast"
-                # Keywords: 業績予想の修正, 修正に関するお知らせ
-                if "業績予想の修正" in title_text or "差異" in title_text:
+                # Filter for "Upward Revision", "Dividend Revision", "Buybacks"
+                # Keywords: 業績予想の修正, 修正に関するお知らせ, 配当, 剰余金の処分, 自己株式
+                if any(k in title_text for k in ["業績予想の修正", "差異", "配当", "剰余金の処分", "自己株式"]):
                     ticker = code_text[:4] # 12340 -> 1234
                     
                     print(f"  Found Revision: {ticker} {name_text} - {title_text}")
