@@ -287,11 +287,11 @@ export default function PortfolioPage() {
                 <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
             </header>
 
-            {/* Responsive Grid: Changed minmax to 100% on small screens */}
+            {/* Responsive Grid: Changed minmax to 260px and reduced gap on small screens */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '2rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+                gap: '1.5rem',
                 width: '100%'
             }}>
 
