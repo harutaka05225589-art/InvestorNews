@@ -606,7 +606,7 @@ export default function PortfolioPage() {
                             <ResponsiveContainer width="100%" height="100%">
                                 <BarChart
                                     data={monthlyData}
-                                    onClick={(data) => {
+                                    onClick={(data: any) => {
                                         if (data && data.activePayload && data.activePayload.length > 0) {
                                             setSelectedMonth(data.activePayload[0].payload.month);
                                         }
