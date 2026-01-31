@@ -108,12 +108,16 @@ export default function PortfolioPage() {
         }
     };
 
+    const [chartMode, setChartMode] = useState<'payment' | 'rights'>('payment');
+    const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+
+    // ... (fetchData etc remain same)
+
     const calculate = (txs: Transaction[]) => {
         const map = new Map<string, Holding>();
         const uniqueKeys: string[] = [];
 
         // Group by Ticker + AccountType
-        // Logic: Group transactions to calculate holdings
         txs.forEach(tx => {
             const key = `${tx.ticker}-${tx.account_type}`;
             if (!map.has(key)) {
@@ -167,7 +171,6 @@ export default function PortfolioPage() {
 
         // Calculate Dividends for current holdings
         const holdingsList: Holding[] = [];
-        const monthlyMap = new Array(12).fill(0).map((_, i) => ({ month: i + 1, amount: 0 }));
 
         map.forEach(h => {
             if (h.totalShares > 0) {
@@ -183,34 +186,69 @@ export default function PortfolioPage() {
                 h.netDividend = netDiv;
 
                 holdingsList.push(h);
-
-                // Add to Monthly
-                let payMonth1 = 6;
-                const payM = h.paymentMonth;
-                const rightM = h.rightsMonth;
-
-                if (payM) {
-                    payMonth1 = payM;
-                } else if (rightM) {
-                    payMonth1 = (rightM + 3);
-                    if (payMonth1 > 12) payMonth1 -= 12;
-                }
-
-                let payMonth2 = payMonth1 + 6;
-                if (payMonth2 > 12) payMonth2 -= 12;
-
-                const halfNet = netDiv / 2;
-                const idx1 = (payMonth1 - 1) % 12;
-                const idx2 = (payMonth2 - 1) % 12;
-
-                monthlyMap[idx1].amount += halfNet;
-                monthlyMap[idx2].amount += halfNet;
             }
         });
 
         setHoldings(holdingsList);
-        setMonthlyData(monthlyMap);
+        // Note: setMonthlyData removed here, moved to useMemo below
     };
+
+    // Re-calculate monthly data whenever holdings or mode changes
+    const monthlyData = useMemo(() => {
+        const data = new Array(12).fill(0).map((_, i) => ({
+            month: i + 1,
+            amount: 0,
+            details: [] as { ticker: string, name?: string, partAmount: number }[]
+        }));
+
+        holdings.forEach(h => {
+            const halfNet = h.netDividend / 2; // Assuming semi-annual
+
+            // Determine primary month based on mode
+            let m1 = -1;
+
+            if (chartMode === 'payment') {
+                if (h.paymentMonth) {
+                    m1 = h.paymentMonth;
+                } else if (h.rightsMonth) {
+                    // Estimate: Rights + 3
+                    m1 = h.rightsMonth + 3;
+                    if (m1 > 12) m1 -= 12;
+                }
+            } else {
+                // Rights Mode
+                if (h.rightsMonth) {
+                    m1 = h.rightsMonth;
+                } else if (h.paymentMonth) {
+                    // Estimate: Payment - 3
+                    m1 = h.paymentMonth - 3;
+                    if (m1 < 1) m1 += 12;
+                }
+            }
+
+            if (m1 !== -1) {
+                // Add first payment/rights
+                const idx1 = (m1 - 1) % 12;
+                data[idx1].amount += halfNet;
+                data[idx1].details.push({ ticker: h.ticker, name: h.name, partAmount: halfNet });
+
+                // Add second payment/rights (assuming +6 months)
+                let m2 = m1 + 6;
+                if (m2 > 12) m2 -= 12;
+                const idx2 = (m2 - 1) % 12;
+                data[idx2].amount += halfNet;
+                data[idx2].details.push({ ticker: h.ticker, name: h.name, partAmount: halfNet });
+            }
+        });
+
+        return data;
+    }, [holdings, chartMode]);
+
+    // Helper for displaying selected month details
+    const selectedMonthData = useMemo(() => {
+        if (selectedMonth === null) return null;
+        return monthlyData.find(d => d.month === selectedMonth);
+    }, [monthlyData, selectedMonth]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -531,27 +569,107 @@ export default function PortfolioPage() {
 
                     {/* Chart 2: Monthly Income (Bar) */}
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                             <h2 style={{ fontSize: '1.2rem' }}>月別 配当金 (予測)</h2>
-                            <div style={{ fontSize: '0.8rem', background: '#334155', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
-                                権利/支払月から推定
+
+                            {/* Toggle Buttons */}
+                            <div style={{ display: 'flex', background: '#334155', borderRadius: '6px', padding: '2px' }}>
+                                <button
+                                    onClick={() => setChartMode('payment')}
+                                    style={{
+                                        padding: '0.3rem 0.8rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        background: chartMode === 'payment' ? '#38bdf8' : 'transparent',
+                                        color: chartMode === 'payment' ? '#0f172a' : '#94a3b8',
+                                        fontWeight: chartMode === 'payment' ? 'bold' : 'normal',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    支払月
+                                </button>
+                                <button
+                                    onClick={() => setChartMode('rights')}
+                                    style={{
+                                        padding: '0.3rem 0.8rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        background: chartMode === 'rights' ? '#38bdf8' : 'transparent',
+                                        color: chartMode === 'rights' ? '#0f172a' : '#94a3b8',
+                                        fontWeight: chartMode === 'rights' ? 'bold' : 'normal',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    確定月
+                                </button>
                             </div>
                         </div>
+
                         <div style={{ height: '250px' }}>
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={monthlyData}>
+                                <BarChart
+                                    data={monthlyData}
+                                    onClick={(data) => {
+                                        if (data && data.activePayload && data.activePayload.length > 0) {
+                                            setSelectedMonth(data.activePayload[0].payload.month);
+                                        }
+                                    }}
+                                    style={{ cursor: 'pointer' }}
+                                >
                                     <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                                     <XAxis dataKey="month" stroke="#94a3b8" tickFormatter={(val) => `${val}月`} />
                                     <YAxis stroke="#94a3b8" />
                                     <Tooltip
                                         contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
-                                        labelFormatter={(label) => `${label}月`}
-                                        formatter={(value: any) => [`${Math.round(Number(value)).toLocaleString()}円`, '受取額']}
+                                        labelFormatter={(label) => `${label}月 (${chartMode === 'payment' ? '支払' : '確定'})`}
+                                        formatter={(value: any) => [`${Math.round(Number(value)).toLocaleString()}円`, '合計']}
                                     />
-                                    <Bar dataKey="amount" fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                                    <Bar
+                                        dataKey="amount"
+                                        fill={chartMode === 'payment' ? '#38bdf8' : '#f472b6'}
+                                        radius={[4, 4, 0, 0]}
+                                    />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
+
+                        {/* Detail View for Selected Month */}
+                        {selectedMonthData && (
+                            <div style={{ marginTop: '1.5rem', borderTop: '1px solid #334155', paddingTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
+                                <h3 style={{ fontSize: '1rem', marginBottom: '0.8rem', color: '#e2e8f0' }}>
+                                    {selectedMonth}月の内訳 <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(合計: {Math.round(selectedMonthData.amount).toLocaleString()}円)</span>
+                                </h3>
+                                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                    <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                                        <thead>
+                                            <tr style={{ color: '#94a3b8', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                                                <th style={{ padding: '0.4rem' }}>銘柄</th>
+                                                <th style={{ padding: '0.4rem', textAlign: 'right' }}>配当金額</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {selectedMonthData.details.length > 0 ? (
+                                                selectedMonthData.details.map((d, i) => (
+                                                    <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
+                                                        <td style={{ padding: '0.4rem' }}>
+                                                            <div style={{ fontWeight: 'bold' }}>{d.ticker}</div>
+                                                            <div style={{ fontSize: '0.85em', color: '#64748b' }}>{d.name}</div>
+                                                        </td>
+                                                        <td style={{ padding: '0.4rem', textAlign: 'right', color: '#4ade80' }}>
+                                                            {Math.round(d.partAmount).toLocaleString()}
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            ) : (
+                                                <tr><td colSpan={2} style={{ padding: '0.5rem', textAlign: 'center', color: '#64748b' }}>なし</td></tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 </div>
 
