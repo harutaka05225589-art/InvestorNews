@@ -346,7 +346,7 @@ export default function PortfolioPage() {
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip formatter={(value: number) => `${Math.round(value).toLocaleString()}円`} />
+                                    <Tooltip formatter={(value: any) => `${Math.round(Number(value)).toLocaleString()}円`} />
                                     <Legend />
                                 </PieChart>
                             </ResponsiveContainer>
@@ -370,7 +370,7 @@ export default function PortfolioPage() {
                                     <Tooltip
                                         contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
                                         labelFormatter={(label) => `${label}月`}
-                                        formatter={(value: number) => [`${Math.round(value).toLocaleString()}円`, '受取額']}
+                                        formatter={(value: any) => [`${Math.round(Number(value)).toLocaleString()}円`, '受取額']}
                                     />
                                     <Bar dataKey="amount" fill="#38bdf8" radius={[4, 4, 0, 0]} />
                                 </BarChart>
