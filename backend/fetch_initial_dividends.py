@@ -55,15 +55,27 @@ def fetch_and_store_dividends():
     consecutive_errors = 0
     
     for ticker in sorted_tickers:
-        # Skip if already has dividend data (Resume capability)
-        # We assume if dividend_forecast_annual is set, we are good.
-        # Unless it's 0, but some stocks are 0.
-        # Let's check if we have a revision entry with title='YahooFinance_Initial' OR recent data
-        c.execute("SELECT id FROM revisions WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL", (ticker,))
-        if c.fetchone():
-            print(f"[{count+1}/{total}] Skipping {ticker} (Data exists)")
-            count += 1
-            continue
+        # Determine priority
+        is_priority = ticker in priority_tickers
+        
+        # Check existence
+        c.execute("""
+            SELECT id, dividend_payment_month 
+            FROM revisions 
+            WHERE ticker = ? AND title = 'YahooFinance_Initial'
+        """, (ticker,))
+        existing = c.fetchone()
+        
+        # Logic:
+        # 1. If priority (portfolio), always update (or at least check if improved data available)
+        # 2. If not priority and exists, skip
+        if existing and not is_priority:
+             # Just checking if we have dividend data generally
+            c.execute("SELECT id FROM revisions WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL", (ticker,))
+            if c.fetchone():
+                print(f"[{count+1}/{total}] Skipping {ticker} (Data exists)")
+                count += 1
+                continue
             
         if not ticker.isdigit():
             count += 1
@@ -73,49 +85,85 @@ def fetch_and_store_dividends():
         print(f"[{count+1}/{total}] Fetching {yf_ticker}...")
         
         try:
-            # Random delay to look less like a bot
+            # Random delay
             time.sleep(2 + random.random() * 2) 
             
             stock = yf.Ticker(yf_ticker)
-            # Accessing .info triggers the request
             info = stock.info
             
-            # Reset error count on success
             consecutive_errors = 0
             
             div_rate = info.get('dividendRate')
-            
-            # Save even if 0 to mark as "processed"
-            if div_rate is None:
-                div_rate = 0
+            if div_rate is None: div_rate = 0
             
             print(f"  -> Dividend: {div_rate} JPY")
             
             now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             today_date = datetime.now().strftime('%Y-%m-%d')
             
-            # Estimate Rights Month
+            # --- Month Extraction Logic ---
             rights_month = None
+            payment_month = None
+            
+            # 1. Rights Date (Ex-Dividend Date)
             ex_div_timestamp = info.get('exDividendDate')
             if ex_div_timestamp:
                 dt = datetime.fromtimestamp(ex_div_timestamp)
                 rights_month = dt.month
+                
+            # 2. Payment Date (dividendDate) - Try to get explicit date
+            div_timestamp = info.get('dividendDate')
+            if div_timestamp:
+                dt_pay = datetime.fromtimestamp(div_timestamp)
+                payment_month = dt_pay.month
             
-            c.execute("""
-                INSERT INTO revisions (
-                    ticker, company_name, revision_date, title, 
-                    dividend_forecast_annual, dividend_rights_month, 
-                    ai_analyzed, created_at
-                ) VALUES (?, ?, ?, ?, ?, ?, 1, ?)
-            """, (
-                ticker, 
-                info.get('longName', f"Company {ticker}"),
-                today_date,
-                'YahooFinance_Initial',
-                div_rate,
-                rights_month,
-                now
-            ))
+            # 3. Fallback Estimation for Payment Month
+            if payment_month is None and rights_month is not None:
+                # Usually +3 months for JP stocks
+                payment_month = rights_month + 3
+                if payment_month > 12: payment_month -= 12
+                print(f"  -> Estimated Payment: Month {payment_month} (Rights: {rights_month})")
+            elif payment_month:
+                print(f"  -> Found Payment: Month {payment_month}")
+
+            # Upsert Logic
+            if existing: # Update existing Initial entry
+                c.execute("""
+                    UPDATE revisions SET
+                        company_name = ?,
+                        dividend_forecast_annual = ?,
+                        dividend_rights_month = ?,
+                        dividend_payment_month = ?,
+                        ai_analyzed = 1,
+                        updated_at = ?
+                    WHERE id = ?
+                """, (
+                    info.get('longName', f"Company {ticker}"),
+                    div_rate,
+                    rights_month,
+                    payment_month,
+                    now,
+                    existing[0]
+                ))
+                print(f"  -> Updated existing entry.")
+            else:
+                c.execute("""
+                    INSERT INTO revisions (
+                        ticker, company_name, revision_date, title, 
+                        dividend_forecast_annual, dividend_rights_month, dividend_payment_month,
+                        ai_analyzed, created_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, ?)
+                """, (
+                    ticker, 
+                    info.get('longName', f"Company {ticker}"),
+                    today_date,
+                    'YahooFinance_Initial',
+                    div_rate,
+                    rights_month,
+                    payment_month,
+                    now
+                ))
+            
             conn.commit()
             updated += 1
                 
