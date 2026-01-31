@@ -119,7 +119,8 @@ export default function PortfolioPage() {
                 map.set(key, {
                     id: key, // unique key for rendering
                     ticker: tx.ticker,
-                    name: tx.company_name || '',
+                    // Use company_name if available, else ticker
+                    name: tx.company_name || tx.ticker,
                     accountType: tx.account_type,
                     totalShares: 0,
                     averagePrice: 0,
@@ -549,7 +550,7 @@ export default function PortfolioPage() {
                                         outerRadius={80}
                                         paddingAngle={5}
                                         dataKey="netDividend"
-                                        nameKey="ticker"
+                                        nameKey="name"
                                     >
                                         {holdings.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
