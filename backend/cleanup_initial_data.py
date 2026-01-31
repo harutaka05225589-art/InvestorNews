@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = 'investor_news.db'
+DB_PATH = 'frontend/investor_news.db'
 
 def cleanup():
     if not os.path.exists(DB_PATH):
