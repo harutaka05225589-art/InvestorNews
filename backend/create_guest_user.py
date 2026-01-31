@@ -1,9 +1,10 @@
-
 import sqlite3
 import os
 import time
 
-# ... (db connection)
+db_path = os.path.join(os.getcwd(), 'frontend', 'investor_news.db')
+conn = sqlite3.connect(db_path)
+cursor = conn.cursor()
 
 try:
     # Check if ID 1 exists again to be safe
