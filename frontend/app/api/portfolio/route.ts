@@ -28,7 +28,8 @@ export async function GET(req: Request) {
                 ...tx,
                 latest_dividend: divInfo.amount,
                 dividend_rights_month: divInfo.rightsMonth,
-                dividend_payment_month: divInfo.paymentMonth
+                dividend_payment_month: divInfo.paymentMonth,
+                company_name: divInfo.companyName
             };
         });
 

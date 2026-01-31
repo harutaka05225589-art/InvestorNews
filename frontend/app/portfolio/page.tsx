@@ -9,6 +9,7 @@ import {
 interface Transaction {
     id: number;
     ticker: string;
+    company_name?: string; // Added
     shares: number;
     price: number;
     transaction_date: string | null;
@@ -20,6 +21,7 @@ interface Transaction {
 
 interface Holding {
     ticker: string;
+    name?: string; // Added
     totalShares: number;
     averagePrice: number;
     totalInvested: number;
@@ -112,6 +114,7 @@ export default function PortfolioPage() {
             // Update Holdings Map
             const current = map.get(tx.ticker) || {
                 ticker: tx.ticker,
+                name: tx.company_name || '', // Use Name
                 totalShares: 0,
                 averagePrice: 0,
                 totalInvested: 0,
@@ -130,6 +133,8 @@ export default function PortfolioPage() {
             current.averagePrice = newTotalInvested > 0 ? newTotalInvested / newTotalShares : 0;
             current.projectedDividend += grossDiv;
             current.netDividend += netDiv;
+            // Ensure name is set if we encountered it later
+            if (!current.name && tx.company_name) current.name = tx.company_name;
 
             map.set(tx.ticker, current);
 
@@ -334,7 +339,16 @@ export default function PortfolioPage() {
                                     ) : (
                                         holdings.map(h => (
                                             <tr key={h.ticker} style={{ borderBottom: '1px solid #334155' }}>
-                                                <td style={{ padding: '0.8rem 0.5rem', fontWeight: 'bold' }}>{h.ticker}</td>
+                                                <td style={{ padding: '0.8rem 0.5rem', fontWeight: 'bold' }}>
+                                                    {h.name ? (
+                                                        <>
+                                                            <div style={{ fontSize: '1em' }}>{h.ticker}</div>
+                                                            <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{h.name}</div>
+                                                        </>
+                                                    ) : (
+                                                        h.ticker
+                                                    )}
+                                                </td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{h.totalShares.toLocaleString()}株</td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>@{Math.round(h.averagePrice).toLocaleString()}</td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{Math.round(h.totalInvested).toLocaleString()}</td>

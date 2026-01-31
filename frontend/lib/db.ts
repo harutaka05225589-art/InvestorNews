@@ -88,34 +88,47 @@ export interface DividendInfo {
     amount: number;
     rightsMonth: number | null;
     paymentMonth: number | null;
+    companyName: string | null;
 }
 
 export function getLatestDividend(ticker: string): DividendInfo {
     try {
         const stmt = db.prepare(`
-            SELECT dividend_forecast_annual, dividend_rights_month, dividend_payment_month
+            SELECT dividend_forecast_annual, dividend_rights_month, dividend_payment_month, company_name
             FROM revisions 
-            WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL 
-            ORDER BY revision_date DESC 
+            WHERE ticker = ? 
+            ORDER BY revision_date DESC, id DESC
             LIMIT 1
         `);
         const row = stmt.get(ticker) as {
-            dividend_forecast_annual: number,
+            dividend_forecast_annual: number | null,
             dividend_rights_month: number | null,
-            dividend_payment_month: number | null
+            dividend_payment_month: number | null,
+            company_name: string
         } | undefined;
 
         if (row) {
             return {
-                amount: row.dividend_forecast_annual,
+                amount: row.dividend_forecast_annual || 0,
                 rightsMonth: row.dividend_rights_month,
-                paymentMonth: row.dividend_payment_month
+                paymentMonth: row.dividend_payment_month,
+                companyName: row.company_name
             };
         }
-        return { amount: 0, rightsMonth: null, paymentMonth: null };
+
+        // Fallback: Try fetching just name from ir_events if revision not found
+        try {
+            const nameStmt = db.prepare('SELECT company_name FROM ir_events WHERE ticker = ? LIMIT 1');
+            const nameRow = nameStmt.get(ticker) as { company_name: string } | undefined;
+            if (nameRow) {
+                return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: nameRow.company_name };
+            }
+        } catch (e) { /* ignore */ }
+
+        return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
     } catch (e) {
         console.error("Get latest dividend error:", e);
-        return { amount: 0, rightsMonth: null, paymentMonth: null };
+        return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
     }
 }
 
