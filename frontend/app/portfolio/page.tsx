@@ -1,7 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import {
+    PieChart, Pie, Cell,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
+} from 'recharts';
 
 interface Transaction {
     id: number;
@@ -10,6 +13,7 @@ interface Transaction {
     price: number;
     transaction_date: string | null;
     account_type: 'nisa' | 'general';
+    latest_dividend?: number; // From API
 }
 
 interface Holding {
@@ -17,12 +21,17 @@ interface Holding {
     totalShares: number;
     averagePrice: number;
     totalInvested: number;
+    projectedDividend: number;
+    netDividend: number;
 }
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a855f7', '#ec4899', '#6366f1'];
 
 export default function PortfolioPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [holdings, setHoldings] = useState<Holding[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [monthlyData, setMonthlyData] = useState<any[]>([]);
+    const [chartMode, setChartMode] = useState<'payment' | 'rights'>('payment'); // 'payment' (支払月) or 'rights' (権利月)
 
     // Form State
     const [formTicker, setFormTicker] = useState('');
@@ -32,9 +41,45 @@ export default function PortfolioPage() {
     const [formAccount, setFormAccount] = useState<'nisa' | 'general'>('general');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Search State
+    const [query, setQuery] = useState('');
+    const [suggestions, setSuggestions] = useState<{ ticker: string, name: string }[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
     useEffect(() => {
         fetchData();
     }, []);
+
+    // Debounce Search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (query.length >= 1) {
+                fetchSuggestions(query);
+            } else {
+                setSuggestions([]);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [query]);
+
+    const fetchSuggestions = async (q: string) => {
+        try {
+            const res = await fetch(`/api/search/companies?q=${encodeURIComponent(q)}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSuggestions(data.companies);
+                setShowSuggestions(true);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
+    const handleSelectCompany = (c: { ticker: string, name: string }) => {
+        setFormTicker(c.ticker);
+        setQuery(`${c.ticker} ${c.name}`);
+        setShowSuggestions(false);
+    };
 
     const fetchData = async () => {
         try {
@@ -42,42 +87,75 @@ export default function PortfolioPage() {
             const data = await res.json();
             if (data.transactions) {
                 setTransactions(data.transactions);
-                calculateHoldings(data.transactions);
+                calculate(data.transactions);
             }
         } catch (error) {
             console.error("Failed to fetch portfolio", error);
-        } finally {
-            setLoading(false);
         }
     };
 
-    const calculateHoldings = (txs: Transaction[]) => {
-        const map = new Map<string, { totalShares: number; totalCost: number }>();
+    const calculate = (txs: Transaction[]) => {
+        const map = new Map<string, Holding>();
+
+        // Monthly Aggregation (Initialize 1-12)
+        const montlyMap = new Array(12).fill(0).map((_, i) => ({ month: i + 1, amount: 0 }));
 
         txs.forEach(tx => {
-            const current = map.get(tx.ticker) || { totalShares: 0, totalCost: 0 };
-            current.totalShares += tx.shares;
-            current.totalCost += (tx.shares * tx.price);
+            const divPerShare = tx.latest_dividend || 0;
+            const grossDiv = tx.shares * divPerShare;
+            const taxRate = tx.account_type === 'nisa' ? 0 : 0.20315;
+            const netDiv = grossDiv * (1 - taxRate);
+
+            // Update Holdings Map
+            const current = map.get(tx.ticker) || {
+                ticker: tx.ticker,
+                totalShares: 0,
+                averagePrice: 0,
+                totalInvested: 0,
+                projectedDividend: 0,
+                netDividend: 0
+            };
+
+            // WAvg Price Calc
+            const newTotalShares = current.totalShares + tx.shares;
+            const newTotalInvested = current.totalInvested + (tx.shares * tx.price);
+
+            current.totalShares = newTotalShares;
+            current.totalInvested = newTotalInvested;
+            current.averagePrice = newTotalInvested > 0 ? newTotalInvested / newTotalShares : 0;
+            current.projectedDividend += grossDiv;
+            current.netDividend += netDiv;
+
             map.set(tx.ticker, current);
+
+            // Monthly Calc (Simulation: Assuming 3/9 rights -> 6/12 payment for now)
+            const halfNet = netDiv / 2;
+            montlyMap[5].amount += halfNet; // June (Index 5)
+            montlyMap[11].amount += halfNet; // Dec (Index 11)
         });
 
-        const calculated: Holding[] = [];
-        map.forEach((val, key) => {
-            if (val.totalShares > 0) {
-                calculated.push({
-                    ticker: key,
-                    totalShares: val.totalShares,
-                    averagePrice: val.totalCost / val.totalShares,
-                    totalInvested: val.totalCost
-                });
-            }
-        });
-        setHoldings(calculated);
+        setHoldings(Array.from(map.values()));
+        setMonthlyData(montlyMap);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formTicker || !formShares || !formPrice) return;
+
+        // Logic to support direct typing or selection
+        let targetTicker = formTicker;
+        if (!targetTicker && query) {
+            const match = query.match(/^([0-9]{4})/);
+            if (match) {
+                targetTicker = match[1];
+            } else if (/^[0-9]{4}$/.test(query)) {
+                targetTicker = query;
+            }
+        }
+
+        if (!targetTicker || !formShares || !formPrice) {
+            alert("銘柄、株数、購入単価を入力してください");
+            return;
+        }
 
         setIsSubmitting(true);
         try {
@@ -85,7 +163,7 @@ export default function PortfolioPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    ticker: formTicker.toUpperCase(),
+                    ticker: targetTicker.toUpperCase(),
                     shares: Number(formShares),
                     price: Number(formPrice),
                     date: formDate || null,
@@ -94,12 +172,12 @@ export default function PortfolioPage() {
             });
 
             if (res.ok) {
-                // Reset form
                 setFormTicker('');
+                setQuery('');
                 setFormShares('');
                 setFormPrice('');
                 setFormDate('');
-                fetchData(); // Reload
+                fetchData();
             } else {
                 alert("登録に失敗しました");
             }
@@ -122,11 +200,14 @@ export default function PortfolioPage() {
         }
     };
 
+    const totalPortfolioValue = holdings.reduce((sum, h) => sum + (h.totalShares * h.averagePrice), 0);
+    const totalNetDividend = holdings.reduce((sum, h) => sum + h.netDividend, 0);
+
     return (
         <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
             <header style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 マイ・ポートフォリオ</h1>
-                <p style={{ color: '#94a3b8' }}>保有銘柄の管理と配当金の自動計算</p>
+                <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
             </header>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2rem' }}>
@@ -136,162 +217,164 @@ export default function PortfolioPage() {
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
                         <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>➕ 取引の登録</h2>
                         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                            <div>
-                                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>銘柄コード</label>
+                            <div style={{ position: 'relative' }}>
+                                <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>銘柄 (コード または 社名)</label>
                                 <input
                                     type="text"
-                                    value={formTicker}
-                                    onChange={e => setFormTicker(e.target.value)}
-                                    placeholder="例: 7203"
+                                    value={query}
+                                    onChange={e => {
+                                        setQuery(e.target.value);
+                                        if (e.target.value === '') setFormTicker('');
+                                    }}
+                                    onFocus={() => query.length >= 1 && setShowSuggestions(true)}
+                                    placeholder="例: トヨタ または 7203"
                                     style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }}
+                                    autoComplete="off"
                                     required
                                 />
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <>
+                                        <div style={{
+                                            position: 'absolute', top: '100%', left: 0, right: 0,
+                                            background: '#0f172a', border: '1px solid #475569', borderRadius: '4px',
+                                            zIndex: 10, maxHeight: '200px', overflowY: 'auto', marginTop: '4px'
+                                        }}>
+                                            {suggestions.map(c => (
+                                                <div
+                                                    key={c.ticker}
+                                                    onClick={() => handleSelectCompany(c)}
+                                                    style={{ padding: '0.5rem', cursor: 'pointer', borderBottom: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between' }}
+                                                    onMouseOver={(e) => e.currentTarget.style.background = '#334155'}
+                                                    onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    <span style={{ fontWeight: 'bold', color: '#38bdf8' }}>{c.ticker}</span>
+                                                    <span style={{ fontSize: '0.9rem' }}>{c.name}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <div
+                                            style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', zIndex: 5 }}
+                                            onClick={() => setShowSuggestions(false)}
+                                        ></div>
+                                    </>
+                                )}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>株数</label>
-                                    <input
-                                        type="number"
-                                        value={formShares}
-                                        onChange={e => setFormShares(e.target.value)}
-                                        placeholder="100"
-                                        style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }}
-                                        required
-                                    />
+                                    <input type="number" value={formShares} onChange={e => setFormShares(e.target.value)} placeholder="100" style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }} required />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>取得単価 (円)</label>
-                                    <input
-                                        type="number"
-                                        value={formPrice}
-                                        onChange={e => setFormPrice(e.target.value)}
-                                        placeholder="2000"
-                                        style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }}
-                                        required
-                                    />
+                                    <input type="number" value={formPrice} onChange={e => setFormPrice(e.target.value)} placeholder="2000" style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }} required />
                                 </div>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                 <div>
-                                    <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>取引日 (任意)</label>
-                                    <input
-                                        type="date"
-                                        value={formDate}
-                                        onChange={e => setFormDate(e.target.value)}
-                                        style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }}
-                                    />
+                                    <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>取引日</label>
+                                    <input type="date" value={formDate} onChange={e => setFormDate(e.target.value)} style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }} />
                                 </div>
                                 <div>
                                     <label style={{ display: 'block', marginBottom: '0.3rem', fontSize: '0.9rem', color: '#cbd5e1' }}>口座区分</label>
-                                    <select
-                                        value={formAccount}
-                                        onChange={e => setFormAccount(e.target.value as any)}
-                                        style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }}
-                                    >
+                                    <select value={formAccount} onChange={e => setFormAccount(e.target.value as any)} style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', border: '1px solid #475569', background: '#334155', color: '#fff' }}>
                                         <option value="general">一般/特定 (税20.3%)</option>
                                         <option value="nisa">NISA (非課税)</option>
                                     </select>
                                 </div>
                             </div>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                style={{ marginTop: '0.5rem', background: 'var(--accent)', color: '#000', padding: '0.8rem', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', border: 'none' }}
-                            >
+                            <button type="submit" disabled={isSubmitting} style={{ marginTop: '0.5rem', background: 'var(--accent)', color: '#000', padding: '0.8rem', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', border: 'none' }}>
                                 {isSubmitting ? '登録中...' : '登録する'}
                             </button>
                         </form>
                     </section>
 
+                    {/* Transaction List */}
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
                         <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📜 取引履歴</h2>
-                        <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
-                            {transactions.length === 0 ? (
-                                <p style={{ color: '#64748b', textAlign: 'center', padding: '1rem' }}>履歴はありません</p>
-                            ) : (
-                                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
-                                    <thead>
-                                        <tr style={{ color: '#94a3b8', borderBottom: '1px solid #334155' }}>
-                                            <th style={{ textAlign: 'left', padding: '0.5rem' }}>日付</th>
-                                            <th style={{ textAlign: 'left', padding: '0.5rem' }}>銘柄</th>
-                                            <th style={{ textAlign: 'right', padding: '0.5rem' }}>株数</th>
-                                            <th style={{ textAlign: 'right', padding: '0.5rem' }}>単価</th>
-                                            <th style={{ textAlign: 'center', padding: '0.5rem' }}>口座</th>
-                                            <th style={{ width: '30px' }}></th>
+                        <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                                <tbody>
+                                    {transactions.map(tx => (
+                                        <tr key={tx.id} style={{ borderBottom: '1px solid #334155' }}>
+                                            <td style={{ padding: '0.5rem' }}>{tx.ticker}</td>
+                                            <td style={{ padding: '0.5rem' }}>{tx.shares}株</td>
+                                            <td style={{ padding: '0.5rem' }}>@{tx.price.toLocaleString()}</td>
+                                            <td style={{ padding: '0.5rem' }}>
+                                                {tx.latest_dividend ? <span style={{ color: '#4ade80' }}>配当:{tx.latest_dividend}円</span> : <span style={{ color: '#64748b' }}>配当不明</span>}
+                                            </td>
+                                            <td>
+                                                <button onClick={() => handleDelete(tx.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }}>×</button>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody>
-                                        {transactions.map(tx => (
-                                            <tr key={tx.id} style={{ borderBottom: '1px solid #334155' }}>
-                                                <td style={{ padding: '0.5rem' }}>{tx.transaction_date || '不明'}</td>
-                                                <td style={{ padding: '0.5rem', fontWeight: 'bold' }}>{tx.ticker}</td>
-                                                <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tx.shares}</td>
-                                                <td style={{ padding: '0.5rem', textAlign: 'right' }}>{tx.price.toLocaleString()}</td>
-                                                <td style={{ padding: '0.5rem', textAlign: 'center' }}>
-                                                    <span style={{
-                                                        fontSize: '0.75rem',
-                                                        padding: '0.2rem 0.4rem',
-                                                        borderRadius: '3px',
-                                                        background: tx.account_type === 'nisa' ? '#ca8a04' : '#475569',
-                                                        color: '#fff'
-                                                    }}>
-                                                        {tx.account_type === 'nisa' ? 'NISA' : '特定'}
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <button
-                                                        onClick={() => handleDelete(tx.id)}
-                                                        style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1.2rem' }}
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            )}
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </section>
                 </div>
 
-                {/* Right Column: Summaries & Charts */}
+                {/* Right Column: Visualizations */}
                 <div>
-                    <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📊 保有サマリー</h2>
+                    {/* Summary Card */}
+                    <div style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', border: '1px solid #334155' }}>
+                        <h3 style={{ color: '#94a3b8', fontSize: '0.9rem' }}>年間受取配当金 (手取り)</h3>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#4ade80', margin: '0.5rem 0' }}>
+                            {Math.round(totalNetDividend).toLocaleString()}円
+                        </div>
+                        <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                            投資総額: {Math.round(totalPortfolioValue).toLocaleString()}円 (利回り: {totalPortfolioValue > 0 ? (totalNetDividend / totalPortfolioValue * 100).toFixed(2) : 0}%)
+                        </p>
+                    </div>
 
-                        {holdings.length === 0 ? (
-                            <p style={{ color: '#64748b', textAlign: 'center', padding: '2rem' }}>データがありません</p>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                                {holdings.map(h => (
-                                    <div key={h.ticker} style={{ background: '#0f172a', padding: '1rem', borderRadius: '6px', border: '1px solid #334155' }}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                                            <h3 style={{ fontSize: '1.3rem', fontWeight: 'bold' }}>{h.ticker}</h3>
-                                            <span style={{ fontSize: '0.9rem', color: '#94a3b8' }}>平均取得単価</span>
-                                        </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                                            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#38bdf8' }}>
-                                                {h.totalShares}株
-                                            </div>
-                                            <div style={{ fontSize: '1.2rem' }}>
-                                                {Math.round(h.averagePrice).toLocaleString()}円
-                                            </div>
-                                        </div>
-                                        <div style={{ textAlign: 'right', fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>
-                                            投資総額: {h.totalInvested.toLocaleString()}円
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                    {/* Chart 1: Dividend Composition (Pie) */}
+                    <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
+                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>銘柄別 配当構成比</h2>
+                        <div style={{ height: '250px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={holdings}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="netDividend"
+                                        nameKey="ticker"
+                                    >
+                                        {holdings.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip formatter={(value: number) => `${Math.round(value).toLocaleString()}円`} />
+                                    <Legend />
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
                     </section>
 
-                    {/* Placeholder for Dividend Charts */}
-                    <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', opacity: 0.7 }}>
-                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📅 配当金グラフ (準備中)</h2>
-                        <div style={{ height: '200px', background: '#0f172a', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '6px' }}>
-                            <p style={{ color: '#64748b' }}>配当データ連携後に実装されます</p>
+                    {/* Chart 2: Monthly Income (Bar) */}
+                    <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                            <h2 style={{ fontSize: '1.2rem' }}>月別 配当金 (予測)</h2>
+                            <div style={{ fontSize: '0.8rem', background: '#334155', padding: '0.2rem 0.6rem', borderRadius: '4px' }}>
+                                3月/9月決算と仮定
+                            </div>
+                        </div>
+                        <div style={{ height: '250px' }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={monthlyData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                    <XAxis dataKey="month" stroke="#94a3b8" tickFormatter={(val) => `${val}月`} />
+                                    <YAxis stroke="#94a3b8" />
+                                    <Tooltip
+                                        contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
+                                        labelFormatter={(label) => `${label}月`}
+                                        formatter={(value: number) => [`${Math.round(value).toLocaleString()}円`, '受取額']}
+                                    />
+                                    <Bar dataKey="amount" fill="#38bdf8" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
                     </section>
                 </div>
