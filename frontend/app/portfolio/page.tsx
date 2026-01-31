@@ -1,10 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import {
-    PieChart, Pie, Cell,
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+import React, { useState, useEffect, useMemo } from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 interface Transaction {
     id: number;
@@ -20,39 +17,43 @@ interface Transaction {
 }
 
 interface Holding {
-    id: string; // Unique key (ticker + account)
+    id?: string;
     ticker: string;
     name?: string;
-    accountType: 'nisa' | 'general';
+    accountType?: 'nisa' | 'general';
     totalShares: number;
     averagePrice: number;
-    totalInvested: number; // Acquisition Cost
+    totalInvested: number;
     projectedDividend: number;
     netDividend: number;
     rightsMonth?: number | null;
     paymentMonth?: number | null;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#a855f7', '#ec4899', '#6366f1'];
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1919', '#19FFD7', '#F472B6'];
 
 export default function PortfolioPage() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [holdings, setHoldings] = useState<Holding[]>([]);
-    const [monthlyData, setMonthlyData] = useState<any[]>([]);
+    // MonthlyData state REMOVED to avoid duplication with useMemo
 
     // Form State
     const [formTicker, setFormTicker] = useState('');
     const [formShares, setFormShares] = useState('');
     const [formPrice, setFormPrice] = useState('');
     const [formDate, setFormDate] = useState('');
-    const [formAccount, setFormAccount] = useState<'nisa' | 'general'>('general');
     const [formType, setFormType] = useState<'buy' | 'sell'>('buy');
+    const [formAccount, setFormAccount] = useState<'nisa' | 'general'>('general');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Search State
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState<{ ticker: string, name: string }[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Chart State
+    const [chartMode, setChartMode] = useState<'payment' | 'rights'>('payment');
+    const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
 
     useEffect(() => {
         fetchData();
@@ -108,21 +109,15 @@ export default function PortfolioPage() {
         }
     };
 
-    const [chartMode, setChartMode] = useState<'payment' | 'rights'>('payment');
-    const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
-
-    // ... (fetchData etc remain same)
-
     const calculate = (txs: Transaction[]) => {
         const map = new Map<string, Holding>();
-        const uniqueKeys: string[] = [];
 
         // Group by Ticker + AccountType
         txs.forEach(tx => {
             const key = `${tx.ticker}-${tx.account_type}`;
             if (!map.has(key)) {
                 map.set(key, {
-                    id: key,
+                    id: key, // unique key for rendering
                     ticker: tx.ticker,
                     name: tx.company_name || '',
                     accountType: tx.account_type,
@@ -134,7 +129,6 @@ export default function PortfolioPage() {
                     rightsMonth: tx.dividend_rights_month,
                     paymentMonth: tx.dividend_payment_month
                 });
-                uniqueKeys.push(key);
             }
 
             const current = map.get(key)!;
@@ -190,7 +184,7 @@ export default function PortfolioPage() {
         });
 
         setHoldings(holdingsList);
-        // Note: setMonthlyData removed here, moved to useMemo below
+        // NO setMonthlyData here
     };
 
     // Re-calculate monthly data whenever holdings or mode changes
@@ -249,6 +243,7 @@ export default function PortfolioPage() {
         if (selectedMonth === null) return null;
         return monthlyData.find(d => d.month === selectedMonth);
     }, [monthlyData, selectedMonth]);
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
