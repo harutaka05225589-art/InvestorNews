@@ -132,6 +132,10 @@ def process_revisions():
                 if os.path.exists(pdf_path):
                     os.remove(pdf_path)
             
+            except Exception as e:
+                print(f"  Error downloading/analyzing PDF: {e}")
+                result = None
+
             if result:
                 is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
