@@ -16,7 +16,25 @@ try {
     throw error;
 }
 
-export default db;
+
+// --- Dividend Helpers ---
+
+export function getLatestDividend(ticker: string): number {
+    try {
+        const stmt = db.prepare(`
+            SELECT dividend_forecast_annual 
+            FROM revisions 
+            WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL 
+            ORDER BY revision_date DESC 
+            LIMIT 1
+        `);
+        const row = stmt.get(ticker) as { dividend_forecast_annual: number } | undefined;
+        return row ? row.dividend_forecast_annual : 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
 
 // --- Data Fetching Helpers ---
 
