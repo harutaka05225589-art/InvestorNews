@@ -26,13 +26,24 @@ export async function GET(request: NextRequest) {
             // This month: YYYY-MM-01 to YYYY-MM-31 (or just > YYYY-MM-01)
             const startDate = `${y}-${m}-01`;
             const endDate = `${y}-${m}-31`; // Loose end date
-            revisions = getRevisionsByDateRange(startDate, endDate);
+            revisions = await getRevisionsByDateRange(startDate, endDate); // Added await
         } else {
             const search = searchParams.get('q');
             if (search) {
-                revisions = searchRevisions(search);
+                revisions = await db.all(`
+            SELECT * FROM revisions
+            WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
+            AND (title LIKE ? OR content LIKE ?)
+            ORDER BY revision_date DESC, id DESC
+            LIMIT 550
+        `, [`%${search}%`, `%${search}%`]); // Adjusted to use search parameter and limit
             } else {
-                revisions = getRevisions(50);
+                revisions = await db.all(`
+                    SELECT * FROM revisions
+                    WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
+                    ORDER BY revision_date DESC, id DESC
+                    LIMIT 50
+                `);
             }
         }
 
