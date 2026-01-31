@@ -314,7 +314,41 @@ export default function PortfolioPage() {
                         </form>
                     </section>
 
-                    {/* Transaction List */}
+                    {/* Holdings Table (Aggregated) */}
+                    <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
+                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📊 保有銘柄 (合算)</h2>
+                        <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                                <thead>
+                                    <tr style={{ borderBottom: '2px solid #334155', color: '#94a3b8' }}>
+                                        <th style={{ padding: '0.5rem', textAlign: 'left' }}>銘柄</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>保有株数</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>平均取得単価</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>投資額</th>
+                                        <th style={{ padding: '0.5rem', textAlign: 'right' }}>予想配当(年)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {holdings.length === 0 ? (
+                                        <tr><td colSpan={5} style={{ padding: '1rem', textAlign: 'center', color: '#64748b' }}>データがありません</td></tr>
+                                    ) : (
+                                        holdings.map(h => (
+                                            <tr key={h.ticker} style={{ borderBottom: '1px solid #334155' }}>
+                                                <td style={{ padding: '0.8rem 0.5rem', fontWeight: 'bold' }}>{h.ticker}</td>
+                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{h.totalShares.toLocaleString()}株</td>
+                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>@{Math.round(h.averagePrice).toLocaleString()}</td>
+                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{Math.round(h.totalInvested).toLocaleString()}</td>
+                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right', color: '#4ade80' }}>
+                                                    {Math.round(h.projectedDividend).toLocaleString()}
+                                                    <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(税引前)</span>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
                         <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>📜 取引履歴</h2>
                         <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
