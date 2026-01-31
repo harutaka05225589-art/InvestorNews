@@ -91,10 +91,47 @@ def analyze_revision_pdf(pdf_path, title):
     except Exception as e:
         # Error handling ...
         return None
+def process_revisions():
+    print("Starting AI Analysis...")
+    conn = get_db_connection()
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
 
-# ... (process_revisions logic update) ...
+    try:
+        # Fetch unanalyzed
+        rows = c.execute("SELECT * FROM revisions WHERE ai_analyzed = 0 ORDER BY id DESC").fetchall()
+        print(f"Found {len(rows)} unanalyzed items")
 
-            if result:
+        for row in rows:
+            rev_id = row['id']
+            ticker = row['ticker']
+            title = row['title']
+            url = row['source_url']
+            company_name = row['company_name']
+
+            print(f"Analyzing {ticker} {company_name}: {title}")
+            
+            if not url:
+                print("  No URL, skipping")
+                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'No URL' WHERE id = ?", (rev_id,))
+                conn.commit()
+                continue
+
+            try:
+                # Download PDF
+                # Use a specific user agent to avoid 403
+                headers = {'User-Agent': 'Mozilla/5.0'}
+                r = requests.get(url, headers=headers, timeout=15)
+                
+                pdf_path = None
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
+                    f.write(r.content)
+                    pdf_path = f.name
+                
+                result = analyze_revision_pdf(pdf_path, title)
+                
+                if os.path.exists(pdf_path):
+                    os.remove(pdf_path)            if result:
                 is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
