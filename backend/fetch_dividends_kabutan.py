@@ -30,7 +30,11 @@ def get_all_tickers():
 
 def fetch_kabutan_dividend(ticker):
     url = f"https://kabutan.jp/stock/?code={ticker}"
-    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ja,en-US;q=0.7,en;q=0.3',
+    }
     
     try:
         res = requests.get(url, headers=headers, timeout=10)
@@ -41,57 +45,62 @@ def fetch_kabutan_dividend(ticker):
         soup = BeautifulSoup(res.text, 'html.parser')
         
         # 1. Company Name
-        name_tag = soup.select_one('div.si_i1_1 h2')
-        company_name = name_tag.text.strip() if name_tag else None
-        
-        # 2. Dividend (Annual)
-        # Usually in <div id="stockinfo_i3"> ... 
-        # Look for the table with th="配当"
+        company_name = None
+        # Try multiple selectors for name
+        name_tag = soup.select_one('div.si_i1_1 h2') or soup.select_one('h2')
+        if name_tag:
+            company_name = name_tag.text.strip()
+
+        # 2. Dividend (Annual) - Robust Search
         div_amount = 0.0
         
-        # Strategy: Look for the big price table or the 'kobetsu_data' table
-        # Selector for Dividend Yield/Amount is tricky, varies.
-        # Let's try the key indicators table "si_i3"
-        # Table rows: [Start Price, High, Low, End, VWAP, Volume, Value, PER, PBR, Yield, Dividend, Unit, MinCost]
-        
-        # Often Kabutan puts dividend in the summary table
-        # <td class="v_dd_b">35.0</td>  (Example)
-        # Let's look for the cell following "1株配当"
-        
-        dl_list = soup.select('div#stockinfo_i3 dl')
-        # Structure: <dl><dt>1株配当</dt><dd>35.00</dd></dl>
-        
-        for dl in dl_list:
-            dt = dl.find('dt')
-            if dt and '1株配当' in dt.text:
-                dd = dl.find('dd')
+        # Find "1株配当" text node
+        div_label = soup.find(string=re.compile(r'1株配当'))
+        if div_label:
+            # Go up to the row/definition list
+            parent = div_label.parent
+            # Traverse siblings to find the value (usually in a <dd> or <td class="v_dd_b">)
+            # Strategy: look at the NEXT element or parent's next sibling
+            
+            # Case 1: <dl><dt>1株配当</dt><dd>35.0</dd></dl>
+            if parent.name == 'dt':
+                dd = parent.find_next_sibling('dd')
                 if dd:
                     val_str = dd.text.replace('円', '').strip()
-                    if val_str == '－': 
-                        div_amount = 0.0
-                    else:
-                        try:
-                            div_amount = float(val_str)
-                        except:
-                            div_amount = 0.0
-                break
+                    try: div_amount = float(val_str)
+                    except: pass
+            
+            # Case 2: <table><tr><th>1株配当</th><td>35.0</td></tr></table>
+            elif parent.name == 'th' or parent.name == 'td':
+                td = parent.find_next_sibling('td')
+                if td:
+                    val_str = td.text.replace('円', '').strip()
+                    try: div_amount = float(val_str)
+                    except: pass
+            
+            # Case 3: Just search for the number nearby if above failed
+            if div_amount == 0.0:
+                # Look for the immediate next text that looks like a number
+                pass
         
         # 3. Settlement Month (決算期)
-        # <div id="stockinfo_i2"> ... <dl><dt>決算期</dt><dd class="v_dd_b">3月</dd></dl>
         settlement_month = None
-        dl_list_2 = soup.select('div#stockinfo_i2 dl')
-        for dl in dl_list_2:
-            dt = dl.find('dt')
-            if dt and '決算期' in dt.text:
-                dd = dl.find('dd')
-                if dd:
-                    m_str = dd.text.replace('月', '').strip()
-                    # Could be "3" or "3,9" etc. Usually main month.
-                    # Sometimes "連3" (Consolidated March)
-                    match = re.search(r'(\d+)', m_str)
-                    if match:
-                        settlement_month = int(match.group(1))
-                break
+        set_label = soup.find(string=re.compile(r'決算期'))
+        if set_label:
+            parent = set_label.parent
+            target_str = ""
+            if parent.name == 'dt':
+                dd = parent.find_next_sibling('dd')
+                if dd: target_str = dd.text
+            elif parent.name == 'th' or parent.name == 'td':
+                td = parent.find_next_sibling('td')
+                if td: target_str = td.text
+            
+            if target_str:
+                m_str = target_str.replace('月', '').strip()
+                match = re.search(r'(\d+)', m_str)
+                if match:
+                    settlement_month = int(match.group(1))
 
         return {
             'company_name': company_name,
