@@ -29,7 +29,8 @@ def get_all_tickers():
     return [row[0] for row in c.fetchall()]
 
 def fetch_kabutan_dividend(ticker):
-    url = f"https://kabutan.jp/stock/?code={ticker}"
+    # Use the Finance (Kessan) page for more reliable table data
+    url = f"https://kabutan.jp/stock/finance?code={ticker}&mode=k"
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -46,61 +47,83 @@ def fetch_kabutan_dividend(ticker):
         
         # 1. Company Name
         company_name = None
-        # Try multiple selectors for name
         name_tag = soup.select_one('div.si_i1_1 h2') or soup.select_one('h2')
         if name_tag:
-            company_name = name_tag.text.strip()
+            # "2975　スターマイカ" -> extract name part if desired, or keep full
+            # Usually we want just the name part but for now full string is okay or split
+            full_text = name_tag.text.strip()
+            # Try to split by space/tab
+            parts = full_text.split(None, 1)
+            if len(parts) > 1:
+                company_name = parts[1]
+            else:
+                company_name = full_text
 
-        # 2. Dividend (Annual) - Robust Search
+        # 2. Extract Data from Key Table
         div_amount = 0.0
-        
-        # Find "1株配当" text node
-        div_label = soup.find(string=re.compile(r'1株配当'))
-        if div_label:
-            # Go up to the row/definition list
-            parent = div_label.parent
-            # Traverse siblings to find the value (usually in a <dd> or <td class="v_dd_b">)
-            # Strategy: look at the NEXT element or parent's next sibling
-            
-            # Case 1: <dl><dt>1株配当</dt><dd>35.0</dd></dl>
-            if parent.name == 'dt':
-                dd = parent.find_next_sibling('dd')
-                if dd:
-                    val_str = dd.text.replace('円', '').strip()
-                    try: div_amount = float(val_str)
-                    except: pass
-            
-            # Case 2: <table><tr><th>1株配当</th><td>35.0</td></tr></table>
-            elif parent.name == 'th' or parent.name == 'td':
-                td = parent.find_next_sibling('td')
-                if td:
-                    val_str = td.text.replace('円', '').strip()
-                    try: div_amount = float(val_str)
-                    except: pass
-            
-            # Case 3: Just search for the number nearby if above failed
-            if div_amount == 0.0:
-                # Look for the immediate next text that looks like a number
-                pass
-        
-        # 3. Settlement Month (決算期)
         settlement_month = None
-        set_label = soup.find(string=re.compile(r'決算期'))
-        if set_label:
-            parent = set_label.parent
-            target_str = ""
-            if parent.name == 'dt':
-                dd = parent.find_next_sibling('dd')
-                if dd: target_str = dd.text
-            elif parent.name == 'th' or parent.name == 'td':
-                td = parent.find_next_sibling('td')
-                if td: target_str = td.text
+        
+        # Find the table containing "修正1株配" (Revised Dividend per Share)
+        # We look for a table header row properly
+        target_table = None
+        div_col_idx = -1
+        period_col_idx = 0 # Usually 0
+        
+        tables = soup.find_all('table')
+        for tbl in tables:
+            # Check headers
+            headers_list = [th.get_text(strip=True) for th in tbl.find_all('th')]
+            # We are looking for a row like ['決算期', ..., '修正1株配', ...]
+            # Note: headers might be split across rows (thead), but usually this specific table is simple
             
-            if target_str:
-                m_str = target_str.replace('月', '').strip()
-                match = re.search(r'(\d+)', m_str)
-                if match:
-                    settlement_month = int(match.group(1))
+            if '修正1株配' in headers_list:
+                target_table = tbl
+                # Find index. Be careful if headers are complex, but usually '修正1株配' is unique enough
+                try:
+                    div_col_idx = headers_list.index('修正1株配')
+                    # '決算期' should be there too
+                    if '決算期' in headers_list:
+                       period_col_idx = headers_list.index('決算期')
+                except:
+                    pass
+                break
+        
+        if target_table and div_col_idx != -1:
+            # Iterate rows to find the Forecast row
+            rows = target_table.find_all('tr')
+            for tr in rows:
+                cols = tr.find_all(['td', 'th'])
+                # Convert to text list
+                col_texts = [td.get_text(strip=True) for td in cols]
+                
+                if not col_texts: continue
+                
+                # Check first column for "予" (Forecast)
+                # Typically format: "連 予 2026.11"
+                period_text = col_texts[period_col_idx]
+                
+                if '予' in period_text and len(col_texts) > div_col_idx:
+                    # Get Dividend
+                    div_str = col_texts[div_col_idx]
+                    # Clean up "45", "45.0", "－"
+                    if div_str and div_str != '－':
+                        try:
+                            div_amount = float(div_str.replace(',', ''))
+                        except:
+                            pass
+                    
+                    # Get Settlement Month
+                    # "連 予 2026.11" -> extract 11
+                    match = re.search(r'\.(\d+)', period_text)
+                    if match:
+                        settlement_month = int(match.group(1))
+                    
+                    # We found the main forecast row, break
+                    if div_amount > 0 or settlement_month:
+                        break
+
+        # Fallback: if div_amount is 0.0, maybe try looking for "1株配当" again?
+        # But this table method is usually superior for revisions/forecasts.
 
         return {
             'company_name': company_name,
