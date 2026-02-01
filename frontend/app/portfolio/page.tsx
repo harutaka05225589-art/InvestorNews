@@ -755,17 +755,27 @@ export default function PortfolioPage() {
                                             dataKey="amount"
                                             fill={chartMode === 'payment' ? '#38bdf8' : '#f472b6'}
                                             radius={[4, 4, 0, 0]}
+                                            onClick={(data, index) => setActiveMonthIndex(index)}
+                                            cursor="pointer"
                                         />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
 
                             {/* Detail View for Selected Month */}
-                            {selectedMonthData && (
+                            {activeMonthData && activeMonthData.amount > 0 && (
                                 <div style={{ marginTop: '1.5rem', borderTop: '1px solid #334155', paddingTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
-                                    <h3 style={{ fontSize: '1rem', marginBottom: '0.8rem', color: '#e2e8f0' }}>
-                                        {selectedMonth}月の内訳 <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(合計: {Math.round(selectedMonthData.amount).toLocaleString()}円)</span>
-                                    </h3>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+                                        <h3 style={{ fontSize: '1rem', color: '#e2e8f0', margin: 0 }}>
+                                            {activeMonthData.month}月の内訳 <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(合計: {Math.round(activeMonthData.amount).toLocaleString()}円)</span>
+                                        </h3>
+                                        <button
+                                            onClick={() => setActiveMonthIndex(null)}
+                                            style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
                                     <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                                         <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
                                             <thead>
@@ -775,8 +785,8 @@ export default function PortfolioPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {selectedMonthData.details.length > 0 ? (
-                                                    selectedMonthData.details.map((d, i) => (
+                                                {activeMonthData.details.length > 0 ? (
+                                                    activeMonthData.details.map((d, i) => (
                                                         <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
                                                             <td style={{ padding: '0.4rem' }}>
                                                                 <div style={{ fontWeight: 'bold' }}>{d.ticker}</div>
