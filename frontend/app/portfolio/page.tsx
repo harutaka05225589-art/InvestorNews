@@ -657,141 +657,158 @@ export default function PortfolioPage() {
 
                     {/* Chart 1: Dividend Composition (Pie) */}
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>銘柄別 配当構成比 (投下元本ベース)</h2>
-                        <div style={{ height: '300px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={holdings}
-                                        cx="50%" cy="50%"
-                                        outerRadius={100}
-                                        fill="#8884d8"
-                                        dataKey="totalInvested"
-                                        nameKey="name"
-                                        label={({ name, percent }: any) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
-                                    >
+                        {/* Chart 1: Dividend Composition (Pie) */}
+                        <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
+                            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>銘柄別 配当構成比 (投下元本ベース)</h2>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                <div style={{ height: '300px' }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={holdings}
+                                                cx="50%" cy="50%"
+                                                outerRadius={100}
+                                                fill="#8884d8"
+                                                dataKey="totalInvested"
+                                                nameKey="name"
+                                                label={({ name, percent }: any) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
+                                            >
+                                                {holdings.map((entry, index) => (
+                                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                ))}
+                                            </Pie>
+                                            <Tooltip
+                                                formatter={(value: any) => `¥${(value || 0).toLocaleString()}`}
+                                                contentStyle={{ backgroundColor: '#0f172a', border: 'none', color: '#fff' }}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </div>
+
+                                {/* Scrollable Custom Legend */}
+                                <div style={{ maxHeight: '200px', overflowY: 'auto', borderTop: '1px solid #334155', paddingTop: '1rem' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.5rem' }}>
                                         {holdings.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            <div key={`legend-${index}`} style={{ display: 'flex', alignItems: 'center', fontSize: '0.8rem', color: '#cbd5e1' }}>
+                                                <div style={{ width: '10px', height: '10px', background: COLORS[index % COLORS.length], marginRight: '6px', borderRadius: '2px', flexShrink: 0 }}></div>
+                                                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={entry.name}>
+                                                    {entry.name}
+                                                </div>
+                                            </div>
                                         ))}
-                                    </Pie>
-                                    <Tooltip
-                                        formatter={(value: any) => `¥${(value || 0).toLocaleString()}`}
-                                        contentStyle={{ backgroundColor: '#0f172a', border: 'none', color: '#fff' }}
-                                    />
-                                    <Legend />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </section>
-
-                    {/* Chart 2: Monthly Income (Bar) */}
-                    <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            <h2 style={{ fontSize: '1.2rem' }}>月別 配当金 (予測)</h2>
-
-                            {/* Toggle Buttons */}
-                            <div style={{ display: 'flex', background: '#334155', borderRadius: '6px', padding: '2px' }}>
-                                <button
-                                    onClick={() => setChartMode('payment')}
-                                    style={{
-                                        padding: '0.3rem 0.8rem',
-                                        borderRadius: '4px',
-                                        border: 'none',
-                                        background: chartMode === 'payment' ? '#38bdf8' : 'transparent',
-                                        color: chartMode === 'payment' ? '#0f172a' : '#94a3b8',
-                                        fontWeight: chartMode === 'payment' ? 'bold' : 'normal',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    支払月
-                                </button>
-                                <button
-                                    onClick={() => setChartMode('rights')}
-                                    style={{
-                                        padding: '0.3rem 0.8rem',
-                                        borderRadius: '4px',
-                                        border: 'none',
-                                        background: chartMode === 'rights' ? '#38bdf8' : 'transparent',
-                                        color: chartMode === 'rights' ? '#0f172a' : '#94a3b8',
-                                        fontWeight: chartMode === 'rights' ? 'bold' : 'normal',
-                                        cursor: 'pointer',
-                                        fontSize: '0.8rem'
-                                    }}
-                                >
-                                    確定月
-                                </button>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </section>
 
-                        <div style={{ height: '250px' }}>
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart
-                                    data={monthlyData}
-                                >
-                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                                    <XAxis dataKey="month" stroke="#94a3b8" tickFormatter={(val) => `${val}月`} />
-                                    <YAxis stroke="#94a3b8" />
-                                    <Tooltip
-                                        contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
-                                        labelFormatter={(label) => `${label}月 (${chartMode === 'payment' ? '支払' : '確定'})`}
-                                        formatter={(value: any) => [`${Math.round(Number(value)).toLocaleString()}円`, '合計']}
-                                    />
-                                    <Bar
-                                        dataKey="amount"
-                                        fill={chartMode === 'payment' ? '#38bdf8' : '#f472b6'}
-                                        radius={[4, 4, 0, 0]}
-                                        onClick={(data, index) => setActiveMonthIndex(index)}
-                                        cursor="pointer"
-                                    />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </div>
+                        {/* Chart 2: Monthly Income (Bar) */}
+                        <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                                <h2 style={{ fontSize: '1.2rem' }}>月別 配当金 (予測)</h2>
 
-                        {/* Detail View for Selected Month */}
-                        {activeMonthData && activeMonthData.amount > 0 && (
-                            <div style={{ marginTop: '1.5rem', borderTop: '1px solid #334155', paddingTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
-                                    <h3 style={{ fontSize: '1rem', color: '#e2e8f0', margin: 0 }}>
-                                        {activeMonthData.month}月の内訳 <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(合計: {Math.round(activeMonthData.amount).toLocaleString()}円)</span>
-                                    </h3>
+                                {/* Toggle Buttons */}
+                                <div style={{ display: 'flex', background: '#334155', borderRadius: '6px', padding: '2px' }}>
                                     <button
-                                        onClick={() => setActiveMonthIndex(null)}
-                                        style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}
+                                        onClick={() => setChartMode('payment')}
+                                        style={{
+                                            padding: '0.3rem 0.8rem',
+                                            borderRadius: '4px',
+                                            border: 'none',
+                                            background: chartMode === 'payment' ? '#38bdf8' : 'transparent',
+                                            color: chartMode === 'payment' ? '#0f172a' : '#94a3b8',
+                                            fontWeight: chartMode === 'payment' ? 'bold' : 'normal',
+                                            cursor: 'pointer',
+                                            fontSize: '0.8rem'
+                                        }}
                                     >
-                                        ×
+                                        支払月
+                                    </button>
+                                    <button
+                                        onClick={() => setChartMode('rights')}
+                                        style={{
+                                            padding: '0.3rem 0.8rem',
+                                            borderRadius: '4px',
+                                            border: 'none',
+                                            background: chartMode === 'rights' ? '#38bdf8' : 'transparent',
+                                            color: chartMode === 'rights' ? '#0f172a' : '#94a3b8',
+                                            fontWeight: chartMode === 'rights' ? 'bold' : 'normal',
+                                            cursor: 'pointer',
+                                            fontSize: '0.8rem'
+                                        }}
+                                    >
+                                        確定月
                                     </button>
                                 </div>
-                                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                    <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
-                                        <thead>
-                                            <tr style={{ color: '#94a3b8', borderBottom: '1px solid #334155', textAlign: 'left' }}>
-                                                <th style={{ padding: '0.4rem' }}>銘柄</th>
-                                                <th style={{ padding: '0.4rem', textAlign: 'right' }}>配当金額</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {activeMonthData.details.length > 0 ? (
-                                                activeMonthData.details.map((d, i) => (
-                                                    <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
-                                                        <td style={{ padding: '0.4rem' }}>
-                                                            <div style={{ fontWeight: 'bold' }}>{d.ticker}</div>
-                                                            <div style={{ fontSize: '0.85em', color: '#64748b' }}>{d.name}</div>
-                                                        </td>
-                                                        <td style={{ padding: '0.4rem', textAlign: 'right', color: '#4ade80' }}>
-                                                            {Math.round(d.partAmount).toLocaleString()}
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            ) : (
-                                                <tr><td colSpan={2} style={{ padding: '0.5rem', textAlign: 'center', color: '#64748b' }}>なし</td></tr>
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
                             </div>
-                        )}
-                    </section>
+
+                            <div style={{ height: '250px' }}>
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={monthlyData}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                        <XAxis dataKey="month" stroke="#94a3b8" tickFormatter={(val) => `${val}月`} />
+                                        <YAxis stroke="#94a3b8" />
+                                        <Tooltip
+                                            contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
+                                            labelFormatter={(label) => `${label}月 (${chartMode === 'payment' ? '支払' : '確定'})`}
+                                            formatter={(value: any) => [`${Math.round(Number(value)).toLocaleString()}円`, '合計']}
+                                        />
+                                        <Bar
+                                            dataKey="amount"
+                                            fill={chartMode === 'payment' ? '#38bdf8' : '#f472b6'}
+                                            radius={[4, 4, 0, 0]}
+                                            onClick={(data, index) => setActiveMonthIndex(index)}
+                                            cursor="pointer"
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+
+                            {/* Detail View for Selected Month */}
+                            {activeMonthData && activeMonthData.amount > 0 && (
+                                <div style={{ marginTop: '1.5rem', borderTop: '1px solid #334155', paddingTop: '1rem', animation: 'fadeIn 0.3s ease' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
+                                        <h3 style={{ fontSize: '1rem', color: '#e2e8f0', margin: 0 }}>
+                                            {activeMonthData.month}月の内訳 <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(合計: {Math.round(activeMonthData.amount).toLocaleString()}円)</span>
+                                        </h3>
+                                        <button
+                                            onClick={() => setActiveMonthIndex(null)}
+                                            style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '1.2rem', padding: '0 0.5rem' }}
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                        <table style={{ width: '100%', fontSize: '0.85rem', borderCollapse: 'collapse' }}>
+                                            <thead>
+                                                <tr style={{ color: '#94a3b8', borderBottom: '1px solid #334155', textAlign: 'left' }}>
+                                                    <th style={{ padding: '0.4rem' }}>銘柄</th>
+                                                    <th style={{ padding: '0.4rem', textAlign: 'right' }}>配当金額</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {activeMonthData.details.length > 0 ? (
+                                                    activeMonthData.details.map((d, i) => (
+                                                        <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
+                                                            <td style={{ padding: '0.4rem' }}>
+                                                                <div style={{ fontWeight: 'bold' }}>{d.ticker}</div>
+                                                                <div style={{ fontSize: '0.85em', color: '#64748b' }}>{d.name}</div>
+                                                            </td>
+                                                            <td style={{ padding: '0.4rem', textAlign: 'right', color: '#4ade80' }}>
+                                                                {Math.round(d.partAmount).toLocaleString()}
+                                                            </td>
+                                                        </tr>
+                                                    ))
+                                                ) : (
+                                                    <tr><td colSpan={2} style={{ padding: '0.5rem', textAlign: 'center', color: '#64748b' }}>なし</td></tr>
+                                                )}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </section>
                 </div>
 
             </div>
