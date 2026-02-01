@@ -1,3 +1,4 @@
+import { NextRequest, NextResponse } from 'next/server';
 import db, { getRevisions, getRevisionsByDateRange } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
