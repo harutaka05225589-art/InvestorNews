@@ -59,6 +59,9 @@ export default function PortfolioPage() {
     // --- Asset History Logic (Added) ---
     const [historyTimeframe, setHistoryTimeframe] = useState<'day' | 'week' | 'month' | 'year'>('month');
 
+    // --- Pie Chart Logic (Added) ---
+    const [pieChartMode, setPieChartMode] = useState<'invested' | 'dividend'>('dividend');
+
     const assetHistoryData = useMemo(() => {
         if (!transactions || transactions.length === 0) return [];
 
@@ -708,7 +711,44 @@ export default function PortfolioPage() {
 
                     {/* Chart 1: Dividend Composition (Pie) */}
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
-                        <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>銘柄別 配当構成比 (投下元本ベース)</h2>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>
+                            <h2 style={{ fontSize: '1.2rem' }}>
+                                銘柄別構成比 ({pieChartMode === 'dividend' ? '配当金ベース' : '投下元本ベース'})
+                            </h2>
+                            <div style={{ display: 'flex', background: '#334155', borderRadius: '6px', padding: '2px' }}>
+                                <button
+                                    onClick={() => setPieChartMode('dividend')}
+                                    style={{
+                                        padding: '0.3rem 0.8rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        background: pieChartMode === 'dividend' ? '#38bdf8' : 'transparent',
+                                        color: pieChartMode === 'dividend' ? '#0f172a' : '#94a3b8',
+                                        fontWeight: pieChartMode === 'dividend' ? 'bold' : 'normal',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    配当金
+                                </button>
+                                <button
+                                    onClick={() => setPieChartMode('invested')}
+                                    style={{
+                                        padding: '0.3rem 0.8rem',
+                                        borderRadius: '4px',
+                                        border: 'none',
+                                        background: pieChartMode === 'invested' ? '#38bdf8' : 'transparent',
+                                        color: pieChartMode === 'invested' ? '#0f172a' : '#94a3b8',
+                                        fontWeight: pieChartMode === 'invested' ? 'bold' : 'normal',
+                                        cursor: 'pointer',
+                                        fontSize: '0.8rem'
+                                    }}
+                                >
+                                    投資額
+                                </button>
+                            </div>
+                        </div>
+
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                             <div style={{ height: '300px' }}>
                                 <ResponsiveContainer width="100%" height="100%">
@@ -718,7 +758,7 @@ export default function PortfolioPage() {
                                             cx="50%" cy="50%"
                                             outerRadius={80}
                                             fill="#8884d8"
-                                            dataKey="totalInvested"
+                                            dataKey={pieChartMode === 'dividend' ? "projectedDividend" : "totalInvested"}
                                             nameKey="name"
                                             label={({ name, percent }: any) => `${name} ${(percent ? percent * 100 : 0).toFixed(0)}%`}
                                         >
@@ -730,13 +770,32 @@ export default function PortfolioPage() {
                                             content={({ active, payload }) => {
                                                 if (active && payload && payload.length) {
                                                     const data = payload[0];
-                                                    const percent = totalPortfolioValue > 0 ? (Number(data.value) / totalPortfolioValue * 100).toFixed(1) : "0.0";
+                                                    // Calculate percent manually if needed, but for dynamic dataKey it's better to rely on payload if possible.
+                                                    // However, total value differs (Total Portfolio Value vs Total Dividend).
+                                                    // We need to calculate percentage based on the current mode's total.
+
+                                                    let total = 0;
+                                                    if (pieChartMode === 'dividend') {
+                                                        total = totalNetDividend / 0.79685; // Gross Dividend Proxy? 
+                                                        // Wait, holdings.projectedDividend is used. 
+                                                        // holdings reduce sum projectedDividend.
+                                                        total = holdings.reduce((sum, h) => sum + h.projectedDividend, 0);
+                                                    } else {
+                                                        total = totalPortfolioValue;
+                                                    }
+
+                                                    const val = Number(data.value);
+                                                    const percent = total > 0 ? (val / total * 100).toFixed(1) : "0.0";
+
                                                     return (
                                                         <div style={{ backgroundColor: '#0f172a', border: '1px solid #334155', padding: '0.5rem', borderRadius: '4px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                                                             <div style={{ color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' }}>{data.name}</div>
                                                             <div style={{ color: '#f8fafc' }}>
-                                                                ¥{(data.value as number).toLocaleString()}
+                                                                ¥{val.toLocaleString()}
                                                                 <span style={{ color: '#94a3b8', fontSize: '0.9em', marginLeft: '8px' }}>({percent}%)</span>
+                                                            </div>
+                                                            <div style={{ fontSize: '0.8em', color: '#94a3b8', marginTop: '2px' }}>
+                                                                {pieChartMode === 'dividend' ? '予想配当(年)' : '投下元本'}
                                                             </div>
                                                         </div>
                                                     );
