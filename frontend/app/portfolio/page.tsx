@@ -736,12 +736,6 @@ export default function PortfolioPage() {
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={monthlyData}
-                                        onClick={(data: any) => {
-                                            if (data && data.activePayload && data.activePayload.length > 0) {
-                                                setSelectedMonth(data.activePayload[0].payload.month);
-                                            }
-                                        }}
-                                        style={{ cursor: 'pointer' }}
                                     >
                                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
                                         <XAxis dataKey="month" stroke="#94a3b8" tickFormatter={(val) => `${val}月`} />
