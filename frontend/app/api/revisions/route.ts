@@ -1,5 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getRevisions, getRevisionsByDateRange, searchRevisions } from '@/lib/db';
+import db, { getRevisions, getRevisionsByDateRange } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,7 +7,7 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const filter = searchParams.get('filter'); // 'today', 'month'
 
-        let revisions = [];
+        let revisions: any[] = [];
 
         if (filter === 'today') {
             // JST Today
@@ -26,24 +25,26 @@ export async function GET(request: NextRequest) {
             // This month: YYYY-MM-01 to YYYY-MM-31 (or just > YYYY-MM-01)
             const startDate = `${y}-${m}-01`;
             const endDate = `${y}-${m}-31`; // Loose end date
-            revisions = await getRevisionsByDateRange(startDate, endDate); // Added await
+            revisions = getRevisionsByDateRange(startDate, endDate);
         } else {
             const search = searchParams.get('q');
             if (search) {
-                revisions = await db.all(`
-            SELECT * FROM revisions
-            WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
-            AND (title LIKE ? OR content LIKE ?)
-            ORDER BY revision_date DESC, id DESC
-            LIMIT 550
-        `, [`%${search}%`, `%${search}%`]); // Adjusted to use search parameter and limit
+                const stmt = db.prepare(`
+                    SELECT * FROM revisions
+                    WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
+                    AND (title LIKE ? OR content LIKE ?)
+                    ORDER BY revision_date DESC, id DESC
+                    LIMIT 550
+                `);
+                revisions = stmt.all(`%${search}%`, `%${search}%`) as any[];
             } else {
-                revisions = await db.all(`
+                const stmt = db.prepare(`
                     SELECT * FROM revisions
                     WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
                     ORDER BY revision_date DESC, id DESC
                     LIMIT 50
                 `);
+                revisions = stmt.all() as any[];
             }
         }
 
