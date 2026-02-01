@@ -409,7 +409,6 @@ export default function PortfolioPage() {
     };
 
     const totalPortfolioValue = holdings.reduce((sum, h) => sum + (h.totalShares * h.averagePrice), 0);
-    const totalPortfolioValue = holdings.reduce((sum, h) => sum + (h.totalShares * h.averagePrice), 0);
     const totalNetDividend = holdings.reduce((sum, h) => sum + h.netDividend, 0);
     const totalPendingDividend = pendingDividends.reduce((sum, p) => sum + p.amount, 0);
 
