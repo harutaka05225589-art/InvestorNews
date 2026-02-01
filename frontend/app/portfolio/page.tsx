@@ -343,11 +343,11 @@ export default function PortfolioPage() {
             return data;
         }, [holdings, chartMode]);
 
-        // Helper for displaying selected month details
-        const selectedMonthData = useMemo(() => {
-            if (selectedMonth === null) return null;
-            return monthlyData.find(d => d.month === selectedMonth);
-        }, [monthlyData, selectedMonth]);
+        // Derived: Selected Month Data for Breakdown
+        const activeMonthData = useMemo(() => {
+            if (activeMonthIndex === null) return null;
+            return monthlyData[activeMonthIndex];
+        }, [activeMonthIndex, monthlyData]);
 
 
         const handleSubmit = async (e: React.FormEvent) => {
@@ -665,25 +665,27 @@ export default function PortfolioPage() {
 
                         {/* Chart 1: Dividend Composition (Pie) */}
                         <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem' }}>
-                            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>銘柄別 配当構成比</h2>
-                            <div style={{ height: '250px' }}>
+                            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>銘柄別 配当構成比 (投下元本ベース)</h2>
+                            <div style={{ height: '300px' }}>
                                 <ResponsiveContainer width="100%" height="100%">
                                     <PieChart>
                                         <Pie
                                             data={holdings}
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={60}
-                                            outerRadius={80}
-                                            paddingAngle={5}
-                                            dataKey="netDividend"
+                                            cx="50%" cy="50%"
+                                            outerRadius={100}
+                                            fill="#8884d8"
+                                            dataKey="totalInvested"
                                             nameKey="name"
+                                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                                         >
                                             {holdings.map((entry, index) => (
                                                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                             ))}
                                         </Pie>
-                                        <Tooltip formatter={(value: any) => `${Math.round(Number(value)).toLocaleString()}円`} />
+                                        <Tooltip
+                                            formatter={(value: number) => `¥${value.toLocaleString()}`}
+                                            contentStyle={{ backgroundColor: '#0f172a', border: 'none', color: '#fff' }}
+                                        />
                                         <Legend />
                                     </PieChart>
                                 </ResponsiveContainer>
