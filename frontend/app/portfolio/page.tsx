@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
 
 interface Transaction {
     id: number;
@@ -809,4 +809,127 @@ export default function PortfolioPage() {
                 </div>
         </main>
     );
-}
+    // --- Asset History Logic ---
+    const [historyTimeframe, setHistoryTimeframe] = useState<'day' | 'week' | 'month' | 'year'>('month');
+
+    const assetHistoryData = useMemo(() => {
+        if (!transactions || transactions.length === 0) return [];
+
+        // Sort transactions by date asc
+        const sortedTx = [...transactions].sort((a, b) => {
+            if (!a.transaction_date) return -1;
+            if (!b.transaction_date) return 1;
+            return new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime();
+        });
+
+        const points: { date: string, invested: number }[] = [];
+        let currentInvested = 0;
+
+        // Grouping helper
+        const getGroupKey = (dateStr: string, mode: 'day' | 'week' | 'month' | 'year') => {
+            const d = new Date(dateStr);
+            if (isNaN(d.getTime())) return 'Unknown';
+            if (mode === 'day') return dateStr; // YYYY-MM-DD
+            if (mode === 'month') return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            if (mode === 'year') return `${d.getFullYear()}`;
+            if (mode === 'week') {
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+                const monday = new Date(d.setDate(diff));
+                return `${monday.getFullYear()}-${String(monday.getMonth() + 1).padStart(2, '0')}-${String(monday.getDate()).padStart(2, '0')}`;
+            }
+            return dateStr;
+        };
+
+        // 1. Calculate cumulative invested daily first
+        const dailyPoints: { date: string, invested: number }[] = [];
+        // Map to aggregate by selected timeframe
+        const groupedMap = new Map<string, number>();
+
+        sortedTx.forEach(tx => {
+            if (!tx.transaction_date) return;
+            const amount = tx.shares * tx.price; // Buy is positive shares, Sell is negative shares? 
+            // wait, tx.shares is usually absolute in DB but let's check content.
+            // If I look at the transaction table rendering: 
+            // {tx.shares > 0 ? '買い' : '売り'} -> shares is signed in the UI rendering logic? 
+            // In DB: "shares" column. "shares" > 0 for Buy? 
+            // Let's assume Signed. If not, I need to check type. 
+            // Viewing line 625: `tx.shares > 0 ? '買い' : '売り'` implies shares is signed.
+            // But wait, line 629: `{Math.abs(tx.shares)}株`. Yes, it is signed.
+
+            // Invested Change:
+            // Buy (positive shares): Increase Invested
+            // Sell (negative shares): Decrease Invested (Realize profit/loss, but "Invested Amount" usually means Cost Basis remaining? 
+            // Or "Net Capital Injected"?
+            // "投下元本ベース" (Invested Capital Base) usually means Net Cash In.
+            // Buy 10000 -> Invested 10000.
+            // Sell 12000 -> Invested -2000? No.
+            // Sell 12000 (orig 10000) -> Net Cash flow is +2000. Invested should go down by cost basis?
+            // User asked for "投入金額の推移" (Transition of Invested Amount).
+            // Usually this means "Total Acquisition Cost of Current Holdings" OR "Cumulative Net Deposit".
+            // Given "Net Dividend / Total Invested" calculation earlier: holdings.reduce sum + (h.totalShares * h.averagePrice).
+            // This suggests "Current Portfolio Value (Cost Basis)".
+            // So if I sell, the "Invested Amount" drops by the *original cost* of the sold shares, not the sell price.
+            // However, transaction history might not strictly track "original cost" easily without FIFO logic.
+            // Simple approximation: "Net Cash Injected" maybe? 
+            // If checking Portfolio Page: "投資総額: ... (投下元本ベース)".
+            // This is likely Sum(Current Holdings * Average Price).
+            // To show *History* of this, I need to know Holdings *at that time*.
+            // This is complex to calculate from just a transaction list without full replay.
+
+            // Simpler Interpretation: "Accumulated Buy Amount".
+            // Or "Buy Amount - Sell Amount" (Market Value ignored).
+            // Let's go with: Cumulative (Signed Shares * Price). 
+            // Buy: +100 * 1000 = +100,000
+            // Sell: -100 * 1200 = -120,000. 
+            // Result: -20,000. (Profit realized).
+            // If user wants "Invested Amount", maybe they mean "Principal"?
+            // If I realized profit, is my "Invested Amount" reduced? Yes, technically I got money back.
+            // Let's stick to `Cumulative Sum of (Shares * Price)`. This represents Net Capital Exposure.
+
+            const cost = tx.shares * tx.price;
+            currentInvested += cost;
+
+            // Store point
+            dailyPoints.push({ date: tx.transaction_date, invested: currentInvested });
+        });
+
+        // Now group/resample by timeframe
+        // For line chart, we usually want the "End value" of that period? Or Average?
+        // Usually "End Value".
+
+        dailyPoints.forEach(p => {
+            const k = getGroupKey(p.date, historyTimeframe);
+            groupedMap.set(k, p.invested); // Overwrite, so last one wins = End of period status
+        });
+
+        // Convert map to array and sort
+        const result = Array.from(groupedMap.entries()).map(([date, val]) => ({
+            date,
+            invested: Math.round(val)
+        })).sort((a, b) => a.date.localeCompare(b.date));
+
+        return result;
+
+    }, [transactions, historyTimeframe]);
+
+    return (
+        <main style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', color: '#e2e8f0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '2rem', alignItems: 'start' }}>
+
+                {/* Left Column */}
+                <div style={{ minWidth: 0 }}>
+                    {/* ... (Holdings Table & Transaction History are here but we are replacing from line 812 so we need to be careful) ... */}
+                    {/* Wait, I am replacing from line 812 which is the very end. I cannot rewrite the top of the component. */}
+                    {/* I need to inject the hook logic at the top, and the JSX at the bottom. */}
+                    {/* MultiReplace is needed or careful separate edits. */}
+                    {/* Since I can't put hooks at the bottom, I'll have to do this in two steps or use MultiReplace. */}
+                    {/* Using MultiReplaceFileContent is safer. */}
+                </div>
+            </div>
+        </main>
+    )
+// CANCEL - I cannot write hooks inside the render loop or at the bottom.
+// I need to place the hook at the top (lines ~20-50) and the JSX at the bottom.
+// I will use `multi_replace_file_content`.
+
