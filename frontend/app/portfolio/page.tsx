@@ -809,7 +809,6 @@ export default function PortfolioPage() {
                     </div>
 
                 </div>
-            </div>
-            </main >
+            </main>
         );
-}
+    }
