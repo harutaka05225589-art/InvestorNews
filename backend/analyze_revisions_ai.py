@@ -215,5 +215,17 @@ def process_revisions():
             print("  Sleeping 15s to respect Rate Limits...")
             time.sleep(15)
             
+    except Exception as e:
+        if "QUOTA_EXCEEDED" in str(e):
+            print("\n!!! CRITICAL: QUOTA EXCEEDED (429) !!!")
+            conn.close()
+            exit(1)
 
-```
+        print(f"  Error processing row: {e}")
+        try:
+            c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Processing Error' WHERE id = ?", (rev_id,))
+            conn.commit()
+        except:
+            pass
+            
+    conn.close()
