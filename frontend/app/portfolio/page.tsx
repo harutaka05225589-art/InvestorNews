@@ -716,7 +716,7 @@ export default function PortfolioPage() {
                                         <Pie
                                             data={holdings}
                                             cx="50%" cy="50%"
-                                            outerRadius={100}
+                                            outerRadius={80}
                                             fill="#8884d8"
                                             dataKey="totalInvested"
                                             nameKey="name"
@@ -727,8 +727,22 @@ export default function PortfolioPage() {
                                             ))}
                                         </Pie>
                                         <Tooltip
-                                            formatter={(value: any) => `¥${(value || 0).toLocaleString()}`}
-                                            contentStyle={{ backgroundColor: '#0f172a', border: 'none', color: '#fff' }}
+                                            content={({ active, payload }) => {
+                                                if (active && payload && payload.length) {
+                                                    const data = payload[0];
+                                                    const percent = totalPortfolioValue > 0 ? (Number(data.value) / totalPortfolioValue * 100).toFixed(1) : "0.0";
+                                                    return (
+                                                        <div style={{ backgroundColor: '#0f172a', border: '1px solid #334155', padding: '0.5rem', borderRadius: '4px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                                                            <div style={{ color: '#f8fafc', fontWeight: 'bold', marginBottom: '4px' }}>{data.name}</div>
+                                                            <div style={{ color: '#f8fafc' }}>
+                                                                ¥{(data.value as number).toLocaleString()}
+                                                                <span style={{ color: '#94a3b8', fontSize: '0.9em', marginLeft: '8px' }}>({percent}%)</span>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
                                         />
                                     </PieChart>
                                 </ResponsiveContainer>
