@@ -705,7 +705,7 @@ export default function PortfolioPage() {
                             {Math.round(totalNetDividend).toLocaleString()}円
                         </div>
                         <p style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                            投資総額: {Math.round(totalPortfolioValue).toLocaleString()}円 (利回り: {totalPortfolioValue > 0 ? (totalNetDividend / totalPortfolioValue * 100).toFixed(2) : 0}%)
+                            総投入額: {Math.round(totalPortfolioValue).toLocaleString()}円 (利回り: {totalPortfolioValue > 0 ? (totalNetDividend / totalPortfolioValue * 100).toFixed(2) : 0}%)
                         </p>
                     </div>
 
@@ -935,7 +935,7 @@ export default function PortfolioPage() {
                     {/* Chart 3: Asset History (Total Invested) */}
                     <section style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginTop: '2rem' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            <h2 style={{ fontSize: '1.2rem' }}>資産推移 (投入金額)</h2>
+                            <h2 style={{ fontSize: '1.2rem' }}>総投入額の推移</h2>
                             <div style={{ display: 'flex', background: '#334155', borderRadius: '6px', padding: '2px' }}>
                                 {(['day', 'week', 'month', 'year'] as const).map(tf => (
                                     <button
