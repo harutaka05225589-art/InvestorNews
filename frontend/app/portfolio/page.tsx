@@ -473,7 +473,7 @@ export default function PortfolioPage() {
                 <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
                 <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                     <div>
-                        <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>総資産評価額</span>
+                        <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>総投入額</span>
                         <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>¥{totalPortfolioValue.toLocaleString()}</div>
                     </div>
                     <div>
