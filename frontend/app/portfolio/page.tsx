@@ -675,7 +675,7 @@ export default function PortfolioPage() {
                                         ))}
                                     </Pie>
                                     <Tooltip
-                                        formatter={(value: number) => `¥${value.toLocaleString()}`}
+                                        formatter={(value: any) => `¥${(value || 0).toLocaleString()}`}
                                         contentStyle={{ backgroundColor: '#0f172a', border: 'none', color: '#fff' }}
                                     />
                                     <Legend />
