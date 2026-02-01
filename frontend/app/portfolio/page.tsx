@@ -54,10 +54,12 @@ export default function PortfolioPage() {
 
     // Chart State
     const [chartMode, setChartMode] = useState<'payment' | 'rights'>('payment');
-    const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
+    const [activeMonthIndex, setActiveMonthIndex] = useState<number | null>(null);
 
     useEffect(() => {
         fetchData();
+        // Reset active month on fetch
+        setActiveMonthIndex(null);
     }, []);
 
     // Debounce Search
