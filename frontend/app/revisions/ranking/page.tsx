@@ -34,10 +34,10 @@ export default function RevisionRankingPage() {
         <main className={styles.container}>
             <header className={styles.header}>
                 <h1 className={styles.title}>
-                    🏆 今週の爆上げランキング
+                    🏆 今週の業績修正率ランキング
                 </h1>
                 <p className={styles.subtitle}>
-                    今週、業績修正を発表した銘柄の中で<strong>株価上昇率が高かった銘柄</strong>のトップ20です。
+                    今週、<strong>営業利益の上方修正率が高かった銘柄</strong>のトップ20です。
                     <br />
                     <span style={{ fontSize: '0.8rem', opacity: 0.7 }}>更新: {updatedAt} (毎週土曜更新)</span>
                 </p>
@@ -56,7 +56,7 @@ export default function RevisionRankingPage() {
                                 <th>順位</th>
                                 <th>コード</th>
                                 <th>銘柄名</th>
-                                <th>週間騰落率</th>
+                                <th>修正率</th>
                             </tr>
                         </thead>
                         <tbody>
