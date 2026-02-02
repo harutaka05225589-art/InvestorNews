@@ -90,7 +90,7 @@ def analyze_revision_pdf(pdf_path, title):
         return data
 
     except Exception as e:
-        # Error handling ...
+        print(f"  [ERROR] Gemini API Error: {e}")
         return None
 def process_revisions():
     print("Starting AI Analysis...")
@@ -112,9 +112,11 @@ def process_revisions():
 
             print(f"Analyzing {ticker} {company_name}: {title}")
             
-            if not url:
-                print("  No URL, skipping")
-                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'No URL' WHERE id = ?", (rev_id,))
+            # Skip "Status reports" (Progress updates) to save quota/time
+            if "取得状況" in title:
+                print("  Skipping status report (noise)...")
+                # Mark as analyzed (neutral) so it doesn't loop
+                c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'Stat Report', is_upward = 0 WHERE id = ?", (rev_id,))
                 conn.commit()
                 continue
 
@@ -135,6 +137,8 @@ def process_revisions():
             
             except Exception as e:
                 print(f"  Error downloading/analyzing PDF: {e}")
+                import traceback
+                traceback.print_exc()
                 result = None
 
             if result:
