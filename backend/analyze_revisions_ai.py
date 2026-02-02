@@ -76,7 +76,9 @@ def analyze_revision_pdf(pdf_path, title):
         }}
         """
 
-        # ... (Model selection logic remains) ...
+        # Run Inference
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        response = model.generate_content([prompt, sample_file])
         
         # Extract JSON
         text = response.text
