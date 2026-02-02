@@ -79,21 +79,38 @@ def fetch_tdnet_revisions(target_date=None):
                     # Note: This might overwrite other fields if they changed, but for this use case it's fine.
                     # Or use UPSERT syntax (SQLite 3.24+)
                     
+                    # Determine Category
+                    category = 'general'
+                    is_earnings = any(k in title_text for k in ['業績', '修正', '差異']) # '修正' is ambiguous but usually earnings/forecast
+                    is_dividend = any(k in title_text for k in ['配当', '剰余金'])
+                    is_buyback = '自己株式' in title_text
+
+                    if is_earnings and is_dividend:
+                        category = 'both'
+                    elif is_earnings:
+                        category = 'earnings'
+                    elif is_dividend:
+                        category = 'dividend'
+                    elif is_buyback:
+                        category = 'buyback'
+
                     c.execute("""
                         INSERT INTO revisions 
-                        (ticker, company_name, revision_date, source_url, quarter, title)
-                        VALUES (?, ?, ?, ?, ?, ?)
+                        (ticker, company_name, revision_date, source_url, quarter, title, category)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
                         ON CONFLICT(ticker, revision_date) DO UPDATE SET
                             title=excluded.title,
                             company_name=excluded.company_name,
-                            source_url=excluded.source_url
+                            source_url=excluded.source_url,
+                            category=excluded.category
                     """, (
                         ticker, 
                         name_text, 
                         target_date.strftime('%Y-%m-%d'),
                         pdf_link,
                         "Unknown",
-                        title_text
+                        title_text,
+                        category
                     ))
                     
                     if c.rowcount > 0:
