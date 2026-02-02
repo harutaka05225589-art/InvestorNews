@@ -13,22 +13,18 @@ export async function GET(request: NextRequest) {
         const category = searchParams.get('category');
 
         if (filter === 'today') {
-            // ... (keep existing today logic, maybe add category filtering later if needed, but for now focus on main list)
-            // For simplicity, passing category to existing functions requires DB update, let's Stick to Main Query for now.
             const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
-            // ...
-            // NOTE: getRevisionsByDateRange assumes standard fetch. 
-            // To support category, we might need a custom query here too.
-            // Let's implement category filtering for the main list first which uses raw SQL below.
-
-            // Actually, let's just use the main Custom Query block for everything if possible?
-            // No, keep 'today'/'month' as is for Quick Links, they are less likely to need strict category filtering immediately unless requested.
-            // But the user said "Organize them".
-
-            // Let's modify the MAIN block (else) to filter by category.
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const dateStr = `${y}-${m}-${d}`;
             revisions = getRevisionsByDateRange(dateStr, dateStr);
         } else if (filter === 'month') {
-            // ...
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const startDate = `${y}-${m}-01`;
+            const endDate = `${y}-${m}-31`;
             revisions = getRevisionsByDateRange(startDate, endDate);
         } else {
             const search = searchParams.get('q');
