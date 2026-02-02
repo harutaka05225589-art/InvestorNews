@@ -41,13 +41,17 @@ export default function RevisionsPage() {
 
 
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState(''); // Search State
+    const [searchQuery, setSearchQuery] = useState('');
+    const [category, setCategory] = useState('earnings'); // Default to Earnings as requested ("Extract only stocks with performance revisions")
 
     useEffect(() => {
         const fetchRevisions = () => {
             setLoading(true);
-            const url = searchQuery ? `/api/revisions?q=${encodeURIComponent(searchQuery)}` : '/api/revisions';
-            fetch(url)
+            const params = new URLSearchParams();
+            if (searchQuery) params.append('q', searchQuery);
+            if (category && category !== 'all') params.append('category', category);
+
+            fetch(`/api/revisions?${params.toString()}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data.revisions) {
@@ -58,50 +62,90 @@ export default function RevisionsPage() {
                 .finally(() => setLoading(false));
         };
 
-        // Debounce search
         const timeoutId = setTimeout(() => {
             fetchRevisions();
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [searchQuery]); // Re-run when searchQuery changes
+    }, [searchQuery, category]);
 
     return (
         <main className={styles.container}>
-            {/* ... Header ... */}
             <header className={styles.header}>
                 <h1 className={styles.title}>
                     📊 業績修正速報
                     <span style={{ fontSize: '0.8rem', background: 'var(--accent)', color: '#000', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>Beta</span>
                 </h1>
                 <p className={styles.subtitle}>
-                    AIがPDFを自動解析し「上方修正」「下方修正」を判定します。修正理由も要約済み。
+                    AIがPDFを自動解析し「上方修正」「下方修正」を判定します。
                 </p>
-                {/* ... Quick Links ... */}
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-                    <Link href="/revisions/today" style={{ textDecoration: 'none' }}>
-                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
-                            <span>📅</span> 今日の修正
-                        </div>
-                    </Link>
-                    <Link href="/revisions/this-month" style={{ textDecoration: 'none' }}>
-                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
-                            <span>🗓️</span> 今月の修正
-                        </div>
-                    </Link>
-                    <Link href="/revisions/ranking" style={{ textDecoration: 'none' }}>
-                        <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#000', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #b45309' }}>
-                            <span>🏆</span> 爆上げランキング
-                        </div>
-                    </Link>
-                </div>
             </header>
+
+            {/* Category Tabs */}
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+                <button
+                    onClick={() => setCategory('earnings')}
+                    style={{
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '20px',
+                        background: category === 'earnings' ? 'var(--accent)' : '#334155',
+                        color: category === 'earnings' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    業績修正
+                </button>
+                <button
+                    onClick={() => setCategory('dividend')}
+                    style={{
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '20px',
+                        background: category === 'dividend' ? 'var(--accent)' : '#334155',
+                        color: category === 'dividend' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    配当修正
+                </button>
+                <button
+                    onClick={() => setCategory('buyback')}
+                    style={{
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '20px',
+                        background: category === 'buyback' ? 'var(--accent)' : '#334155',
+                        color: category === 'buyback' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    自社株買い
+                </button>
+                <button
+                    onClick={() => setCategory('all')}
+                    style={{
+                        padding: '0.6rem 1.2rem',
+                        borderRadius: '20px',
+                        background: category === 'all' ? 'var(--accent)' : '#334155',
+                        color: category === 'all' ? '#000' : '#fff',
+                        fontWeight: 'bold',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    すべて
+                </button>
+            </div>
 
             {/* Search Bar */}
             <div style={{ maxWidth: '600px', margin: '0 auto 2rem auto', position: 'relative' }}>
                 <input
                     type="text"
-                    placeholder="銘柄コードまたは社名で検索 (例: トヨタ, 7203)..."
+                    placeholder="銘柄コードまたは社名で検索..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     style={{
@@ -116,107 +160,99 @@ export default function RevisionsPage() {
                         boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                     }}
                 />
-                <div style={{ position: 'absolute', right: '1.2rem', top: '50%', transform: 'translateY(-50%)', color: '#64748b' }}>
-                    🔍
-                </div>
             </div>
 
-            <div className={styles.statsGrid}></div>
+            <div className={styles.tableContainer}>
+                <table className={styles.table}>
+                    <thead>
+                        <tr>
+                            <th>日付</th>
+                            <th>コード</th>
+                            <th>銘柄名</th>
+                            <th>AI判定</th>
+                            <th>開示詳細</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {revisions.map((rev) => {
+                            const type = getRevisionType(rev);
+                            const rate = rev.revision_rate_op;
 
-            <section>
-                <h2 className={styles.sectionTitle}>修正開示一覧 (新着順)</h2>
-
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr>
-                                <th>日付</th>
-                                <th>コード</th>
-                                <th>銘柄名</th>
-                                <th>AI判定</th>
-                                <th>開示詳細</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {revisions.map((rev) => {
-                                const type = getRevisionType(rev);
-                                const rate = rev.revision_rate_op;
-
-                                return (
-                                    <tr key={rev.id}>
-                                        <td style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#ccc' }}>{rev.revision_date}</td>
-                                        <td>
-                                            <a href={`https://finance.yahoo.co.jp/quote/${rev.ticker}.T`} target="_blank" rel="noopener noreferrer" className={styles.tickerLink}>
-                                                {rev.ticker}
-                                            </a>
-                                        </td>
-                                        <td style={{ minWidth: '250px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                {/* Link to Detail Page */}
-                                                <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                    <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}
-                                                        className={styles.companyLink}>
-                                                        {rev.company_name}
-                                                    </span>
-                                                </Link>
-                                            </div>
-                                            {/* AI Summary */}
-                                            {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
-                                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem', lineHeight: '1.4' }}>
-                                                    🤖 {rev.ai_summary}
-                                                </p>
-                                            )}
-                                        </td>
-                                        <td style={{ minWidth: '120px' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span className={`${styles.badge} ${styles[type]}`}>
-                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
+                            return (
+                                <tr key={rev.id}>
+                                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#ccc' }}>{rev.revision_date}</td>
+                                    <td>
+                                        <a href={`https://finance.yahoo.co.jp/quote/${rev.ticker}.T`} target="_blank" rel="noopener noreferrer" className={styles.tickerLink}>
+                                            {rev.ticker}
+                                        </a>
+                                    </td>
+                                    <td style={{ minWidth: '250px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            {/* Link to Detail Page */}
+                                            <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}
+                                                    className={styles.companyLink}>
+                                                    {rev.company_name}
                                                 </span>
-                                                {rate !== undefined && rate !== null && rate !== 0 ? (
-                                                    <span style={{
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: 'bold',
-                                                        color: rate > 0 ? '#4ade80' : '#f87171'
-                                                    }}>
-                                                        {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                {/* Detail button removed as requested, company name is now the link */}
-                                                {rev.source_url ? (
-                                                    <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
-                                                        📄 PDF
-                                                    </a>
-                                                ) : '-'}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-
-
-                            {loading && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
-                                </tr>
-                            )}
-
-                            {!loading && revisions.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
-                                        表示できるデータがありません
+                                            </Link>
+                                        </div>
+                                        {/* AI Summary */}
+                                        {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
+                                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem', lineHeight: '1.4' }}>
+                                                🤖 {rev.ai_summary}
+                                            </p>
+                                        )}
+                                    </td>
+                                    <td style={{ minWidth: '120px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <span className={`${styles.badge} ${styles[type]}`}>
+                                                {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
+                                            </span>
+                                            {rate !== undefined && rate !== null && rate !== 0 ? (
+                                                <span style={{
+                                                    fontSize: '0.85rem',
+                                                    fontWeight: 'bold',
+                                                    color: rate > 0 ? '#4ade80' : '#f87171'
+                                                }}>
+                                                    {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
+                                                </span>
+                                            ) : (
+                                                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            {/* Detail button removed as requested, company name is now the link */}
+                                            {rev.source_url ? (
+                                                <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
+                                                    📄 PDF
+                                                </a>
+                                            ) : '-'}
+                                        </div>
                                     </td>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
+                            );
+                        })}
+
+
+                        {loading && (
+                            <tr>
+                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
+                            </tr>
+                        )}
+
+                        {!loading && revisions.length === 0 && (
+                            <tr>
+                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
+                                    表示できるデータがありません
+                                </td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </section>
         </main >
     );
 }
