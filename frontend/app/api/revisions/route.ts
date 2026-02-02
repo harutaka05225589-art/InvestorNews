@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
                 const stmt = db.prepare(`
                     SELECT * FROM revisions
                     WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
+                    AND (title LIKE '%業績%' OR title LIKE '%差異%')
                     ORDER BY revision_date DESC, id DESC
                     LIMIT 50
                 `);

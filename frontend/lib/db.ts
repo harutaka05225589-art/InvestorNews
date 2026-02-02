@@ -203,6 +203,7 @@ export function getRevisions(limit: number = 100) {
     try {
         const stmt = db.prepare(`
             SELECT * FROM revisions 
+            WHERE (title LIKE '%業績%' OR title LIKE '%差異%')
             ORDER BY revision_date DESC, id DESC
             LIMIT ?
         `);
@@ -217,6 +218,7 @@ export function getRevisionsByDateRange(startDate: string, endDate: string) {
         const stmt = db.prepare(`
             SELECT * FROM revisions 
             WHERE revision_date BETWEEN ? AND ?
+            AND (title LIKE '%業績%' OR title LIKE '%差異%')
             ORDER BY revision_date DESC, id DESC
         `);
         return stmt.all(startDate, endDate) as any[];
@@ -265,7 +267,8 @@ export function searchRevisions(query: string, limit: number = 50) {
     try {
         const stmt = db.prepare(`
             SELECT * FROM revisions 
-            WHERE ticker LIKE ? OR company_name LIKE ? 
+            WHERE (ticker LIKE ? OR company_name LIKE ?)
+            AND (title LIKE '%業績%' OR title LIKE '%差異%')
             ORDER BY revision_date DESC, id DESC 
             LIMIT ?
         `);
