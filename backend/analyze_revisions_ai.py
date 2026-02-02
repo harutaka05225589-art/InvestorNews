@@ -80,6 +80,7 @@ def analyze_revision_pdf(pdf_path, title):
         
         # Extract JSON
         text = response.text
+        print(f"  [DEBUG] Raw Response: {text[:500]}...") # Print first 500 chars
         if "```json" in text:
             text = text.split("```json")[1].split("```")[0]
         elif "```" in text:
