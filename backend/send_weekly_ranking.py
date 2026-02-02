@@ -74,7 +74,7 @@ def send_ranking_tweet():
         # Format: 1. トヨタ (+15.2%)
         msg += f"{i}. {name} (+{rate:.1f}%)\n"
     
-    msg += "\n▶ 全件ランキング\nhttps://rich-investor-news.com/revisions/ranking\n#日本株 #決算速報 #上方修正 #ランキング"
+    msg += "\n▶ 全件ランキング\nhttps://rich-investor-news.com/revisions/ranking\n#日本株 #決算速報 #上方修正 #業績修正 #高配当株"
     
     print("--- Tweet Content ---")
     print(msg)

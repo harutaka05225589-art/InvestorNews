@@ -192,7 +192,7 @@ def process_revisions():
                         
                         clean_title = title[:30] + "..." if len(title) > 30 else title
                         
-                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n#株 #決算 #上方修正"
+                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n#日本株 #決算速報 #上方修正 #増配 #高配当株"
                         
                         tweet_id = post_to_x(x_msg, media_path=None)
 
