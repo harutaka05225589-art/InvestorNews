@@ -252,7 +252,6 @@ export default function RevisionsPage() {
                     </tbody>
                 </table>
             </div>
-        </section>
-        </main >
+        </main>
     );
 }
