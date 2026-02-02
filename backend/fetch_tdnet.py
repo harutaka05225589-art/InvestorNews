@@ -64,6 +64,9 @@ def fetch_tdnet_revisions(target_date=None):
                 # Filter for "Upward Revision", "Dividend Revision", "Buybacks"
                 # Keywords: 業績予想の修正, 修正に関するお知らせ, 配当, 剰余金の処分, 自己株式
                 if any(k in title_text for k in ["業績予想の修正", "差異", "配当", "剰余金の処分", "自己株式"]):
+                    # Refinement: Skip "Status Reports" (noise)
+                    if "自己株式" in title_text and any(skip in title_text for skip in ["取得状況", "取得結果", "完了"]):
+                        continue
                     ticker = code_text[:4] # 12340 -> 1234
                     
                     print(f"  Found Revision: {ticker} {name_text} - {title_text}")
