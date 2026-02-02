@@ -229,3 +229,6 @@ def process_revisions():
             pass
             
     conn.close()
+
+if __name__ == "__main__":
+    process_revisions()
