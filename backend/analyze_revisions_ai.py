@@ -123,6 +123,24 @@ def process_revisions():
                 c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'Stat Report', is_upward = 0 WHERE id = ?", (rev_id,))
                 conn.commit()
                 continue
+            
+            # User Request: Only analyze Earnings Revisions ("業績") to save time
+            # We assume "業績" (Earnings) or "配当" (Dividend) + "修正" (Revision) are the targets.
+            # But the user specifically said "業績修正" (Earnings Revision).
+            # Let's be slightly broader to include "配当" (Dividends) if they are important, 
+            # but strictly the request was "except earnings revisions". 
+            # Let's keep "業績" OR "配当" to remain useful but cut out other noise (like "人事", "定款", "自己株式" without earnings context).
+            
+            is_target = False
+            if "業績" in title or "配当" in title:
+                 is_target = True
+            
+            if not is_target:
+                print(f"  Skipping non-earnings/dividend revision: {title}")
+                # Mark as 3 (Skipped by Filter)
+                c.execute("UPDATE revisions SET ai_analyzed = 3, ai_summary = 'Skipped (Non-Earnings)', is_upward = 0 WHERE id = ?", (rev_id,))
+                conn.commit()
+                continue
 
             try:
                 # Download PDF
@@ -194,16 +212,33 @@ def process_revisions():
                         # We use the official domain for generation
                         og_title = f"{row['company_name']} 上方修正"
                         og_subtitle = summary
+                        # Encode params safely
                         og_url = f"https://rich-investor-news.com/api/og?title={requests.utils.quote(og_title)}&subtitle={requests.utils.quote(og_subtitle)}&type=alert"
                         
                         # Detail URL
                         detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
                         
-                        clean_title = title[:30] + "..." if len(title) > 30 else title
-                        
                         x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n#日本株 #決算速報 #上方修正 #増配 #高配当株"
                         
-                        tweet_id = post_to_x(x_msg, media_path=None)
+                        # Download OGP Image to attach (Fix for missing cards)
+                        media_path = None
+                        try:
+                            print(f"  Downloading OGP image from: {og_url}")
+                            r_img = requests.get(og_url, timeout=10)
+                            if r_img.status_code == 200:
+                                with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tf:
+                                    tf.write(r_img.content)
+                                    media_path = tf.name
+                            else:
+                                print(f"  [WARNING] Failed to download OGP image: {r_img.status_code}")
+                        except Exception as e:
+                            print(f"  [WARNING] OGP download error: {e}")
+
+                        tweet_id = post_to_x(x_msg, media_path=media_path)
+                        
+                        # Cleanup temp file
+                        if media_path and os.path.exists(media_path):
+                            os.remove(media_path)
 
                         if tweet_id:
                             print(f"  -> Posted to X successfully: {tweet_id}")
