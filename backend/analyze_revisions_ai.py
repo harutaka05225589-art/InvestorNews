@@ -23,69 +23,79 @@ def analyze_revision_pdf(pdf_path, title):
     Uploads PDF to Gemini and asks for analysis.
     Returns: { "is_upward": bool, "revision_rate_op": float, "summary": str } or None
     """
-    try:
-        # Upload file
-        print(f"  Uploading PDF to Gemini...")
-        sample_file = genai.upload_file(path=pdf_path, display_name="Revision PDF")
-        
-        # Wait for processing
-        while sample_file.state.name == "PROCESSING":
-            time.sleep(2)
-        # Define Prompt
-        prompt = f"""
-        あなたの任務は、添付のPDF資料（企業の適時開示情報：{title}）から「業績予想」または「配当予想」の数値を抽出し、JSON形式で出力することです。
+    # Define Prompt
+    prompt = f"""
+    あなたの任務は、添付のPDF資料（企業の適時開示情報：{title}）から「業績予想」または「配当予想」の数値を抽出し、JSON形式で出力することです。
 
-        【重要ルール 判断基準】
-        1. is_upward: 「投資家にとってポジティブな修正」か？
-           - **営業利益(Operating Profit)が前回予想より増額されている場合は true（最優先）。**
-           - **営業利益の記載がなく、配当が増額（増配）されている場合も true。**
-           - **営業利益も配当も変更なし、または減額/減配の場合は false。**
-           - 黒字転換は true。赤字転落・赤字拡大は false。
-           
-        2. revision_rate_op: 営業利益の修正率（%）。
-           - 営業利益の記載がない場合やゼロの場合は 0.0 とする。
-           
-        3. forecast_data: 業績予想の数値を抽出。
-           - "previous": 前回予想, "revised": 今回修正予想
-           - "sales": 売上高, "op": 営業利益, "ordinary": 経常利益, "net": 純利益
-        
-        4. dividend: 配当情報の抽出。
-           - "annual_forecast": 修正後の年間配当予想額。
-           - "is_hike": 増配なら true。
-           - "rights_month": 権利確定月。
-           - "payment_month": 支払開始月。
-        
-        5. quarter: 対象期間
+    【重要ルール 判断基準】
+    1. is_upward: 「投資家にとってポジティブな修正」か？
+       - **営業利益(Operating Profit)が前回予想より増額されている場合は true（最優先）。**
+       - **営業利益の記載がなく、配当が増額（増配）されている場合も true。**
+       - **営業利益も配当も変更なし、または減額/減配の場合は false。**
+       - 黒字転換は true。赤字転落・赤字拡大は false。
+       
+    2. revision_rate_op: 営業利益の修正率（%）。
+       - 営業利益の記載がない場合やゼロの場合は 0.0 とする。
+       
+    3. forecast_data: 業績予想の数値を抽出。
+       - "previous": 前回予想, "revised": 今回修正予想
+       - "sales": 売上高, "op": 営業利益, "ordinary": 経常利益, "net": 純利益
+    
+    4. dividend: 配当情報の抽出。
+       - "annual_forecast": 修正後の年間配当予想額。
+       - "is_hike": 増配なら true。
+       - "rights_month": 権利確定月。
+       - "payment_month": 支払開始月。
+    
+    5. quarter: 対象期間
 
-        Output Format (JSON only):
-        {{
-            "is_upward": true,
-            "revision_rate_op": 0.0,
-            "summary": "為替差益により上方修正（20文字程度で簡潔に）",
-            "quarter": "通期",
-            "dividend": {{ ... }},
-            "forecast_data": null
-        }}
-        """
+    Output Format (JSON only):
+    {{
+        "is_upward": true,
+        "revision_rate_op": 0.0,
+        "summary": "為替差益により上方修正（20文字程度で簡潔に）",
+        "quarter": "通期",
+        "dividend": {{ ... }},
+        "forecast_data": null
+    }}
+    """
 
-        # Run Inference
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        response = model.generate_content([prompt, sample_file])
-        
-        # Extract JSON
-        text = response.text
-        print(f"  [DEBUG] Raw Response: {text[:500]}...") # Print first 500 chars
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0]
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0]
+    # Retry logic for 429 errors
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Upload file
+            print(f"  Uploading PDF to Gemini (Attempt {attempt+1}/{max_retries})...")
+            sample_file = genai.upload_file(path=pdf_path, display_name="Revision PDF")
             
-        data = json.loads(text.strip())
-        return data
+            # Wait for processing
+            while sample_file.state.name == "PROCESSING":
+                time.sleep(2)
 
-    except Exception as e:
-        print(f"  [ERROR] Gemini API Error: {e}")
-        return None
+            # Run Inference
+            model = genai.GenerativeModel('gemini-2.0-flash')
+            response = model.generate_content([prompt, sample_file])
+            
+            # Extract JSON
+            text = response.text
+            print(f"  [DEBUG] Raw Response: {text[:500]}...")
+            if "```json" in text:
+                text = text.split("```json")[1].split("```")[0]
+            elif "```" in text:
+                text = text.split("```")[1].split("```")[0]
+                
+            data = json.loads(text.strip())
+            return data
+
+        except Exception as e:
+            if "429" in str(e):
+                wait_time = 30 * (2 ** attempt)  # 30s, 60s, 120s
+                print(f"  [WARNING] Rate Limit (429) hit. Sleeping {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                print(f"  [ERROR] Gemini API Error: {e}")
+                return None
+    return None
 def process_revisions():
     print("Starting AI Analysis...")
     conn = get_db_connection()
@@ -142,7 +152,7 @@ def process_revisions():
                 quarter = result.get('quarter', None) 
                 
                 # Dividend Extraction
-                div_data = result.get('dividend', {})
+                div_data = result.get('dividend') or {}
                 div_forecast = div_data.get('annual_forecast', None)
                 is_div_hike = 1 if div_data.get('is_hike') else 0
                 rights_month = div_data.get('rights_month', None)
