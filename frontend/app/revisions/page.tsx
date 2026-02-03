@@ -94,6 +94,11 @@ export default function RevisionsPage() {
                             <span>📅</span> 今日の業績修正
                         </div>
                     </Link>
+                    <Link href="/revisions/this-week" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
+                            <span>🗓️</span> 今週の業績修正
+                        </div>
+                    </Link>
                     <Link href="/revisions/this-month" style={{ textDecoration: 'none' }}>
                         <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
                             <span>🗓️</span> 今月の業績修正

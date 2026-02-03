@@ -26,6 +26,32 @@ export async function GET(request: NextRequest) {
             const startDate = `${y}-${m}-01`;
             const endDate = `${y}-${m}-31`;
             revisions = getRevisionsByDateRange(startDate, endDate, category || 'earnings');
+        } else if (filter === 'week') {
+            const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+            const day = now.getDay(); // 0 (Sun) - 6 (Sat)
+            const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust when day is Sunday
+            const start = new Date(now.setDate(diff));
+
+            const end = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+
+            // Allow searching up to end of week? or just recent 7 days? 
+            // Usually "This Week" means Monday to Sunday.
+            // Let's use simple logic: Last 7 days or Start of Week?
+            // "Start of Week (Mon) to Today" is standard for "This Week".
+
+            // Re-calculate to be safe string format
+            const y = start.getFullYear();
+            const m = String(start.getMonth() + 1).padStart(2, '0');
+            const d = String(start.getDate()).padStart(2, '0');
+            const startDate = `${y}-${m}-${d}`;
+
+            // End Date (Today/Future)
+            const ey = end.getFullYear();
+            const em = String(end.getMonth() + 1).padStart(2, '0');
+            const ed = String(end.getDate()).padStart(2, '0');
+            const endDate = `${ey}-${em}-${ed}`;
+
+            revisions = getRevisionsByDateRange(startDate, endDate, category || 'earnings');
         } else {
             const search = searchParams.get('q');
             let query = `
