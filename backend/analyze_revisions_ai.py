@@ -234,7 +234,10 @@ def process_revisions():
                         except Exception as e:
                             print(f"  [WARNING] OGP download error: {e}")
 
-                        tweet_id = post_to_x(x_msg, media_path=media_path)
+                        # Tweet Disabled for Bulk Update
+                        # tweet_id = post_to_x(x_msg, media_path=media_path)
+                        tweet_id = None
+                        print(f"  -> X Post SKIPPED (Bulk Update Mode)")
                         
                         # Cleanup temp file
                         if media_path and os.path.exists(media_path):
