@@ -234,11 +234,18 @@ def process_revisions():
                         except Exception as e:
                             print(f"  [WARNING] OGP download error: {e}")
 
-                        # Tweet Disabled for Bulk Update
-                        # tweet_id = post_to_x(x_msg, media_path=media_path)
-                        tweet_id = None
-                        print(f"  -> X Post SKIPPED (Bulk Update Mode)")
+                        # Date Check: Only Tweet if Revision Date is TODAY
+                        # (Prevents spamming X when backfilling old data)
+                        import datetime
+                        today_str = datetime.date.today().strftime('%Y-%m-%d')
+                        rev_date = row['revision_date'] # String YYYY-MM-DD
                         
+                        if rev_date == today_str:
+                            tweet_id = post_to_x(x_msg, media_path=media_path)
+                        else:
+                            tweet_id = None
+                            print(f"  -> X Post SKIPPED (Old Date: {rev_date}, Today: {today_str})")
+
                         # Cleanup temp file
                         if media_path and os.path.exists(media_path):
                             os.remove(media_path)
