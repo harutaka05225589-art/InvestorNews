@@ -31,9 +31,10 @@ def analyze_revision_pdf(pdf_path, title):
         # Wait for processing
         while sample_file.state.name == "PROCESSING":
             time.sleep(2)
-            sample_file = genai.get_file(sample_file.name)
-            
         # Define Prompt
+        prompt = f"""
+        あなたの任務は、添付のPDF資料（企業の適時開示情報：{title}）から「業績予想」または「配当予想」の数値を抽出し、JSON形式で出力することです。
+
         【重要ルール 判断基準】
         1. is_upward: 「投資家にとってポジティブな修正」か？
            - **営業利益(Operating Profit)が前回予想より増額されている場合は true（最優先）。**
