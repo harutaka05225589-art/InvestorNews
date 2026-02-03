@@ -41,15 +41,19 @@ def fetch_tdnet_revisions(target_date=None):
         # Find all rows (skip header)
         # Usually inside a table id="main-list-table" or similar class
         # But broadly searching all tr is safer as structure varies
+        # Find all rows (skip header)
+        # Usually inside a table id="main-list-table" or similar class
+        # But broadly searching all tr is safer as structure varies
         rows = soup.find_all('tr')
+        print(f"  [DEBUG] Found {len(rows)} rows in HTML")
         
-        for row in rows:
+        for i, row in enumerate(rows):
             cols = row.find_all('td')
+            if i < 3: # Debug first 3 rows
+                 print(f"  [DEBUG] Row {i}: {len(cols)} columns. Content: {[c.get_text().strip()[:20] for c in cols]}")
+
             if len(cols) < 4:
                 continue
-            
-            # Extract basic info (heuristic based on standard TDnet layout)
-            # Col 0: Time, Col 1: Code, Col 2: Name, Col 3: Title
             try:
                 code_text = cols[1].get_text().strip()
                 name_text = cols[2].get_text().strip()
