@@ -213,15 +213,31 @@ export function getRevisions(limit: number = 100) {
     }
 }
 
-export function getRevisionsByDateRange(startDate: string, endDate: string) {
+export function getRevisionsByDateRange(startDate: string, endDate: string, category: string = 'earnings') {
     try {
-        const stmt = db.prepare(`
+        let query = `
             SELECT * FROM revisions 
             WHERE revision_date BETWEEN ? AND ?
-            AND (title LIKE '%業績%' OR title LIKE '%差異%')
-            ORDER BY revision_date DESC, id DESC
-        `);
-        return stmt.all(startDate, endDate) as any[];
+        `;
+        const params: any[] = [startDate, endDate];
+
+        if (category === 'earnings') {
+            query += ` AND category IN ('earnings', 'both')`;
+        } else if (category === 'dividend') {
+            query += ` AND category IN ('dividend', 'both')`;
+        } else if (category === 'buyback') {
+            query += ` AND category = 'buyback'`;
+        } else if (category === 'all') {
+            // No filter
+        } else {
+            // Default fallback if unknown (safe)
+            query += ` AND category IN ('earnings', 'both')`;
+        }
+
+        query += ` ORDER BY revision_date DESC, id DESC`;
+
+        const stmt = db.prepare(query);
+        return stmt.all(...params) as any[];
     } catch (e) {
         return [];
     }

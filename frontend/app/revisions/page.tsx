@@ -79,6 +79,24 @@ export default function RevisionsPage() {
                 <p className={styles.subtitle}>
                     AIがPDFを自動解析し「上方修正」「下方修正」を判定します。
                 </p>
+                {/* Quick Links */}
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                    <Link href="/revisions/today" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
+                            <span>📅</span> 今日の業績修正
+                        </div>
+                    </Link>
+                    <Link href="/revisions/this-month" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: '#334155', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #475569' }}>
+                            <span>🗓️</span> 今月の業績修正
+                        </div>
+                    </Link>
+                    <Link href="/revisions/ranking" style={{ textDecoration: 'none' }}>
+                        <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', padding: '0.7rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', color: '#000', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid #b45309' }}>
+                            <span>🏆</span> 爆上げランキング
+                        </div>
+                    </Link>
+                </div>
             </header>
 
             {/* Category Tabs */}

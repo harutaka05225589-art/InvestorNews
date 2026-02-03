@@ -18,14 +18,14 @@ export async function GET(request: NextRequest) {
             const m = String(now.getMonth() + 1).padStart(2, '0');
             const d = String(now.getDate()).padStart(2, '0');
             const dateStr = `${y}-${m}-${d}`;
-            revisions = getRevisionsByDateRange(dateStr, dateStr);
+            revisions = getRevisionsByDateRange(dateStr, dateStr, category || 'earnings');
         } else if (filter === 'month') {
             const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
             const y = now.getFullYear();
             const m = String(now.getMonth() + 1).padStart(2, '0');
             const startDate = `${y}-${m}-01`;
             const endDate = `${y}-${m}-31`;
-            revisions = getRevisionsByDateRange(startDate, endDate);
+            revisions = getRevisionsByDateRange(startDate, endDate, category || 'earnings');
         } else {
             const search = searchParams.get('q');
             let query = `
@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
             const params: any[] = [];
 
             if (search) {
-                query += ` AND (title LIKE ? OR content LIKE ?)`;
-                params.push(`%${search}%`, `%${search}%`);
+                query += ` AND (ticker LIKE ? OR company_name LIKE ? OR title LIKE ? OR ai_summary LIKE ?)`;
+                params.push(`%${search}%`, `%${search}%`, `%${search}%`, `%${search}%`);
             }
 
             // Category Filter
