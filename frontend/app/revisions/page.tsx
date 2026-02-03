@@ -48,8 +48,16 @@ export default function RevisionsPage() {
         const fetchRevisions = () => {
             setLoading(true);
             const params = new URLSearchParams();
-            if (searchQuery) params.append('q', searchQuery);
-            if (category && category !== 'all') params.append('category', category);
+            if (searchQuery) {
+                params.append('q', searchQuery);
+                // When searching, we should search EVERYTHING, not just the selected tab.
+                // Unless the user explicitly wants to filter within a tab?
+                // Standard UX is "Search overrides tabs" or "Global Search". 
+                // Given the user report "Search is dead", they probably expect global search.
+                params.append('category', 'all');
+            } else {
+                if (category && category !== 'all') params.append('category', category);
+            }
 
             fetch(`/api/revisions?${params.toString()}`)
                 .then(res => res.json())

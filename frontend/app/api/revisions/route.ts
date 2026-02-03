@@ -46,16 +46,10 @@ export async function GET(request: NextRequest) {
                 query += ` AND category IN ('dividend', 'both')`;
             } else if (category === 'buyback') {
                 query += ` AND category = 'buyback'`;
+            } else if (category === 'all') {
+                // No additional filter
             } else {
                 // Default: Show Earnings and Dividends (exclude pure buybacks if user wants "Performance Revisions")
-                // User said "Extract only stocks with performance revisions".
-                // So maybe defaults should be strict?
-                // Let's show all by default but sort/tag. 
-                // Wait, user said "Organize them... separate the code".
-                // I'll show all (except buybacks maybe?) or just all.
-                // Let's show ALL valid revisions (earnings, dividend, both) but maybe filter out pure 'buyback' if it's too noisy?
-                // For now, let's NOT filter by default unless requested, to avoid hiding data.
-                // But exclude 'general' if it's empty?
                 query += ` AND (title LIKE '%業績%' OR title LIKE '%差異%' OR title LIKE '%配当%' OR title LIKE '%剰余金%' OR title LIKE '%自己株式%')`;
             }
 
