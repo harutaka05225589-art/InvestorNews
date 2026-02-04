@@ -1,9 +1,7 @@
 import { notFound } from 'next/navigation';
-import Database from 'better-sqlite3';
-import path from 'path';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getRevisionsByTicker } from '@/lib/db'; // Import helper
+import { getRevisionsByTicker, getRevisionById } from '@/lib/db'; // Import shared helpers
 
 // Helper to format currency
 const formatNum = (num: any) => {
@@ -11,21 +9,8 @@ const formatNum = (num: any) => {
     return Number(num).toLocaleString();
 };
 
-// Function to get DB connection (reused logic)
-const DB_PATH = path.join(process.cwd(), 'investor_news.db');
+// Removed local getRevision logic in favor of lib/db.ts shared function
 
-function getRevision(id: string) {
-    // We strictly use the local DB logic here or can reuse lib/db if we exported a getter by ID.
-    // For now, keep existing local logic for ID, but use lib for related.
-    try {
-        const db = new Database(DB_PATH, { readonly: true });
-        const stmt = db.prepare('SELECT * FROM revisions WHERE id = ?');
-        return stmt.get(id) as any;
-    } catch (e) {
-        console.error("DB Error:", e);
-        return null;
-    }
-}
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -33,7 +18,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { id } = await params;
-    const revision = getRevision(id);
+    const revision = getRevisionById(id);
 
     if (!revision) {
         return {
@@ -80,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function RevisionPage({ params }: Props) {
     const { id } = await params;
-    const revision = getRevision(id);
+    const revision = getRevisionById(id);
 
     if (!revision) {
         return notFound();

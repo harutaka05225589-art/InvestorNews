@@ -296,3 +296,25 @@ export function searchRevisions(query: string, limit: number = 50) {
     }
 }
 
+export function getRevisionsForSitemap(limit: number = 1000) {
+    try {
+        const stmt = db.prepare(`
+            SELECT id, revision_date FROM revisions 
+            ORDER BY revision_date DESC, id DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as { id: number, revision_date: string }[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getRevisionById(id: string | number) {
+    try {
+        const stmt = db.prepare('SELECT * FROM revisions WHERE id = ?');
+        return stmt.get(id) as any;
+    } catch (e) {
+        return null;
+    }
+}
+

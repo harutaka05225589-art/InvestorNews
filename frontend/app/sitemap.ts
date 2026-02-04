@@ -1,4 +1,4 @@
-import { getInvestors, getRevisions } from '@/lib/db';
+import { getInvestors, getRevisionsForSitemap } from '@/lib/db';
 import { Investor } from '@/lib/types';
 import { MetadataRoute } from 'next';
 
@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     const investors = getInvestors() as Investor[];
     // Get last 1000 revisions to ensure recent content is indexed
     // SEO Strategy: We want these specific pages to be found
-    const revisions = getRevisions(1000);
+    const revisions = getRevisionsForSitemap(1000);
 
     // Dynamic Routes: Investor News Page
     const investorNewsUrls = investors.map((investor) => ({
