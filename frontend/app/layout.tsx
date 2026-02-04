@@ -99,6 +99,9 @@ export default function RootLayout({
             <Link href="/introduction" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>投資家一覧</Link>
             <Link href="/request" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>追加リクエスト</Link>
             <Link href="/inquiry" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>お問い合わせ</Link>
+            <Link href="/about" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>サイトについて</Link>
+            <Link href="/guide" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>使い方ガイド</Link>
+            <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>免責事項</Link>
             <Link href="/privacy" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>プライバシーポリシー</Link>
           </div>
           <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>

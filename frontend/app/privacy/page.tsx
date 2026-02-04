@@ -23,7 +23,18 @@ export default function PrivacyPolicy() {
             </section>
 
             <section style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>3. 外部サービスとアクセス解析</h2>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>3. 広告配信について</h2>
+                <p>
+                    本サービスは、第三者配信の広告サービス（Google AdSense等）を利用しています。
+                    広告配信事業者は、ユーザーの興味に応じた広告を表示するためにCookieを使用することがあります。
+                    Cookieを無効にする方法や、Google AdSenseに関する詳細は、
+                    <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--accent)', textDecoration: 'underline' }}>Googleのポリシーと規約</a>
+                    をご確認ください。
+                </p>
+            </section>
+
+            <section style={{ marginBottom: '2rem' }}>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>4. 外部サービスとアクセス解析</h2>
                 <p>
                     本サービスは、サイトの利用状況を把握するためにアクセス解析ツール（Google Analytics等）を利用する場合があります。
                     これらはCookieを使用しており、個人を特定しない形でデータを収集します。
@@ -31,7 +42,7 @@ export default function PrivacyPolicy() {
             </section>
 
             <section style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>4. 免責事項</h2>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>5. 免責事項</h2>
                 <p>
                     本サービスが提供する投資情報（AIによる要約・分析を含む）は、情報の正確性を保証するものではありません。
                     投資に関する最終的な決定は、ユーザーご自身の判断でなさるようお願いいたします。
