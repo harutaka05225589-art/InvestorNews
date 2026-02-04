@@ -74,6 +74,13 @@ export default function TodayRevisionsPage() {
                 <p className={styles.subtitle}>
                     今日（{new Date().toLocaleDateString('ja-JP')}）発表された業績予想の修正一覧です。
                 </p>
+                <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1rem', borderRadius: '8px' }}>
+                    <p>
+                        本ページでは「本日」発表された最新の上方修正・下方修正をまとめています。
+                        市場が閉まった後（大引け後）に発表された情報は、翌営業日の株価に大きく影響する可能性があります。
+                        特にサプライズ決算や予想外の増配は、寄付きからの急騰要因となるため要チェックです。
+                    </p>
+                </div>
                 <a href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
                     &larr; 全ての一覧に戻る
                 </a>
@@ -123,7 +130,7 @@ export default function TodayRevisionsPage() {
                                         <td style={{ minWidth: '120px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <span className={`${styles.badge} ${styles[type]}`}>
-                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
+                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : type === 'neutral' ? '― 修正なし' : '―'}
                                                 </span>
                                                 {rate !== undefined && rate !== null && rate !== 0 ? (
                                                     <span style={{

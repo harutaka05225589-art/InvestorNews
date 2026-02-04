@@ -1,97 +1,50 @@
-'use client';
+import React from 'react';
 
-import Link from 'next/link';
+export const metadata = {
+    title: 'データの見方・使い方 | 億り人・決算速報',
+    description: '業績修正情報の見方、AIによる判定基準、各用語の解説。',
+};
 
 export default function GuidePage() {
     return (
-        <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' }}>
-            <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <h1 style={{ fontSize: '2rem', marginBottom: '1rem', fontWeight: 'bold' }}>このサイトの使い方について</h1>
-                <p style={{ color: '#94a3b8' }}>個人投資家のための情報収集プラットフォーム「億り人・決算速報」の機能と活用方法</p>
-            </div>
+        <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem', color: '#e2e8f0', lineHeight: '1.8' }}>
+            <h1 style={{ fontSize: '2rem', marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
+                データの見方・使い方
+            </h1>
 
-            <div style={{ display: 'grid', gap: '2rem' }}>
+            <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>業績修正について</h2>
+                <p>
+                    当サイトでは、企業が発表する「業績予想の修正」をAIが自動で分類しています。
+                </p>
 
-                {/* 1. Revisions */}
-                <section style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', borderBottom: '2px solid #3b82f6', paddingBottom: '0.5rem', display: 'inline-block' }}>
-                        1. 業績修正 リアルタイム速報
-                    </h2>
-                    <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: '1.8' }}>
-                        TDnet（適時開示情報）とダイレクトに連携し、企業の「業績予想の修正」を即座に検知・配信します。
-                        証券会社のツールよりも早く、開示された瞬間にデータを取得できるのが特徴です。
+                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginTop: '1.5rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#4ade80', marginBottom: '0.5rem' }}>📈 上方修正 (Upward Revision)</h3>
+                    <p>
+                        売上高や利益が、以前の予想よりも「良くなる」と企業が発表した場合に表示されます。
+                        一般的に株価にはポジティブな影響を与えやすいですが、市場の期待値（コンセンサス）がそれ以上に高かった場合は、材料出尽くしとして売られることもあります。
                     </p>
-                    <ul style={{ paddingLeft: '1.5rem', color: '#cbd5e1', lineHeight: '1.8' }}>
-                        <li style={{ marginBottom: '0.5rem' }}><strong>リアルタイム検知</strong>: 発表と同時にサイトに反映されます。</li>
-                        <li style={{ marginBottom: '0.5rem' }}><strong>自動判定</strong>: 上方修正（赤・緑）や下方修正（青・赤）を自動でタグ付けして表示します。</li>
-                        <li style={{ marginBottom: '0.5rem' }}><strong>ランキング</strong>: 修正幅の大きさで並び替えができ、インパクトの大きい銘柄をすぐに見つけられます。</li>
-                    </ul>
-                </section>
+                </div>
 
-                {/* 2. Investor Tracking */}
-                <section style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', borderBottom: '2px solid #10b981', paddingBottom: '0.5rem', display: 'inline-block' }}>
-                        2. 有名投資家トラッキング
-                    </h2>
-                    <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: '1.8' }}>
-                        「誰が」「何を」注目しているかを可視化し、投資アイデアの源泉を提供します。
+                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px', marginTop: '1rem' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#f87171', marginBottom: '0.5rem' }}>📉 下方修正 (Downward Revision)</h3>
+                    <p>
+                        売上高や利益が、以前の予想よりも「悪くなる」と企業が発表した場合に表示されます。
+                        ネガティブな要因ですが、悪材料出尽くしとして逆に買われる（アク抜け）こともあります。
                     </p>
-                    <ul style={{ paddingLeft: '1.5rem', color: '#cbd5e1', lineHeight: '1.8' }}>
-                        <li style={{ marginBottom: '0.5rem' }}><strong>AIニュース要約</strong>: 著名投資家に関連するニュースやブログを収集し、AIが3行で要約して表示します。</li>
-                        <li style={{ marginBottom: '0.5rem' }}><strong>保有銘柄追跡</strong>: 大量保有報告書（EDINET）を解析し、現在どの銘柄を保有しているかポートフォリオ形式で見ることができます。</li>
-                    </ul>
-                </section>
+                </div>
+            </section>
 
-                {/* 3. Calendar */}
-                <section style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', borderBottom: '2px solid #f59e0b', paddingBottom: '0.5rem', display: 'inline-block' }}>
-                        3. 自分だけのIRカレンダー
-                    </h2>
-                    <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: '1.8' }}>
-                        ウォッチリストに登録した銘柄の決算発表スケジュールだけを表示する「Myカレンダー」機能です。
-                        数千銘柄の中から自分の持ち株を探す必要がなくなり、重要な発表日を見逃しません。
-                    </p>
-                </section>
-
-                {/* 4. LINE Notifications */}
-                <section style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', borderBottom: '2px solid #06c755', paddingBottom: '0.5rem', display: 'inline-block' }}>
-                        4. LINE即時通知
-                    </h2>
-                    <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: '1.8' }}>
-                        登録銘柄にアクションがあった時だけLINE通知を受け取れます。
-                        「上方修正が出た瞬間」など、本当に必要な情報だけがスマホに届きます。
-                    </p>
-                    <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                        <Link href="/settings" style={{ display: 'inline-block', padding: '0.8rem 1.5rem', background: '#06c755', color: 'white', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold' }}>
-                            LINE連携を設定する
-                        </Link>
-                    </div>
-                </section>
-
-                {/* 5. Plans */}
-                <section style={{ background: '#1e293b', padding: '2rem', borderRadius: '12px', border: '1px solid #334155' }}>
-                    <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', borderBottom: '2px solid #a855f7', paddingBottom: '0.5rem', display: 'inline-block' }}>
-                        現在の提供プラン
-                    </h2>
-                    <p style={{ color: '#cbd5e1', marginBottom: '1rem', lineHeight: '1.8' }}>
-                        現在はベータテスト期間中のため、本来有料の「Proプラン」相当の機能を<strong>無料で一般開放</strong>しています。
-                        この機会にぜひ全機能をご活用ください。
-                    </p>
-                    <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-                        <Link href="/plans" style={{ display: 'inline-block', padding: '0.8rem 1.5rem', background: '#3b82f6', color: 'white', borderRadius: '6px', textDecoration: 'none', fontWeight: 'bold' }}>
-                            プラン詳細を見る
-                        </Link>
-                    </div>
-                </section>
-
-            </div>
-
-            <div style={{ marginTop: '3rem', textAlign: 'center' }}>
-                <Link href="/" style={{ color: '#94a3b8', textDecoration: 'underline' }}>
-                    ホームに戻る
-                </Link>
-            </div>
+            <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>AI要約の活用法</h2>
+                <p>
+                    各詳細ページには、AIがPDF資料を読み込んで生成した「要約」が表示されます。
+                    ここには、単なる数字だけでなく、「なぜ修正されたのか」という理由（為替差益、受注増、原材料高など）が記載されています。
+                </p>
+                <p style={{ marginTop: '1rem', color: '#94a3b8', fontSize: '0.9rem' }}>
+                    ※ AIの解析結果は必ずしも100%正確ではありません。最終的な投資判断を行う際は、必ずリンク先の一次情報（PDF）をご確認ください。
+                </p>
+            </section>
         </div>
     );
 }

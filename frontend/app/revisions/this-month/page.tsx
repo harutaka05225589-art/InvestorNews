@@ -75,6 +75,13 @@ export default function MonthRevisionsPage() {
                 <p className={styles.subtitle}>
                     {currentMonth}月に発表された業績予想の修正一覧です。
                 </p>
+                <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1rem', borderRadius: '8px' }}>
+                    <p>
+                        今月発表された業績修正を月次で振り返ります。
+                        決算発表シーズン（1月/4月/7月/10月など）には情報量が増えますが、その他の月でも突発的な修正発表があります。
+                        月間の修正率ランキング上位銘柄は、中長期的な上昇トレンドに入ることも多いため要注目です。
+                    </p>
+                </div>
                 <a href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
                     &larr; 全ての一覧に戻る
                 </a>
@@ -124,7 +131,7 @@ export default function MonthRevisionsPage() {
                                         <td style={{ minWidth: '120px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <span className={`${styles.badge} ${styles[type]}`}>
-                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
+                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : type === 'neutral' ? '― 修正なし' : '―'}
                                                 </span>
                                                 {rate !== undefined && rate !== null && rate !== 0 ? (
                                                     <span style={{

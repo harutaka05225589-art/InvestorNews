@@ -73,6 +73,7 @@ export default function Home() {
           </div>
         </div>
 
+
         {/* Right Sidebar: Widgets */}
         <div className={styles.sidebar}>
           {/* EDINET Breaking News Widget */}
@@ -139,6 +140,50 @@ export default function Home() {
           </section>
         </div>
       </div>
+
+      {/* SEO & About Site Content */}
+      <section style={{ marginTop: '4rem', padding: '2rem', background: '#0f172a', borderRadius: '12px', border: '1px solid #334155', color: '#e2e8f0' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>
+          億り人・決算速報について
+        </h2>
+        <div style={{ lineHeight: '1.8', fontSize: '0.95rem' }}>
+          <h3 style={{ fontSize: '1.1rem', color: '#4ade80', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
+            なぜ「業績修正」と「著名投資家」なのか？
+          </h3>
+          <p>
+            株式市場において、株価を最も大きく動かす要因の一つが「業績の変化」です。
+            特に、企業が当初の予想よりも利益が増えると発表する「上方修正」や、株主への還元を増やす「増配」は、
+            ポジティブなサプライズとして株価上昇のトリガーとなりやすいと言われています。
+          </p>
+          <p style={{ marginTop: '1rem' }}>
+            一方で、日本には数千社の上場企業があり、毎日発表される膨大な適時開示情報（TDnet）をすべてチェックするのは不可能です。
+            そこで当サイトでは、以下の2つのアプローチで、個人投資家の皆様に「勝てる情報」を効率よく提供することを目指しています。
+          </p>
+
+          <h3 style={{ fontSize: '1.1rem', color: '#4ade80', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
+            当サイトの3つの特徴
+          </h3>
+          <ul style={{ paddingLeft: '1.5rem', listStyle: 'disc' }}>
+            <li style={{ marginBottom: '0.8rem' }}>
+              <strong>AIによる即時解析:</strong> 毎日発表される数百件の決算短信や業績修正資料をAIがリアルタイムで読み込み、「上方修正」「増配」のみを瞬時に判定・抽出します。
+              単なる数値の羅列ではなく、「なぜ修正されたのか（為替、価格転嫁、受注増など）」という定性的な理由も要約して提供します。
+            </li>
+            <li style={{ marginBottom: '0.8rem' }}>
+              <strong>著名投資家の動向追跡:</strong> テスタ氏、井村俊哉氏、五味大輔氏など、市場に大きな影響力を持つ「億り人（大口個人投資家）」が保有する銘柄のニュースを自動収集。
+              彼らが注目するセクターや銘柄を知ることで、次のトレンドを先読みするヒントが得られます。
+            </li>
+            <li>
+              <strong>視認性の高いUI:</strong> 重要な情報が一目でわかるよう、配当利回りや修正率をカラフルなカード形式で表示。
+              スマートフォンでも見やすく、通勤時間や昼休みなどのスキマ時間でも市場の動きを把握できます。
+            </li>
+          </ul>
+
+          <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+            当サイトは、初心者から中級者の個人投資家が、機関投資家や専業トレーダーと同じ情報レベルで戦えるようサポートするツールです。
+            日々の投資判断の一助として、ぜひブックマークしてご活用ください。
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

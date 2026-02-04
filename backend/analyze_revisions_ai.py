@@ -53,11 +53,21 @@ def analyze_revision_pdf(pdf_path, title):
     {{
         "is_upward": true,
         "revision_rate_op": 0.0,
-        "summary": "為替差益により上方修正（20文字程度で簡潔に）",
+    5. summary: 
+       - 「なぜ修正/増配になったのか」の理由を明確に記載してください。
+       - 為替の影響、価格転嫁の進捗、販売数量の増減など、具体的な要因を含めてください。
+       - 文字数は80〜100文字程度で、投資家が判断材料にできる内容にしてください。
+       - 「～ため。」「～ことが寄与。」のように体言止めや簡潔な文末にしてください。
+
+    Output Format (JSON only):
+    {
+        "is_upward": true,
+        "revision_rate_op": 0.0,
+        "summary": "海外売上高が想定を上回り、円安効果も寄与したため。価格改定の浸透により原材料高を吸収し、営業利益は過去最高を更新する見込み。",
         "quarter": "通期",
-        "dividend": {{ ... }},
+        "dividend": { ... },
         "forecast_data": null
-    }}
+    }
     """
 
     # Retry logic for 429 errors

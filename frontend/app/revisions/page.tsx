@@ -107,6 +107,13 @@ export default function RevisionsPage() {
                 <p className={styles.subtitle}>
                     AIがPDFを自動解析し「上方修正」「下方修正」を判定します。
                 </p>
+                <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1rem', borderRadius: '8px' }}>
+                    <p>
+                        本ページでは、TDnet（適時開示情報）で発表された企業の業績予想修正をリアルタイムで一覧表示しています。
+                        業績修正は株価変動の大きな要因となります。特に「上方修正」や「増配」はポジティブ材料として注目されます。
+                        AI要約を活用して、修正の理由（為替、価格転嫁、コスト増など）を素早く把握し、投資判断にお役立てください。
+                    </p>
+                </div>
                 {/* Quick Links */}
                 <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
                     <Link href="/revisions/today" style={{ textDecoration: 'none' }}>
@@ -250,7 +257,7 @@ export default function RevisionsPage() {
                                     <td style={{ minWidth: '120px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <span className={`${styles.badge} ${styles[type]}`}>
-                                                {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
+                                                {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : type === 'neutral' ? '― 修正なし' : '―'}
                                             </span>
                                             {rate !== undefined && rate !== null && rate !== 0 ? (
                                                 <span style={{

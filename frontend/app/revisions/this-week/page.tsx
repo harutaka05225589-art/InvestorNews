@@ -75,6 +75,13 @@ export default function ThisWeekRevisionsPage() {
                 <p className={styles.subtitle}>
                     今週発表された業績予想の修正一覧です。
                 </p>
+                <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1rem', borderRadius: '8px' }}>
+                    <p>
+                        今週1週間の業績修正トレンドを確認できます。
+                        特定セクター（例：自動車、半導体）で修正が相次いでいないか、連れ高・連れ安のヒントを探るのに役立ちます。
+                        見落としていた高配当株や好業績株の拾い直しにもご活用ください。
+                    </p>
+                </div>
                 <a href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
                     &larr; 全ての一覧に戻る
                 </a>
@@ -124,7 +131,7 @@ export default function ThisWeekRevisionsPage() {
                                         <td style={{ minWidth: '120px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 <span className={`${styles.badge} ${styles[type]}`}>
-                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―'}
+                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : type === 'neutral' ? '― 修正なし' : '―'}
                                                 </span>
                                                 {rate !== undefined && rate !== null && rate !== 0 ? (
                                                     <span style={{
