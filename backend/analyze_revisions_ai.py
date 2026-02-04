@@ -60,14 +60,14 @@ def analyze_revision_pdf(pdf_path, title):
        - 「～ため。」「～ことが寄与。」のように体言止めや簡潔な文末にしてください。
 
     Output Format (JSON only):
-    {
+    {{
         "is_upward": true,
         "revision_rate_op": 0.0,
         "summary": "海外売上高が想定を上回り、円安効果も寄与したため。価格改定の浸透により原材料高を吸収し、営業利益は過去最高を更新する見込み。",
         "quarter": "通期",
-        "dividend": { ... },
+        "dividend": {{ ... }},
         "forecast_data": null
-    }
+    }}
     """
 
     # Retry logic for 429 errors
