@@ -96,7 +96,7 @@ export function getLatestDividend(ticker: string): DividendInfo {
         const stmt = db.prepare(`
             SELECT dividend_forecast_annual, dividend_rights_month, dividend_payment_month, company_name
             FROM revisions 
-            WHERE ticker = ? 
+            WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL
             ORDER BY revision_date DESC, id DESC
             LIMIT 1
         `);
