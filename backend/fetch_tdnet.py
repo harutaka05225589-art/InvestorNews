@@ -65,9 +65,9 @@ def fetch_tdnet_revisions(target_date=None):
                 if a_tag:
                     pdf_link = "https://www.release.tdnet.info/inbs/" + a_tag['href']
                 
-                # Filter for "Upward Revision", "Dividend Revision", "Buybacks"
-                # Keywords: 業績予想の修正, 修正に関するお知らせ, 配当, 剰余金の処分, 自己株式
-                if any(k in title_text for k in ["業績予想の修正", "差異", "配当", "剰余金の処分", "自己株式"]):
+                # Filter for "Upward Revision", "Dividend Revision", "Buybacks", AND "Financial Results"
+                # Keywords: 業績予想の修正, 修正に関するお知らせ, 配当, 剰余金の処分, 自己株式, 決算短信
+                if any(k in title_text for k in ["業績予想の修正", "差異", "配当", "剰余金の処分", "自己株式", "決算短信"]):
                     # Refinement: Skip "Status Reports" (noise)
                     if "自己株式" in title_text and any(skip in title_text for skip in ["取得状況", "取得結果", "完了"]):
                         continue
@@ -85,7 +85,7 @@ def fetch_tdnet_revisions(target_date=None):
                     
                     # Determine Category
                     category = 'general'
-                    is_earnings = any(k in title_text for k in ['業績', '修正', '差異']) # '修正' is ambiguous but usually earnings/forecast
+                    is_earnings = any(k in title_text for k in ['業績', '修正', '差異', '決算短信']) # Added Financial Results
                     is_dividend = any(k in title_text for k in ['配当', '剰余金'])
                     is_buyback = '自己株式' in title_text
 

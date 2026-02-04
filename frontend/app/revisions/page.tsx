@@ -17,13 +17,14 @@ interface Revision {
     revision_rate_op?: number;
     ai_summary?: string;
     ai_analyzed?: number;
+    is_dividend_hike?: number; // Added
 }
 
 function getRevisionType(rev: Revision) {
     // 1. AI Analysis result (Priority)
     if (rev.ai_analyzed && rev.is_upward !== null && rev.is_upward !== undefined) {
         // If the rate is 0 or null, consider it neutral (not downward)
-        if (!rev.revision_rate_op || rev.revision_rate_op === 0) {
+        if ((!rev.revision_rate_op || rev.revision_rate_op === 0) && !rev.is_dividend_hike) {
             return 'neutral';
         }
         return rev.is_upward === 1 ? 'up' : 'down';
@@ -38,11 +39,9 @@ function getRevisionType(rev: Revision) {
 
 export default function RevisionsPage() {
     const [revisions, setRevisions] = useState<Revision[]>([]);
-
-
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [category, setCategory] = useState('earnings'); // Default to Earnings as requested ("Extract only stocks with performance revisions")
+    const [category, setCategory] = useState('earnings'); // Default to Earnings as requested
 
     useEffect(() => {
         const fetchRevisions = () => {
@@ -50,10 +49,6 @@ export default function RevisionsPage() {
             const params = new URLSearchParams();
             if (searchQuery) {
                 params.append('q', searchQuery);
-                // When searching, we should search EVERYTHING, not just the selected tab.
-                // Unless the user explicitly wants to filter within a tab?
-                // Standard UX is "Search overrides tabs" or "Global Search". 
-                // Given the user report "Search is dead", they probably expect global search.
                 params.append('category', 'all');
             } else {
                 if (category && category !== 'all') params.append('category', category);
@@ -76,6 +71,31 @@ export default function RevisionsPage() {
 
         return () => clearTimeout(timeoutId);
     }, [searchQuery, category]);
+
+    // Filter Logic to remove "No Change" / "Noise"
+    const validRevisions = revisions.filter(rev => {
+        // If AI Analyzed
+        if (rev.ai_analyzed === 1) {
+            // Keep if Upward (True)
+            if (rev.is_upward === 1) return true;
+            // Keep if Dividend Hike
+            if (rev.is_dividend_hike === 1) return true;
+            // Keep if Downward (False) AND Rate is not 0 (Significant Downward)
+            if (rev.is_upward === 0 && rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
+
+            // Otherwise it's "Neutral" (No change), Skip it.
+            return false;
+        }
+
+        // If Not Analyzed (or Failed/Skipped), fallback to title check
+        // Show everything when searching
+        if (searchQuery) return true;
+
+        // Filter based on title keywords if unanalyzed
+        // We want to avoid generic 'Financial Results' showing up unless they have revision keywords
+        // But for now, let's be permissive with unanalyzed items to avoid hiding real news.
+        return true;
+    });
 
     return (
         <main className={styles.container}>
@@ -200,7 +220,7 @@ export default function RevisionsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {revisions.map((rev) => {
+                        {validRevisions.map((rev) => {
                             const type = getRevisionType(rev);
                             const rate = rev.revision_rate_op;
 
@@ -214,7 +234,6 @@ export default function RevisionsPage() {
                                     </td>
                                     <td style={{ minWidth: '250px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            {/* Link to Detail Page */}
                                             <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                                 <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}
                                                     className={styles.companyLink}>
@@ -222,7 +241,6 @@ export default function RevisionsPage() {
                                                 </span>
                                             </Link>
                                         </div>
-                                        {/* AI Summary */}
                                         {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
                                             <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem', lineHeight: '1.4' }}>
                                                 🤖 {rev.ai_summary}
@@ -249,7 +267,6 @@ export default function RevisionsPage() {
                                     </td>
                                     <td>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            {/* Detail button removed as requested, company name is now the link */}
                                             {rev.source_url ? (
                                                 <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
                                                     📄 PDF
@@ -261,14 +278,13 @@ export default function RevisionsPage() {
                             );
                         })}
 
-
                         {loading && (
                             <tr>
                                 <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
                             </tr>
                         )}
 
-                        {!loading && revisions.length === 0 && (
+                        {!loading && validRevisions.length === 0 && (
                             <tr>
                                 <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
                                     表示できるデータがありません

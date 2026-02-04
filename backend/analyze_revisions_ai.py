@@ -124,23 +124,11 @@ def process_revisions():
                 conn.commit()
                 continue
             
-            # User Request: Only analyze Earnings Revisions ("業績") to save time
-            # We assume "業績" (Earnings) or "配当" (Dividend) + "修正" (Revision) are the targets.
-            # But the user specifically said "業績修正" (Earnings Revision).
-            # Let's be slightly broader to include "配当" (Dividends) if they are important, 
-            # but strictly the request was "except earnings revisions". 
-            # Let's keep "業績" OR "配当" to remain useful but cut out other noise (like "人事", "定款", "自己株式" without earnings context).
+            # User Request: Analyze ALL captured PDFs (including Financial Results)
+            # The previous filter for "Earnings/Dividend only" is removed.
+            # We strictly rely on the AI's output to determine if it's relevant.
             
-            is_target = False
-            if "業績" in title or "配当" in title:
-                 is_target = True
-            
-            if not is_target:
-                print(f"  Skipping non-earnings/dividend revision: {title}")
-                # Mark as 3 (Skipped by Filter)
-                c.execute("UPDATE revisions SET ai_analyzed = 3, ai_summary = 'Skipped (Non-Earnings)', is_upward = 0 WHERE id = ?", (rev_id,))
-                conn.commit()
-                continue
+            # (Deleted) is_target check block to allow full analysis.
 
             try:
                 # Download PDF

@@ -184,6 +184,10 @@
     .table td {
         display: block;
         width: 100%;
+        min-width: 0;
+        /* Override the desktop min-width of 800px */
+        box-sizing: border-box;
+        /* Ensure padding doesn't add to width */
     }
 
     /* Card container */

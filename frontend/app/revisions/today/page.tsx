@@ -18,13 +18,14 @@ interface Revision {
     revision_rate_op?: number;
     ai_summary?: string;
     ai_analyzed?: number;
+    is_dividend_hike?: number;
 }
 
 function getRevisionType(rev: Revision) {
     // 1. AI Analysis result (Priority)
     if (rev.ai_analyzed && rev.is_upward !== null && rev.is_upward !== undefined) {
         // If the rate is 0 or null, consider it neutral (not downward)
-        if (!rev.revision_rate_op || rev.revision_rate_op === 0) {
+        if ((!rev.revision_rate_op || rev.revision_rate_op === 0) && !rev.is_dividend_hike) {
             return 'neutral';
         }
         return rev.is_upward === 1 ? 'up' : 'down';
@@ -53,6 +54,17 @@ export default function TodayRevisionsPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    // Filter Logic
+    const validRevisions = revisions.filter(rev => {
+        if (rev.ai_analyzed === 1) {
+            if (rev.is_upward === 1) return true;
+            if (rev.is_dividend_hike === 1) return true;
+            if (rev.is_upward === 0 && rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
+            return false;
+        }
+        return true;
+    });
+
     return (
         <main className={styles.container}>
             <header className={styles.header}>
@@ -80,7 +92,7 @@ export default function TodayRevisionsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {revisions.map((rev) => {
+                            {validRevisions.map((rev) => {
                                 const type = getRevisionType(rev);
                                 const rate = rev.revision_rate_op;
 
@@ -96,7 +108,7 @@ export default function TodayRevisionsPage() {
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                 {/* Link to Detail Page */}
                                                 <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                    <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}>
+                                                    <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }} className={styles.companyLink}>
                                                         {rev.company_name}
                                                     </span>
                                                 </Link>
@@ -143,7 +155,7 @@ export default function TodayRevisionsPage() {
                                 </tr>
                             )}
 
-                            {!loading && revisions.length === 0 && (
+                            {!loading && validRevisions.length === 0 && (
                                 <tr>
                                     <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
                                         本日の発表はまだありません
