@@ -142,6 +142,14 @@ def process_revisions():
 
             try:
                 # Download PDF
+                if not url or not url.startswith('http'):
+                    print(f"  [SKIP] Invalid URL: {url}")
+                    result = None
+                    # Mark as failed immediately to avoid loop
+                    c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Invalid URL' WHERE id = ?", (rev_id,))
+                    conn.commit()
+                    continue
+
                 # Use a specific user agent to avoid 403
                 headers = {'User-Agent': 'Mozilla/5.0'}
                 r = requests.get(url, headers=headers, timeout=15)
