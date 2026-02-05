@@ -19,6 +19,7 @@ interface Revision {
     ai_analyzed?: number;
     is_dividend_hike?: number;
     dividend_forecast_annual?: number; // Added
+    dividend_forecast_previous?: number; // Added
 }
 
 function getRevisionType(rev: Revision) {
@@ -234,6 +235,7 @@ export default function RevisionsPage() {
                         {validRevisions.map((rev) => {
                             const type = getRevisionType(rev);
                             const rate = rev.revision_rate_op;
+                            const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
 
                             return (
                                 <tr key={rev.id}>
@@ -270,6 +272,11 @@ export default function RevisionsPage() {
                                                     <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
                                                         {rev.dividend_forecast_annual}円
                                                     </span>
+                                                    {rev.dividend_forecast_previous && divDiff !== 0 && (
+                                                        <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
+                                                            ({divDiff > 0 ? '+' : ''}{divDiff}円)
+                                                        </span>
+                                                    )}
                                                     <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
                                                         (年間配当)
                                                     </span>

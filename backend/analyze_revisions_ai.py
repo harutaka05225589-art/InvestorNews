@@ -43,6 +43,7 @@ def analyze_revision_pdf(pdf_path, title):
     
     4. dividend: 配当情報の抽出。
        - "annual_forecast": 修正後の年間配当予想額。
+       - "annual_previous": 前回予想の年間配当額（ない場合は0またはnull）。
        - "is_hike": 増配なら true。
        - "rights_month": 権利確定月。
        - "payment_month": 支払開始月。
@@ -184,6 +185,7 @@ def process_revisions():
                 # Dividend Extraction
                 div_data = result.get('dividend') or {}
                 div_forecast = div_data.get('annual_forecast', None)
+                div_previous = div_data.get('annual_previous', None) # New
                 is_div_hike = 1 if div_data.get('is_hike') else 0
                 rights_month = div_data.get('rights_month', None)
                 payment_month = div_data.get('payment_month', None)
@@ -191,7 +193,7 @@ def process_revisions():
                 forecast_data = result.get('forecast_data', None)
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
 
-                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Hike={is_div_hike}, Rights={rights_month})")
+                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Prev={div_previous})")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
@@ -204,12 +206,13 @@ def process_revisions():
                         forecast_data = ?,
                         quarter = ?,
                         dividend_forecast_annual = ?,
+                        dividend_forecast_previous = ?,
                         is_dividend_hike = ?,
                         dividend_rights_month = ?,
                         dividend_payment_month = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, is_div_hike, rights_month, payment_month, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, div_previous, is_div_hike, rights_month, payment_month, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
 
