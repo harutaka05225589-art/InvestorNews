@@ -28,31 +28,50 @@ def fetch_dividend_history(ticker):
         
         history = []
         
-        # Determine table structure
-        # Often it's in <div id="finance_box"> ... <table>
-        div_box = soup.find("div", id="finance_box")
-        if not div_box:
-            print("  Table container not found.")
-            return []
-            
-        rows = div_box.find_all("tr")
+        # Find all tables
+        tables = soup.find_all("table")
         
-        # Header parsing to find dividend column index
-        # Usually: 決算期 | ... | 1株配当
-        header_row = rows[0]
-        headers_text = [th.get_text().strip() for th in header_row.find_all(["th", "td"])]
-        
+        target_table = None
         div_idx = -1
-        period_idx = 0
+        period_idx = -1
         
-        for i, h in enumerate(headers_text):
-            if "１株配当" in h:
-                div_idx = i
+        for table in tables:
+            # Check header row
+            rows = table.find_all("tr")
+            if not rows: continue
+            
+            header_row = rows[0]
+            headers_text = [c.get_text().strip() for c in header_row.find_all(["th", "td"])]
+            
+            # Look for "決算期" (Period) and "配当" (Dividend)
+            p_idx = -1
+            d_idx = -1
+            for i, h in enumerate(headers_text):
+                if "決算期" in h:
+                    p_idx = i
+                if "配当" in h:
+                    d_idx = i
+            
+            if p_idx != -1 and d_idx != -1:
+                target_table = table
+                div_idx = d_idx
+                period_idx = p_idx
+                # print(f"  [DEBUG] Found target table. Period Col: {p_idx}, Div Col: {d_idx}, Headers: {headers_text}")
                 break
         
-        if div_idx == -1:
-            print("  Dividend column not found.")
+        if not target_table:
+            # Fallback: Try #finance_box again if finding by text failed (maybe image header?)
+            # But Kabutan uses text.
+            # print("  [DEBUG] All Tables Checked. Targets not found.")
+            # for i, t in enumerate(tables[:3]):
+            #     rows = t.find_all("tr")
+            #     if rows:
+            #         print(f"  Table {i} Header: {[c.get_text().strip() for c in rows[0].find_all(['th','td'])]}")
+            print("  Dividend table not found.")
             return []
+
+        rows = target_table.find_all("tr")
+
             
         # Parse Rows
         for row in rows[1:]: # Skip header
