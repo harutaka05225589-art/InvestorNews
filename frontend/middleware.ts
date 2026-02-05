@@ -47,10 +47,7 @@ export function middleware(request: NextRequest) {
     response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
 
     // Content Security Policy (Allow inline styles for now as we use them heavily)
-    // script-src 'self' 'unsafe-eval' 'unsafe-inline' is often needed for Next.js dev, 
-    // but in prod we should try to be stricter. For now, lenient to avoid breaking.
-    // Allow images from twitter, google, etc.
-    const csp = "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https:;";
+    const csp = "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://fundingchoicesmessages.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https:; frame-src 'self' https://googleads.g.doubleclick.net;";
     response.headers.set('Content-Security-Policy', csp);
 
     // 2. Rate Limiting (API Only)
