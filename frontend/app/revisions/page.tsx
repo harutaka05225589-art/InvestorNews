@@ -105,8 +105,9 @@ export default function RevisionsPage() {
             return isBuyback;
         }
 
-        // 'all' category
-        return hasRate || isDividendHike || isBuyback;
+        // 'all' category: Exclude buybacks (User Feedback: "Strange to see buybacks here")
+        // Only Earnings (Valid Rate) OR Dividend Hikes
+        return hasRate || isDividendHike;
     });
 
     return (

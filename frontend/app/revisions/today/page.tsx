@@ -61,13 +61,9 @@ export default function TodayRevisionsPage() {
     const validRevisions = revisions.filter(rev => {
         const hasRate = rev.revision_rate_op !== undefined && rev.revision_rate_op !== null && Number(rev.revision_rate_op) !== 0;
         const isDividendHike = rev.is_dividend_hike === 1;
-        const isBuyback = rev.category === 'buyback';
 
-        // 'all' category: 
-        // 1. Earnings with valid rate
-        // 2. Dividend Hike
-        // 3. Buyback
-        return hasRate || isDividendHike || isBuyback;
+        // 'all' category: Exclude Buyback
+        return hasRate || isDividendHike;
     });
 
     return (
