@@ -17,14 +17,18 @@ interface Revision {
     revision_rate_op?: number;
     ai_summary?: string;
     ai_analyzed?: number;
-    is_dividend_hike?: number; // Added
+    is_dividend_hike?: number;
+    dividend_forecast_annual?: number; // Added
 }
 
 function getRevisionType(rev: Revision) {
     // 1. AI Analysis result (Priority)
     if (rev.ai_analyzed && rev.is_upward !== null && rev.is_upward !== undefined) {
-        // If the rate is 0 or null, consider it neutral (not downward)
-        if ((!rev.revision_rate_op || rev.revision_rate_op === 0) && !rev.is_dividend_hike) {
+        // If dividend hike, strictly UP
+        if (rev.is_dividend_hike) return 'up';
+
+        // If earnings revision but rate is 0/null -> Neutral
+        if (!rev.revision_rate_op || rev.revision_rate_op === 0) {
             return 'neutral';
         }
         return rev.is_upward === 1 ? 'up' : 'down';
@@ -41,7 +45,7 @@ export default function RevisionsPage() {
     const [revisions, setRevisions] = useState<Revision[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [category, setCategory] = useState('earnings'); // Default to Earnings as requested
+    const [category, setCategory] = useState('earnings'); // Default to Earnings
 
     useEffect(() => {
         const fetchRevisions = () => {
@@ -76,24 +80,24 @@ export default function RevisionsPage() {
     const validRevisions = revisions.filter(rev => {
         // If AI Analyzed
         if (rev.ai_analyzed === 1) {
-            // Keep if Upward (True)
-            if (rev.is_upward === 1) return true;
-            // Keep if Dividend Hike
+            // Priority 1: Dividend Hike (Always Show)
             if (rev.is_dividend_hike === 1) return true;
-            // Keep if Downward (False) AND Rate is not 0 (Significant Downward)
-            if (rev.is_upward === 0 && rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
 
-            // Otherwise it's "Neutral" (No change), Skip it.
+            // Priority 2: Earnings Revision (Show only if rate is Not 0)
+            if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
+
+            // Otherwise Hide (e.g. Upward label but 0% change, or Neutral)
             return false;
         }
 
-        // If Not Analyzed (or Failed/Skipped), fallback to title check
-        // Show everything when searching
+        // If Not Analyzed (or Failed/Skipped)
         if (searchQuery) return true;
 
-        // Filter based on title keywords if unanalyzed
-        // We want to avoid generic 'Financial Results' showing up unless they have revision keywords
-        // But for now, let's be permissive with unanalyzed items to avoid hiding real news.
+        // Hide unanalyzed if we want strict mode? 
+        // User complained "still shows unorganized".
+        // Let's hide items where we don't have clear data, UNLESS it's unanalyzed (status 0).
+        // Since we now filter `is_upward IS NOT NULL` in backend, unanalyzed (is_upward=NULL) won't even reach here usually.
+        // But if they do:
         return true;
     });
 
@@ -257,18 +261,31 @@ export default function RevisionsPage() {
                                     <td style={{ minWidth: '120px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <span className={`${styles.badge} ${styles[type]}`}>
-                                                {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : type === 'neutral' ? '― 修正なし' : '―'}
+                                                {rev.is_dividend_hike ? '💰 増配' : (type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―')}
                                             </span>
-                                            {rate !== undefined && rate !== null && rate !== 0 ? (
-                                                <span style={{
-                                                    fontSize: '0.85rem',
-                                                    fontWeight: 'bold',
-                                                    color: rate > 0 ? '#4ade80' : '#f87171'
-                                                }}>
-                                                    {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
-                                                </span>
+
+                                            {/* Value Display: Dividend or Earnings Rate */}
+                                            {(rev.is_dividend_hike || category === 'dividend') && rev.dividend_forecast_annual ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
+                                                        {rev.dividend_forecast_annual}円
+                                                    </span>
+                                                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                                                        (年間配当)
+                                                    </span>
+                                                </div>
                                             ) : (
-                                                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
+                                                rate !== undefined && rate !== null && rate !== 0 ? (
+                                                    <span style={{
+                                                        fontSize: '0.85rem',
+                                                        fontWeight: 'bold',
+                                                        color: rate > 0 ? '#4ade80' : '#f87171'
+                                                    }}>
+                                                        {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
+                                                    </span>
+                                                ) : (
+                                                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
+                                                )
                                             )}
                                         </div>
                                     </td>
