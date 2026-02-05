@@ -49,14 +49,15 @@ def fetch_dividend_history(ticker):
             for i, h in enumerate(headers_text):
                 if "決算期" in h:
                     p_idx = i
-                if "配当" in h:
+                # Support "1株配" (Dividend per Share) which is common in Main Results table
+                if "配当" in h or "1株配" in h or "１株配" in h:
                     d_idx = i
             
             if p_idx != -1 and d_idx != -1:
                 target_table = table
                 div_idx = d_idx
                 period_idx = p_idx
-                print(f"  [DEBUG] Found Table. PeriodCol={p_idx}, DivCol={d_idx}")
+                # print(f"  [DEBUG] Found Table. PeriodCol={p_idx}, DivCol={d_idx}")
                 break
         
         if not target_table:
@@ -68,17 +69,13 @@ def fetch_dividend_history(ticker):
         # Parse Rows
         for i, row in enumerate(rows[1:]): # Skip header
             cols = row.find_all(["td", "th"])
+            
             if len(cols) <= div_idx:
                 continue
             
             period_text = cols[period_idx].get_text().strip()
             div_text = cols[div_idx].get_text().strip()
             
-            # Debug first few rows
-            if i < 3:
-                print(f"  [DEBUG] Row {i}: Len={len(cols)}, Period='{period_text}', Div='{div_text}'")
-                # print(f"    -> Col HTML: {cols[period_idx]}")
-
             # If period is empty or just arrows, it's likely not the main history (or a graphical spacer)
             if not period_text or period_text in ["↑", "→", "↓"]:
                 continue
@@ -100,18 +97,18 @@ def fetch_dividend_history(ticker):
                 continue
             
             # Relaxed length check (YY.MM is 5 chars, YY/MM is 5 chars)
-            # 24.03 -> 5 chars
+            # 24.03 -> 5 chars. 
+            # But sometimes "2024.03" -> 7 chars.
+            # Allow slightly shorter if it looks like a year?
             if period_clean and len(period_clean) >= 3: 
-                # Normalize YY.MM to 20YY.MM if needed?
-                # For now let's just save it.
+                # Success
                 history.append({
                     "period": period_clean,
                     "amount": amount,
                     "is_forecast": is_forecast
                 })
-
-                
-        return history
+        
+        return history         
 
     except Exception as e:
         print(f"  Fetch Error: {e}")
@@ -135,7 +132,8 @@ def save_history(ticker, history):
         
     conn.commit()
     conn.close()
-    print(f"  Saved {count} records for {ticker}.")
+    if count > 0:
+        print(f"  Saved {count} records for {ticker}.")
 
 if __name__ == "__main__":
     # Test
