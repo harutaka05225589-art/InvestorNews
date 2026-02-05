@@ -20,25 +20,32 @@ interface Revision {
     is_dividend_hike?: number;
     dividend_forecast_annual?: number; // Added
     dividend_forecast_previous?: number; // Added
+    category?: string; // matching DB column
 }
 
-function getRevisionType(rev: Revision) {
-    // 1. AI Analysis result (Priority)
-    if (rev.ai_analyzed && rev.is_upward !== null && rev.is_upward !== undefined) {
-        // If dividend hike, strictly UP
-        if (rev.is_dividend_hike) return 'up';
-
-        // If earnings revision but rate is 0/null -> Neutral
-        if (!rev.revision_rate_op || rev.revision_rate_op === 0) {
-            return 'neutral';
-        }
-        return rev.is_upward === 1 ? 'up' : 'down';
+function getRevisionType(rev: Revision, activeTab: string) {
+    if (!rev.ai_analyzed) {
+        // Fallback for unanalyzed
+        const title = rev.title || '';
+        if (title.includes('上方修正')) return 'up';
+        if (title.includes('下方修正')) return 'down';
+        return 'neutral';
     }
 
-    // 2. Title fallback
-    const title = rev.title || '';
-    if (title.includes('上方修正')) return 'up';
-    if (title.includes('下方修正')) return 'down';
+    // Strict Display Logic based on Tab
+    if (activeTab === 'dividend') {
+        return rev.is_dividend_hike ? 'up' : 'neutral'; // 'up' color for hike
+    }
+
+    // Earnings or All
+    if (activeTab === 'earnings' || activeTab === 'all') {
+        // If it's pure dividend in 'all', handle later. 
+        // For Earnings tab, strictly check rate logic is handled in filter.
+        // Here we just return direction.
+        if (rev.is_upward === 1) return 'up';
+        if (rev.is_upward === 0) return 'down';
+    }
+
     return 'neutral';
 }
 
@@ -77,29 +84,26 @@ export default function RevisionsPage() {
         return () => clearTimeout(timeoutId);
     }, [searchQuery, category]);
 
-    // Filter Logic to remove "No Change" / "Noise"
+    // Filter Logic
     const validRevisions = revisions.filter(rev => {
-        // If AI Analyzed
-        if (rev.ai_analyzed === 1) {
-            // Priority 1: Dividend Hike (Always Show)
-            if (rev.is_dividend_hike === 1) return true;
+        // If not analyzed, show (permissive)
+        if (rev.ai_analyzed !== 1) return true;
 
-            // Priority 2: Earnings Revision (Show only if rate is Not 0)
+        if (category === 'earnings') {
+            // MUST have rate != 0
             if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
-
-            // Otherwise Hide (e.g. Upward label but 0% change, or Neutral)
+            return false;
+        }
+        if (category === 'dividend') {
+            // MUST have dividend forecast
+            if (rev.dividend_forecast_annual) return true;
             return false;
         }
 
-        // If Not Analyzed (or Failed/Skipped)
-        if (searchQuery) return true;
-
-        // Hide unanalyzed if we want strict mode? 
-        // User complained "still shows unorganized".
-        // Let's hide items where we don't have clear data, UNLESS it's unanalyzed (status 0).
-        // Since we now filter `is_upward IS NOT NULL` in backend, unanalyzed (is_upward=NULL) won't even reach here usually.
-        // But if they do:
-        return true;
+        // All / Buyback
+        if (rev.is_dividend_hike === 1) return true;
+        if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
+        return false;
     });
 
     return (
@@ -141,83 +145,15 @@ export default function RevisionsPage() {
 
             {/* Category Tabs */}
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-                <button
-                    onClick={() => setCategory('earnings')}
-                    style={{
-                        padding: '0.6rem 1.2rem',
-                        borderRadius: '20px',
-                        background: category === 'earnings' ? 'var(--accent)' : '#334155',
-                        color: category === 'earnings' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
-                >
-                    業績修正
-                </button>
-                <button
-                    onClick={() => setCategory('dividend')}
-                    style={{
-                        padding: '0.6rem 1.2rem',
-                        borderRadius: '20px',
-                        background: category === 'dividend' ? 'var(--accent)' : '#334155',
-                        color: category === 'dividend' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
-                >
-                    配当修正
-                </button>
-                <button
-                    onClick={() => setCategory('buyback')}
-                    style={{
-                        padding: '0.6rem 1.2rem',
-                        borderRadius: '20px',
-                        background: category === 'buyback' ? 'var(--accent)' : '#334155',
-                        color: category === 'buyback' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
-                >
-                    自社株買い
-                </button>
-                <button
-                    onClick={() => setCategory('all')}
-                    style={{
-                        padding: '0.6rem 1.2rem',
-                        borderRadius: '20px',
-                        background: category === 'all' ? 'var(--accent)' : '#334155',
-                        color: category === 'all' ? '#000' : '#fff',
-                        fontWeight: 'bold',
-                        border: 'none',
-                        cursor: 'pointer'
-                    }}
-                >
-                    すべて
-                </button>
+                <button onClick={() => setCategory('earnings')} style={{ padding: '0.6rem 1.2rem', borderRadius: '20px', background: category === 'earnings' ? 'var(--accent)' : '#334155', color: category === 'earnings' ? '#000' : '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>業績修正</button>
+                <button onClick={() => setCategory('dividend')} style={{ padding: '0.6rem 1.2rem', borderRadius: '20px', background: category === 'dividend' ? 'var(--accent)' : '#334155', color: category === 'dividend' ? '#000' : '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>配当修正</button>
+                <button onClick={() => setCategory('buyback')} style={{ padding: '0.6rem 1.2rem', borderRadius: '20px', background: category === 'buyback' ? 'var(--accent)' : '#334155', color: category === 'buyback' ? '#000' : '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>自社株買い</button>
+                <button onClick={() => setCategory('all')} style={{ padding: '0.6rem 1.2rem', borderRadius: '20px', background: category === 'all' ? 'var(--accent)' : '#334155', color: category === 'all' ? '#000' : '#fff', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>すべて</button>
             </div>
 
             {/* Search Bar */}
             <div style={{ maxWidth: '600px', margin: '0 auto 2rem auto', position: 'relative' }}>
-                <input
-                    type="text"
-                    placeholder="銘柄コードまたは社名で検索..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{
-                        width: '100%',
-                        padding: '1rem 1.2rem',
-                        background: '#1e293b',
-                        border: '1px solid #334155',
-                        borderRadius: '30px',
-                        color: '#fff',
-                        fontSize: '1rem',
-                        outline: 'none',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                    }}
-                />
+                <input type="text" placeholder="銘柄コードまたは社名で検索..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} style={{ width: '100%', padding: '1rem 1.2rem', background: '#1e293b', border: '1px solid #334155', borderRadius: '30px', color: '#fff', fontSize: '1rem', outline: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }} />
             </div>
 
             <div className={styles.tableContainer}>
@@ -233,9 +169,55 @@ export default function RevisionsPage() {
                     </thead>
                     <tbody>
                         {validRevisions.map((rev) => {
-                            const type = getRevisionType(rev);
-                            const rate = rev.revision_rate_op;
-                            const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
+                            // Display Logic based on Tab
+                            let badgeLabel = '―';
+                            let badgeClass = 'neutral';
+                            let valueDisplay = null;
+
+                            if (!rev.ai_analyzed) {
+                                // Fallback
+                                const t = getRevisionType(rev, category);
+                                badgeClass = t;
+                                badgeLabel = t === 'up' ? '↗ 修正' : t === 'down' ? '↘ 修正' : '―';
+                            } else {
+                                if (category === 'dividend') {
+                                    // Dividend Mode
+                                    badgeClass = rev.is_dividend_hike ? 'up' : 'neutral';
+                                    badgeLabel = rev.is_dividend_hike ? '💰 増配' : '配当修正';
+                                    const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
+                                    if (rev.dividend_forecast_annual) {
+                                        valueDisplay = (
+                                            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
+                                                    {rev.dividend_forecast_annual}円
+                                                </span>
+                                                {rev.dividend_forecast_previous && divDiff !== 0 && (
+                                                    <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
+                                                        ({divDiff > 0 ? '+' : ''}{divDiff}円)
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                } else {
+                                    // Earnings Mode (or All default)
+                                    // Hide Dividend info, Show Earnings
+                                    const type = rev.is_upward === 1 ? 'up' : rev.is_upward === 0 ? 'down' : 'neutral';
+                                    badgeClass = type;
+                                    badgeLabel = type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―';
+
+                                    const rate = rev.revision_rate_op;
+                                    if (rate !== undefined && rate !== null && rate !== 0) {
+                                        valueDisplay = (
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
+                                                {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
+                                            </span>
+                                        );
+                                    } else {
+                                        valueDisplay = <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>;
+                                    }
+                                }
+                            }
 
                             return (
                                 <tr key={rev.id}>
@@ -248,8 +230,7 @@ export default function RevisionsPage() {
                                     <td style={{ minWidth: '250px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                             <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }}
-                                                    className={styles.companyLink}>
+                                                <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }} className={styles.companyLink}>
                                                     {rev.company_name}
                                                 </span>
                                             </Link>
@@ -262,38 +243,10 @@ export default function RevisionsPage() {
                                     </td>
                                     <td style={{ minWidth: '120px' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <span className={`${styles.badge} ${styles[type]}`}>
-                                                {rev.is_dividend_hike ? '💰 増配' : (type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―')}
+                                            <span className={`${styles.badge} ${styles[badgeClass]}`}>
+                                                {badgeLabel}
                                             </span>
-
-                                            {/* Value Display: Dividend or Earnings Rate */}
-                                            {(rev.is_dividend_hike || category === 'dividend') && rev.dividend_forecast_annual ? (
-                                                <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-                                                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
-                                                        {rev.dividend_forecast_annual}円
-                                                    </span>
-                                                    {rev.dividend_forecast_previous && divDiff !== 0 && (
-                                                        <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
-                                                            ({divDiff > 0 ? '+' : ''}{divDiff}円)
-                                                        </span>
-                                                    )}
-                                                    <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
-                                                        (年間配当)
-                                                    </span>
-                                                </div>
-                                            ) : (
-                                                rate !== undefined && rate !== null && rate !== 0 ? (
-                                                    <span style={{
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: 'bold',
-                                                        color: rate > 0 ? '#4ade80' : '#f87171'
-                                                    }}>
-                                                        {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
-                                                )
-                                            )}
+                                            {valueDisplay}
                                         </div>
                                     </td>
                                     <td>

@@ -52,21 +52,27 @@ def analyze_revision_pdf(pdf_path, title):
 
     Output Format (JSON only):
     {{
-        "is_upward": true,
-        "revision_rate_op": 0.0,
     5. summary: 
        - 「なぜ修正/増配になったのか」の理由を明確に記載してください。
        - 為替の影響、価格転嫁の進捗、販売数量の増減など、具体的な要因を含めてください。
        - 文字数は80〜100文字程度で、投資家が判断材料にできる内容にしてください。
        - 「～ため。」「～ことが寄与。」のように体言止めや簡潔な文末にしてください。
+    
+    6. category: 修正の種類 (以下のいずれかを選択)
+       - "earnings": 業績予想の修正のみ
+       - "dividend": 配当予想の修正のみ
+       - "both": 業績と配当の両方の修正
+       - "buyback": 自社株買い
+       - "other": その他
 
     Output Format (JSON only):
     {{
+        "category": "both",
         "is_upward": true,
         "revision_rate_op": 0.0,
         "summary": "海外売上高が想定を上回り、円安効果も寄与したため。価格改定の浸透により原材料高を吸収し、営業利益は過去最高を更新する見込み。",
         "quarter": "通期",
-        "dividend": {{ ... }},
+        "dividend": {{ "annual_forecast": 100, "annual_previous": 80, "is_hike": true, "rights_month": 3, "payment_month": 6 }},
         "forecast_data": null
     }}
     """
@@ -136,6 +142,7 @@ def process_revisions():
             # Skip "Status reports" (Progress updates) to save quota/time
             if "取得状況" in title:
                 print("  Skipping status report (noise)...")
+                # Mark as analyzed (neutral) so it doesn't loop
                 c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'Stat Report', is_upward = 0 WHERE id = ?", (rev_id,))
                 conn.commit()
                 continue
@@ -162,10 +169,12 @@ def process_revisions():
                 if not url or not url.startswith('http'):
                     print(f"  [SKIP] Invalid URL: {url}")
                     result = None
+                    # Mark as failed immediately to avoid loop
                     c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Invalid URL' WHERE id = ?", (rev_id,))
                     conn.commit()
                     continue
 
+                # Use a specific user agent to avoid 403
                 headers = {'User-Agent': 'Mozilla/5.0'}
                 r = requests.get(url, headers=headers, timeout=15)
                 
@@ -189,7 +198,15 @@ def process_revisions():
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
                 quarter = result.get('quarter', None) 
+                category = result.get('category', 'earnings') # Default to earnings if not found
                 
+                # Normalize category
+                valid_cats = ['earnings', 'dividend', 'both', 'buyback', 'other']
+                if category not in valid_cats:
+                    if "配当" in title and "修正" in title: category = 'both'
+                    elif "配当" in title: category = 'dividend'
+                    else: category = 'earnings'
+
                 # Dividend Extraction
                 div_data = result.get('dividend') or {}
                 div_forecast = div_data.get('annual_forecast', None)
@@ -205,7 +222,7 @@ def process_revisions():
                 forecast_data = result.get('forecast_data', None)
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
 
-                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Prev={final_prev} [DB: {db_prev_div}])")
+                print(f"  Result: Cat={category}, Up={is_upward}, Rate={rate}%, Div={div_forecast} (Prev={final_prev} [DB: {db_prev_div}])")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
@@ -222,9 +239,10 @@ def process_revisions():
                         is_dividend_hike = ?,
                         dividend_rights_month = ?,
                         dividend_payment_month = ?,
+                        category = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, final_prev, is_div_hike, rights_month, payment_month, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, final_prev, is_div_hike, rights_month, payment_month, category, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
 
