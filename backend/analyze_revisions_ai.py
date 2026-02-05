@@ -125,6 +125,12 @@ def process_revisions():
             company_name = row['company_name']
 
             print(f"Analyzing {ticker} {company_name}: {title}")
+
+            # Race Condition Check: Ensure it hasn't been analyzed by another process since the list was fetched
+            current_status = c.execute("SELECT ai_analyzed FROM revisions WHERE id = ?", (rev_id,)).fetchone()
+            if current_status and current_status['ai_analyzed'] != 0:
+                print(f"  [SKIP] Already analyzed by another process (Status: {current_status['ai_analyzed']})")
+                continue
             
             # Skip "Status reports" (Progress updates) to save quota/time
             if "取得状況" in title:

@@ -11,7 +11,7 @@ from database import get_db_connection
 # YYYYMMDD format
 TDNET_LIST_URL = "https://www.release.tdnet.info/inbs/I_list_001_{}.html"
 
-def fetch_tdnet_revisions(target_date=None):
+def fetch_tdnet_revisions(target_date=None, trigger_ai=True):
     if not target_date:
         target_date = datetime.datetime.now()
     
@@ -161,13 +161,14 @@ def fetch_tdnet_revisions(target_date=None):
         print(f"  Saved {count} revision events.")
 
         # --- Trigger AI Analysis ---
-        try:
-            from analyze_revisions_ai import process_revisions
-            print("--- Starting AI Analysis for new revisions ---")
-            process_revisions()
-            print("--- AI Analysis Completed ---")
-        except Exception as e:
-            print(f"Error during AI Analysis trigger: {e}")
+        if trigger_ai:
+            try:
+                from analyze_revisions_ai import process_revisions
+                print("--- Starting AI Analysis for new revisions ---")
+                process_revisions()
+                print("--- AI Analysis Completed ---")
+            except Exception as e:
+                print(f"Error during AI Analysis trigger: {e}")
         
     except Exception as e:
         print(f"Error fetching TDnet: {e}")
@@ -175,7 +176,13 @@ def fetch_tdnet_revisions(target_date=None):
 if __name__ == "__main__":
     # Test run: Fetch past 7 days to backfill
     today = datetime.datetime.now()
+    # Fetch past 7 days, but ONLY trigger AI once at the very end
     for i in range(7):
         d = today - datetime.timedelta(days=i)
-        fetch_tdnet_revisions(target_date=d)
+        fetch_tdnet_revisions(target_date=d, trigger_ai=False)
         time.sleep(1) # Be nice to server
+
+    # Trigger AI once after all data is fetched
+    print("\nBatch fetch complete. Triggering AI Analysis...")
+    from analyze_revisions_ai import process_revisions
+    process_revisions()
