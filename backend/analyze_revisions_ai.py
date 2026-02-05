@@ -136,28 +136,36 @@ def process_revisions():
             # Skip "Status reports" (Progress updates) to save quota/time
             if "取得状況" in title:
                 print("  Skipping status report (noise)...")
-                # Mark as analyzed (neutral) so it doesn't loop
                 c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = 'Stat Report', is_upward = 0 WHERE id = ?", (rev_id,))
                 conn.commit()
                 continue
             
-            # User Request: Analyze ALL captured PDFs (including Financial Results)
-            # The previous filter for "Earnings/Dividend only" is removed.
-            # We strictly rely on the AI's output to determine if it's relevant.
+            # Lookup Previous Dividend (DB Source of Truth)
+            # Find the most recent valid dividend forecast excluding current record
+            prev_div_row = c.execute("""
+                SELECT dividend_forecast_annual 
+                FROM revisions 
+                WHERE ticker = ? 
+                  AND id != ? 
+                  AND dividend_forecast_annual IS NOT NULL 
+                  AND ai_analyzed = 1
+                ORDER BY revision_date DESC, id DESC 
+                LIMIT 1
+            """, (ticker, rev_id)).fetchone()
             
-            # (Deleted) is_target check block to allow full analysis.
+            db_prev_div = prev_div_row['dividend_forecast_annual'] if prev_div_row else None
+            if db_prev_div is not None:
+                print(f"  [DB Comparison] Found previous dividend: {db_prev_div}")
 
             try:
                 # Download PDF
                 if not url or not url.startswith('http'):
                     print(f"  [SKIP] Invalid URL: {url}")
                     result = None
-                    # Mark as failed immediately to avoid loop
                     c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Invalid URL' WHERE id = ?", (rev_id,))
                     conn.commit()
                     continue
 
-                # Use a specific user agent to avoid 403
                 headers = {'User-Agent': 'Mozilla/5.0'}
                 r = requests.get(url, headers=headers, timeout=15)
                 
@@ -185,7 +193,11 @@ def process_revisions():
                 # Dividend Extraction
                 div_data = result.get('dividend') or {}
                 div_forecast = div_data.get('annual_forecast', None)
-                div_previous = div_data.get('annual_previous', None) # New
+                div_previous = div_data.get('annual_previous', None) # AI extracted
+                
+                # Use DB value as priority for Previous Comparison
+                final_prev = db_prev_div if db_prev_div is not None else div_previous
+                
                 is_div_hike = 1 if div_data.get('is_hike') else 0
                 rights_month = div_data.get('rights_month', None)
                 payment_month = div_data.get('payment_month', None)
@@ -193,7 +205,7 @@ def process_revisions():
                 forecast_data = result.get('forecast_data', None)
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
 
-                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Prev={div_previous})")
+                print(f"  Result: Up={is_upward}, Rate={rate}%, Div={div_forecast} (Prev={final_prev} [DB: {db_prev_div}])")
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
@@ -212,7 +224,7 @@ def process_revisions():
                         dividend_payment_month = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, div_previous, is_div_hike, rights_month, payment_month, rev_id))
+                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, final_prev, is_div_hike, rights_month, payment_month, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
 
