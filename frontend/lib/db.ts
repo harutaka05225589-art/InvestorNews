@@ -126,9 +126,25 @@ export function getLatestDividend(ticker: string): DividendInfo {
         } catch (e) { /* ignore */ }
 
         return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
+        return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
     } catch (e) {
         console.error("Get latest dividend error:", e);
         return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
+    }
+}
+
+export function getDividendHistory(ticker: string) {
+    try {
+        const stmt = db.prepare(`
+            SELECT period, dividend_amount, is_forecast
+            FROM dividend_history
+            WHERE ticker = ?
+            ORDER BY period ASC
+        `);
+        return stmt.all(ticker) as { period: string, dividend_amount: number, is_forecast: number }[];
+    } catch (e) {
+        console.error("Get dividend history error:", e);
+        return [];
     }
 }
 
