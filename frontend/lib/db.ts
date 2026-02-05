@@ -204,6 +204,7 @@ export function getRevisions(limit: number = 100) {
         const stmt = db.prepare(`
             SELECT * FROM revisions 
             WHERE (title LIKE '%業績%' OR title LIKE '%差異%')
+            AND is_upward IS NOT NULL
             ORDER BY revision_date DESC, id DESC
             LIMIT ?
         `);
@@ -218,6 +219,7 @@ export function getRevisionsByDateRange(startDate: string, endDate: string, cate
         let query = `
             SELECT * FROM revisions 
             WHERE revision_date BETWEEN ? AND ?
+            AND is_upward IS NOT NULL
         `;
         const params: any[] = [startDate, endDate];
 
@@ -250,6 +252,7 @@ export function getRevisionRanking(limit: number = 20) {
         const stmt = db.prepare(`
             SELECT ticker, company_name, COUNT(*) as count 
             FROM revisions 
+            WHERE is_upward IS NOT NULL
             GROUP BY ticker, company_name 
             ORDER BY count DESC 
             LIMIT ?
@@ -261,7 +264,7 @@ export function getRevisionRanking(limit: number = 20) {
 }
 export function getRevisionsByTicker(ticker: string, limit: number = 5, excludeId: number | null = null) {
     try {
-        let query = 'SELECT * FROM revisions WHERE ticker = ?';
+        let query = 'SELECT * FROM revisions WHERE ticker = ? AND is_upward IS NOT NULL';
         const params: any[] = [ticker];
 
         if (excludeId) {
@@ -285,6 +288,7 @@ export function searchRevisions(query: string, limit: number = 50) {
             SELECT * FROM revisions 
             WHERE (ticker LIKE ? OR company_name LIKE ?)
             AND (title LIKE '%業績%' OR title LIKE '%差異%')
+            AND is_upward IS NOT NULL
             ORDER BY revision_date DESC, id DESC 
             LIMIT ?
         `);
