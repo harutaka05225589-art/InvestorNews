@@ -43,6 +43,9 @@ def update_investors():
         
         "DAIBOUCHOU": ("DAIBOUCHOU", "https://twitter.com/DAIBOUCHO", ["大膨張", "DAIBOUCYOU"]),
         "DAIBOUCYOU": ("DAIBOUCHOU", "https://twitter.com/DAIBOUCHO", ["大膨張", "DAIBOUCYOU"]),
+        
+        "井村俊哉": ("井村俊哉", "https://twitter.com/imuvill", ["Zeppy", "株芸人", "井村さん"]),
+        "五味大輔": ("五味大輔", "", ["Gomi Daisuke", "五味さん", "そーせい五味"]),
     }
 
     print("Updating investor data and SEARCH ALIASES...")
