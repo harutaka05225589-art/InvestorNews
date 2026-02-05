@@ -89,7 +89,7 @@ export default function RevisionsPage() {
         // Strict Filter: Hide incomplete data
 
         const hasRate = rev.revision_rate_op !== undefined && rev.revision_rate_op !== null && Number(rev.revision_rate_op) !== 0;
-        const hasDividend = rev.dividend_forecast_annual !== undefined && rev.dividend_forecast_annual !== null;
+        const isDividendHike = rev.is_dividend_hike === 1;
         const isBuyback = rev.category === 'buyback';
 
         if (category === 'earnings') {
@@ -97,7 +97,8 @@ export default function RevisionsPage() {
         }
 
         if (category === 'dividend') {
-            return hasDividend;
+            // Only show hikes
+            return isDividendHike;
         }
 
         if (category === 'buyback') {
@@ -105,7 +106,7 @@ export default function RevisionsPage() {
         }
 
         // 'all' category
-        return hasRate || hasDividend || isBuyback;
+        return hasRate || isDividendHike || isBuyback;
     });
 
     return (
