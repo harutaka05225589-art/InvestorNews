@@ -256,19 +256,20 @@ def process_revisions():
                     header_text = "📈 【AI速報: 上方修正判定】"
                     hashtags = "#日本株 #決算速報 #上方修正 #増配 #高配当株"
 
-                    if category == 'dividend':
-                        if is_div_hike:
-                            should_post = True
-                            header_text = "💰 【AI速報: 増配判定】"
-                    elif category == 'buyback':
-                        should_post = True # Always post buybacks for now?
+                    if category == 'buyback':
+                        should_post = True
                         header_text = "🚀 【AI速報: 自社株買い判定】"
-                    elif category == 'both':
-                        if is_div_hike or (is_upward and rate >= 5.0):
+                    else:
+                        # Unified Logic: Check for Earnings Hike OR Dividend Hike
+                        is_earnings_hike = (is_upward and rate >= 5.0)
+                        
+                        if is_earnings_hike and is_div_hike:
                             should_post = True
                             header_text = "🚀 【AI速報: 上方修正＆増配】"
-                    else: # earnings or others
-                        if is_upward and rate >= 5.0:
+                        elif is_div_hike:
+                            should_post = True
+                            header_text = "💰 【AI速報: 増配判定】"
+                        elif is_earnings_hike:
                             should_post = True
                             header_text = "📈 【AI速報: 上方修正判定】"
 
