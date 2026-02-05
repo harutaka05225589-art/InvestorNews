@@ -46,7 +46,7 @@ export default function TodayRevisionsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/revisions?filter=today')
+        fetch('/api/revisions?filter=today&category=all')
             .then(res => res.json())
             .then(data => {
                 if (data.revisions) {

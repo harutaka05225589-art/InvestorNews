@@ -53,7 +53,7 @@ export default function RevisionsPage() {
     const [revisions, setRevisions] = useState<Revision[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [category, setCategory] = useState('earnings'); // Default to Earnings
+    const [category, setCategory] = useState('all'); // Default to All to show Dividends/Buybacks too
 
     useEffect(() => {
         const fetchRevisions = () => {

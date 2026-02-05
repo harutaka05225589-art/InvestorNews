@@ -47,7 +47,7 @@ export default function ThisWeekRevisionsPage() {
 
     useEffect(() => {
         // Use filter=week
-        fetch('/api/revisions?filter=week')
+        fetch('/api/revisions?filter=week&category=all')
             .then(res => res.json())
             .then(data => {
                 if (data.revisions) {

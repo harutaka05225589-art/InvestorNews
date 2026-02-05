@@ -45,7 +45,7 @@ export default function MonthRevisionsPage() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('/api/revisions?filter=month')
+        fetch('/api/revisions?filter=month&category=all')
             .then(res => res.json())
             .then(data => {
                 if (data.revisions) {
