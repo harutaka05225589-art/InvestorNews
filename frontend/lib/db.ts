@@ -219,7 +219,8 @@ export function getRevisions(limit: number = 100) {
     try {
         const stmt = db.prepare(`
             SELECT * FROM revisions 
-            WHERE (title LIKE '%業績%' OR title LIKE '%差異%')
+            WHERE title NOT IN ('System_Dividend_Update', 'YahooFinance_Initial')
+             AND (title LIKE '%業績%' OR title LIKE '%差異%' OR title LIKE '%配当%' OR title LIKE '%剰余金%' OR title LIKE '%自己株式%')
             AND is_upward IS NOT NULL
             ORDER BY revision_date DESC, id DESC
             LIMIT ?

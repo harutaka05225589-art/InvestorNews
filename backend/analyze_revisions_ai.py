@@ -251,8 +251,17 @@ def process_revisions():
                 if row['tweeted_at']:
                     print(f"  -> X Post SKIPPED (Already tweeted at {row['tweeted_at']})")
                 else:
-                    # Logic: Post if (Upward & Rate>=5%) OR (Dividend Hike)
-                    should_post = False
+                    # Check for duplicate tweet for same ticker TODAY (Prevent multiple tweets for same company)
+                    today_str = datetime.now().strftime('%Y-%m-%d')
+                    cursor.execute("SELECT id FROM revisions WHERE ticker = ? AND tweeted_at LIKE ? LIMIT 1", (ticker, f"{today_str}%"))
+                    existing_tweet = cursor.fetchone()
+                    
+                    if existing_tweet:
+                         print(f"  -> X Post SKIPPED (Already tweeted for ticker {ticker} today)")
+                         should_post = False
+                    else:
+                        # Logic: Post if (Upward & Rate>=5%) OR (Dividend Hike)
+                        should_post = False
                     header_text = "📈 【AI速報: 上方修正判定】"
                     hashtags = "#日本株 #決算速報 #上方修正 #増配 #高配当株"
 
