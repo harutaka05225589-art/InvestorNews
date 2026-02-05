@@ -61,12 +61,16 @@ export default function ThisWeekRevisionsPage() {
     // Strict Filter Logic
     const validRevisions = revisions.filter(rev => {
         // Must have essential data to be shown
-        // 1. Dividend Hike
-        if (rev.is_dividend_hike === 1) return true;
+
+        // 1. Dividend Hike (Must have forecast data)
+        if (rev.is_dividend_hike === 1 && (rev.dividend_forecast_annual || rev.category === 'dividend')) return true;
 
         // 2. Earnings Revision (Must have Rate != 0)
         // This implicitly filters out unanalyzed items (rate undefined) and Neutral (rate 0)
         if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
+
+        // 3. Buyback
+        if (rev.category === 'buyback') return true;
 
         return false;
     });
