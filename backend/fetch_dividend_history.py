@@ -70,14 +70,19 @@ def fetch_dividend_history(ticker):
             cols = row.find_all(["td", "th"])
             if len(cols) <= div_idx:
                 continue
-                
+            
             period_text = cols[period_idx].get_text().strip()
             div_text = cols[div_idx].get_text().strip()
             
             # Debug first few rows
             if i < 3:
-                print(f"  [DEBUG] Row {i}: Period='{period_text}', Div='{div_text}'")
+                print(f"  [DEBUG] Row {i}: Len={len(cols)}, Period='{period_text}', Div='{div_text}'")
+                # print(f"    -> Col HTML: {cols[period_idx]}")
 
+            # If period is empty or just arrows, it's likely not the main history (or a graphical spacer)
+            if not period_text or period_text in ["↑", "→", "↓"]:
+                continue
+                 
             # Check if Forecast (予)
             is_forecast = "予" in period_text or "予" in div_text
             
