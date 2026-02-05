@@ -56,25 +56,17 @@ def fetch_dividend_history(ticker):
                 target_table = table
                 div_idx = d_idx
                 period_idx = p_idx
-                # print(f"  [DEBUG] Found target table. Period Col: {p_idx}, Div Col: {d_idx}, Headers: {headers_text}")
+                print(f"  [DEBUG] Found Table. PeriodCol={p_idx}, DivCol={d_idx}")
                 break
         
         if not target_table:
-            # Fallback: Try #finance_box again if finding by text failed (maybe image header?)
-            # But Kabutan uses text.
-            # print("  [DEBUG] All Tables Checked. Targets not found.")
-            # for i, t in enumerate(tables[:3]):
-            #     rows = t.find_all("tr")
-            #     if rows:
-            #         print(f"  Table {i} Header: {[c.get_text().strip() for c in rows[0].find_all(['th','td'])]}")
             print("  Dividend table not found.")
             return []
 
         rows = target_table.find_all("tr")
-
-            
+        
         # Parse Rows
-        for row in rows[1:]: # Skip header
+        for i, row in enumerate(rows[1:]): # Skip header
             cols = row.find_all(["td", "th"])
             if len(cols) <= div_idx:
                 continue
@@ -82,12 +74,16 @@ def fetch_dividend_history(ticker):
             period_text = cols[period_idx].get_text().strip()
             div_text = cols[div_idx].get_text().strip()
             
+            # Debug first few rows
+            if i < 3:
+                print(f"  [DEBUG] Row {i}: Period='{period_text}', Div='{div_text}'")
+
             # Check if Forecast (予)
             is_forecast = "予" in period_text or "予" in div_text
             
             # Clean Period (2024.03) / Remove '連' '単' etc
-            # Keep YYYY.MM
-            period_clean = re.sub(r'[^\d\.]', '', period_text)
+            # Keep digits and dots and slashes
+            period_clean = re.sub(r'[^\d\./]', '', period_text)
             
             # Clean Amount
             try:
@@ -97,13 +93,18 @@ def fetch_dividend_history(ticker):
                     amount = float(re.sub(r'[^\d\.]', '', div_text))
             except:
                 continue
-                
-            if period_clean and len(period_clean) >= 6: # Basic check
+            
+            # Relaxed length check (YY.MM is 5 chars, YY/MM is 5 chars)
+            # 24.03 -> 5 chars
+            if period_clean and len(period_clean) >= 3: 
+                # Normalize YY.MM to 20YY.MM if needed?
+                # For now let's just save it.
                 history.append({
                     "period": period_clean,
                     "amount": amount,
                     "is_forecast": is_forecast
                 })
+
                 
         return history
 
