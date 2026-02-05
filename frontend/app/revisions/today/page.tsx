@@ -108,7 +108,19 @@ export default function TodayRevisionsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {validRevisions.map((rev) => {
+                            {loading && (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
+                                </tr>
+                            )}
+                            {!loading && validRevisions.length === 0 && (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                                        条件に一致する業績修正は見つかりませんでした。
+                                    </td>
+                                </tr>
+                            )}
+                            {!loading && validRevisions.map((rev) => {
                                 // Smart Display Logic (Category Aware)
                                 let displayMode = rev.category || 'earnings';
                                 if (!rev.category) {

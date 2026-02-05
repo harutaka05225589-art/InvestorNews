@@ -109,6 +109,13 @@ export default function ThisWeekRevisionsPage() {
                             </tr>
                         </thead>
                         <tbody>
+                            {validRevisions.length === 0 && !loading && (
+                                <tr>
+                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                                        条件に一致する業績修正は見つかりませんでした。
+                                    </td>
+                                </tr>
+                            )}
                             {validRevisions.map((rev) => {
                                 // Smart Display Logic (Category Aware)
                                 let displayMode = rev.category || 'earnings';

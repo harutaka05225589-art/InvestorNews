@@ -180,6 +180,13 @@ export default function RevisionsPage() {
                         </tr>
                     </thead>
                     <tbody>
+                        {validRevisions.length === 0 && (
+                            <tr>
+                                <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+                                    条件に一致する業績修正は見つかりませんでした。
+                                </td>
+                            </tr>
+                        )}
                         {validRevisions.map((rev) => {
                             // Display Logic based on Tab
                             let displayMode = category === 'all' ? (rev.category || 'earnings') : category;
@@ -323,6 +330,6 @@ export default function RevisionsPage() {
                     </tbody>
                 </table>
             </div>
-        </main>
+        </main >
     );
 }
