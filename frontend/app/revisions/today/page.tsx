@@ -59,19 +59,11 @@ export default function TodayRevisionsPage() {
 
     // Strict Filter Logic
     const validRevisions = revisions.filter(rev => {
-        // Must have essential data to be shown
+        const hasRate = rev.revision_rate_op !== undefined && rev.revision_rate_op !== null && Number(rev.revision_rate_op) !== 0;
+        const hasDividend = rev.dividend_forecast_annual !== undefined && rev.dividend_forecast_annual !== null;
+        const isBuyback = rev.category === 'buyback';
 
-        // 1. Dividend Hike (Must have forecast data)
-        if (rev.is_dividend_hike === 1 && (rev.dividend_forecast_annual || rev.category === 'dividend')) return true;
-
-        // 2. Earnings Revision (Must have Rate != 0)
-        // This implicitly filters out unanalyzed items (rate undefined) and Neutral (rate 0)
-        if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
-
-        // 3. Buyback
-        if (rev.category === 'buyback') return true;
-
-        return false;
+        return hasRate || hasDividend || isBuyback;
     });
 
     return (
@@ -81,7 +73,7 @@ export default function TodayRevisionsPage() {
                     📅 本日の業績修正
                 </h1>
                 <p className={styles.subtitle}>
-                    今日（{new Date().toLocaleDateString('ja-JP')}）発表された業績予想の修正一覧です。
+                    今日発表された業績予想の修正一覧です。
                 </p>
                 <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1rem', borderRadius: '8px' }}>
                     <p>
