@@ -247,15 +247,34 @@ def process_revisions():
                 print("  Saved to DB.")
 
                 # Post to X
-                # Only post if upward AND revision rate >= 5%
-                if is_upward and rate >= 5.0:
+                # Post to X
+                # Logic: Post if (Upward & Rate>=5%) OR (Dividend Hike)
+                should_post = False
+                header_text = "📈 【AI速報: 上方修正判定】"
+                hashtags = "#日本株 #決算速報 #上方修正 #増配 #高配当株"
+
+                if category == 'dividend':
+                    if is_div_hike:
+                        should_post = True
+                        header_text = "💰 【AI速報: 増配判定】"
+                elif category == 'buyback':
+                    should_post = True # Always post buybacks for now?
+                    header_text = "🚀 【AI速報: 自社株買い判定】"
+                elif category == 'both':
+                    if is_div_hike or (is_upward and rate >= 5.0):
+                        should_post = True
+                        header_text = "🚀 【AI速報: 上方修正＆増配】"
+                else: # earnings or others
+                    if is_upward and rate >= 5.0:
+                        should_post = True
+                        header_text = "📈 【AI速報: 上方修正判定】"
+
+                if should_post:
                     try:
                         from send_x import post_to_x
                         
                         # Generate OGP Image URL
-                        # api/og?title=...&subtitle=...&type=alert
-                        # We use the official domain for generation
-                        og_title = f"{row['company_name']} 上方修正"
+                        og_title = f"{row['company_name']} {header_text.replace('【AI速報: ', '').replace('】', '')}"
                         og_subtitle = summary
                         # Encode params safely
                         og_url = f"https://rich-investor-news.com/api/og?title={requests.utils.quote(og_title)}&subtitle={requests.utils.quote(og_subtitle)}&type=alert"
@@ -263,7 +282,7 @@ def process_revisions():
                         # Detail URL
                         detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
                         
-                        x_msg = f"📈 【AI速報: 上方修正判定】\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n#日本株 #決算速報 #上方修正 #増配 #高配当株"
+                        x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n{hashtags}"
                         
                         # Download OGP Image to attach (Fix for missing cards)
                         media_path = None
@@ -302,7 +321,7 @@ def process_revisions():
                     except Exception as e:
                         print(f"  -> Exception posting to X: {e}")
                 else:
-                    print(f"  -> Skip X post (Verdict: {'Down' if is_upward is False else 'Neutral'})")
+                    print(f"  -> Skip X post (Verdict: {'Down' if is_upward is False else 'Neutral/Small'}, Cat: {category})")
                 
             else:
                 print("  Analysis returned No Data.")

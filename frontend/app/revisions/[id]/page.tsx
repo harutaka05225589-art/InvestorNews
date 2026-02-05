@@ -179,6 +179,46 @@ export default async function RevisionPage({ params }: Props) {
                         </div>
                     )}
 
+                    {/* Dividend Table (Added) */}
+                    {revision.dividend_forecast_annual !== null && revision.dividend_forecast_annual !== undefined && (
+                        <div style={{ marginTop: '2rem', overflowX: 'auto' }}>
+                            <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#94a3b8' }}>配当予想の修正 (単位: 円)</h3>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', color: '#e2e8f0' }}>
+                                <thead>
+                                    <tr style={{ background: '#334155' }}>
+                                        <th style={{ padding: '0.8rem', textAlign: 'left' }}>項目</th>
+                                        <th style={{ padding: '0.8rem', textAlign: 'right' }}>前回予想</th>
+                                        <th style={{ padding: '0.8rem', textAlign: 'right', fontWeight: 'bold' }}>今回修正</th>
+                                        <th style={{ padding: '0.8rem', textAlign: 'right' }}>増減</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr style={{ borderBottom: '1px solid #334155' }}>
+                                        <td style={{ padding: '0.8rem' }}>年間配当</td>
+                                        <td style={{ padding: '0.8rem', textAlign: 'right' }}>
+                                            {formatNum(revision.dividend_forecast_previous)}
+                                        </td>
+                                        <td style={{ padding: '0.8rem', textAlign: 'right', fontWeight: 'bold', background: 'rgba(255,255,255,0.05)' }}>
+                                            {formatNum(revision.dividend_forecast_annual)}
+                                        </td>
+                                        <td style={{ padding: '0.8rem', textAlign: 'right' }}>
+                                            {(() => {
+                                                const prev = revision.dividend_forecast_previous;
+                                                const curr = revision.dividend_forecast_annual;
+                                                if (curr != null && prev != null) {
+                                                    const diff = curr - prev;
+                                                    const color = diff > 0 ? '#4ade80' : diff < 0 ? '#f87171' : '#cbd5e1';
+                                                    return <span style={{ color }}>{diff > 0 ? `+${diff}` : diff}</span>;
+                                                }
+                                                return '-';
+                                            })()}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
                     <div style={{ marginTop: '3rem', textAlign: 'center' }}>
                         <a
                             href={revision.source_url}
