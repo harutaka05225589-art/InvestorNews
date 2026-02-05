@@ -177,8 +177,12 @@ export default function RevisionsPage() {
                             // Display Logic based on Tab
                             let displayMode = category === 'all' ? (rev.category || 'earnings') : category;
 
-                            // If DB category is null/unknown, infer from data
-                            if (category === 'all' && !rev.category) {
+                            // Force 'both' display style if the item is 'both', regardless of the tab
+                            if (rev.category === 'both') {
+                                displayMode = 'both';
+                            }
+                            // If DB category is null/unknown (fallback)
+                            else if (category === 'all' && !rev.category) {
                                 if (rev.dividend_forecast_annual) displayMode = 'dividend';
                                 else displayMode = 'earnings';
                             }
