@@ -84,25 +84,37 @@ export default function RevisionsPage() {
         return () => clearTimeout(timeoutId);
     }, [searchQuery, category]);
 
-    // Filter Logic
+    // Strict Filter Logic
     const validRevisions = revisions.filter(rev => {
-        // If not analyzed, show (permissive)
-        if (rev.ai_analyzed !== 1) return true;
+        // Common: If we don't have analysis, we generally hide it to avoid "No %" display.
+        // User requested: "Don't show Up/Down without %". 
+        // So we strictly require the data points.
 
         if (category === 'earnings') {
             // MUST have rate != 0
+            // This filters out Unanalyzed (rate undefined) AND Neutral (rate 0)
             if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
             return false;
         }
+
         if (category === 'dividend') {
             // MUST have dividend forecast
-            if (rev.dividend_forecast_annual) return true;
+            if (rev.dividend_forecast_annual !== undefined && rev.dividend_forecast_annual !== null) return true;
             return false;
         }
 
-        // All / Buyback
-        if (rev.is_dividend_hike === 1) return true;
+        if (category === 'buyback') {
+            // Check category explicitly
+            if (rev.category === 'buyback') return true;
+            return false;
+        }
+
+        // 'all' category
+        // Show if it qualifies for ANY of the specific categories
         if (rev.revision_rate_op && rev.revision_rate_op !== 0) return true;
+        if (rev.dividend_forecast_annual !== undefined && rev.dividend_forecast_annual !== null) return true;
+        if (rev.category === 'buyback') return true;
+
         return false;
     });
 
