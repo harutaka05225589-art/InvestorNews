@@ -62,9 +62,10 @@ export default function ThisWeekRevisionsPage() {
     const validRevisions = revisions.filter(rev => {
         const hasRate = rev.revision_rate_op !== undefined && rev.revision_rate_op !== null && Number(rev.revision_rate_op) !== 0;
         const isDividendHike = rev.is_dividend_hike === 1;
+        const isBoth = rev.category === 'both';
 
         // 'all' category: Exclude Buyback + Strict Dividend Hike
-        return hasRate || isDividendHike;
+        return hasRate || isDividendHike || isBoth;
     });
 
     return (

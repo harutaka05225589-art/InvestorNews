@@ -91,14 +91,15 @@ export default function RevisionsPage() {
         const hasRate = rev.revision_rate_op !== undefined && rev.revision_rate_op !== null && Number(rev.revision_rate_op) !== 0;
         const isDividendHike = rev.is_dividend_hike === 1;
         const isBuyback = rev.category === 'buyback';
+        const isBoth = rev.category === 'both';
 
         if (category === 'earnings') {
-            return hasRate;
+            return hasRate || isBoth;
         }
 
         if (category === 'dividend') {
-            // Only show hikes
-            return isDividendHike;
+            // Only show hikes or 'both' (which implies dividend relevance)
+            return isDividendHike || isBoth;
         }
 
         if (category === 'buyback') {
@@ -106,8 +107,8 @@ export default function RevisionsPage() {
         }
 
         // 'all' category: Exclude buybacks (User Feedback: "Strange to see buybacks here")
-        // Only Earnings (Valid Rate) OR Dividend Hikes
-        return hasRate || isDividendHike;
+        // Only Earnings (Valid Rate) OR Dividend Hikes OR Both
+        return hasRate || isDividendHike || isBoth;
     });
 
     return (
