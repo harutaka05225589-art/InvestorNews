@@ -182,52 +182,85 @@ export default function RevisionsPage() {
                     <tbody>
                         {validRevisions.map((rev) => {
                             // Display Logic based on Tab
+                            let displayMode = category === 'all' ? (rev.category || 'earnings') : category;
+
+                            // If DB category is null/unknown, infer from data
+                            if (category === 'all' && !rev.category) {
+                                if (rev.dividend_forecast_annual) displayMode = 'dividend';
+                                else displayMode = 'earnings';
+                            }
+
                             let badgeLabel = '―';
                             let badgeClass = 'neutral';
                             let valueDisplay = null;
 
-                            if (!rev.ai_analyzed) {
-                                // Fallback
-                                const t = getRevisionType(rev, category);
-                                badgeClass = t;
-                                badgeLabel = t === 'up' ? '↗ 修正' : t === 'down' ? '↘ 修正' : '―';
-                            } else {
-                                if (category === 'dividend') {
-                                    // Dividend Mode
-                                    badgeClass = rev.is_dividend_hike ? 'up' : 'neutral';
-                                    badgeLabel = rev.is_dividend_hike ? '💰 増配' : '配当修正';
-                                    const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
-                                    if (rev.dividend_forecast_annual) {
-                                        valueDisplay = (
-                                            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-                                                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
-                                                    {rev.dividend_forecast_annual}円
+                            // Buyback Display
+                            if (displayMode === 'buyback') {
+                                badgeClass = 'up';
+                                badgeLabel = '🚀 自社株買い';
+                            }
+                            // Dividend Display
+                            else if (displayMode === 'dividend') {
+                                // Dividend Mode
+                                badgeClass = rev.is_dividend_hike ? 'up' : 'neutral';
+                                badgeLabel = rev.is_dividend_hike ? '💰 増配' : '配当修正';
+                                const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
+                                if (rev.dividend_forecast_annual) {
+                                    valueDisplay = (
+                                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
+                                                {rev.dividend_forecast_annual}円
+                                            </span>
+                                            {rev.dividend_forecast_previous && divDiff !== 0 && (
+                                                <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
+                                                    ({divDiff > 0 ? '+' : ''}{divDiff}円)
                                                 </span>
-                                                {rev.dividend_forecast_previous && divDiff !== 0 && (
-                                                    <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
-                                                        ({divDiff > 0 ? '+' : ''}{divDiff}円)
-                                                    </span>
-                                                )}
-                                            </div>
-                                        );
-                                    }
+                                            )}
+                                        </div>
+                                    );
+                                }
+                            }
+                            // Both (Earnings + Dividend)
+                            else if (displayMode === 'both') {
+                                badgeClass = 'up';
+                                badgeLabel = '🚀 上方・増配';
+
+                                const rate = rev.revision_rate_op;
+                                valueDisplay = (
+                                    <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                        {rate && rate !== 0 ? (
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
+                                                {rate > 0 ? '+' : ''}{Number(rate).toFixed(1)}%
+                                            </span>
+                                        ) : null}
+                                        {rev.is_dividend_hike === 1 && (
+                                            <span style={{ fontSize: '0.75rem', color: '#fbbf24' }}>
+                                                + 増配
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            // Earnings Display (Default)
+                            else {
+                                const rate = rev.revision_rate_op;
+                                const isZero = !rate || rate === 0;
+
+                                if (isZero) {
+                                    // If rate is missing/zero, do NOT show Up/Down label unless we are sure
+                                    badgeClass = 'neutral';
+                                    badgeLabel = '修正';
                                 } else {
-                                    // Earnings Mode (or All default)
-                                    // Hide Dividend info, Show Earnings
                                     const type = rev.is_upward === 1 ? 'up' : rev.is_upward === 0 ? 'down' : 'neutral';
                                     badgeClass = type;
-                                    badgeLabel = type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '―';
+                                    // Only show Up/Down if we have a rate
+                                    badgeLabel = type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '修正';
 
-                                    const rate = rev.revision_rate_op;
-                                    if (rate !== undefined && rate !== null && rate !== 0) {
-                                        valueDisplay = (
-                                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
-                                                {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
-                                            </span>
-                                        );
-                                    } else {
-                                        valueDisplay = <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>;
-                                    }
+                                    valueDisplay = (
+                                        <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
+                                            {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
+                                        </span>
+                                    );
                                 }
                             }
 

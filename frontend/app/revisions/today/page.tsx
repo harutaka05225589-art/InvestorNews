@@ -19,6 +19,9 @@ interface Revision {
     ai_summary?: string;
     ai_analyzed?: number;
     is_dividend_hike?: number;
+    dividend_forecast_annual?: number;
+    dividend_forecast_previous?: number;
+    category?: string;
 }
 
 function getRevisionType(rev: Revision) {
@@ -102,8 +105,88 @@ export default function TodayRevisionsPage() {
                         </thead>
                         <tbody>
                             {validRevisions.map((rev) => {
-                                const type = getRevisionType(rev);
-                                const rate = rev.revision_rate_op;
+                                // Smart Display Logic (Category Aware)
+                                let displayMode = rev.category || 'earnings';
+                                if (!rev.category) {
+                                    if (rev.dividend_forecast_annual) displayMode = 'dividend';
+                                    else displayMode = 'earnings';
+                                }
+
+                                let badgeLabel = '―';
+                                let badgeClass = 'neutral';
+                                let valueDisplay = null;
+
+                                if (displayMode === 'buyback') {
+                                    badgeClass = 'up';
+                                    badgeLabel = '🚀 自社株買い';
+                                }
+                                else if (displayMode === 'dividend') {
+                                    badgeClass = rev.is_dividend_hike ? 'up' : 'neutral';
+                                    badgeLabel = rev.is_dividend_hike ? '💰 増配' : '配当修正';
+                                    const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
+                                    if (rev.dividend_forecast_annual) {
+                                        valueDisplay = (
+                                            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
+                                                    {rev.dividend_forecast_annual}円
+                                                </span>
+                                                {rev.dividend_forecast_previous && divDiff !== 0 && (
+                                                    <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
+                                                        ({divDiff > 0 ? '+' : ''}{divDiff}円)
+                                                    </span>
+                                                )}
+                                            </div>
+                                        );
+                                    }
+                                }
+                                else if (displayMode === 'both') {
+                                    badgeClass = 'up';
+                                    badgeLabel = '🚀 上方・増配';
+                                    const rate = rev.revision_rate_op;
+                                    valueDisplay = (
+                                        <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
+                                            {rate && rate !== 0 ? (
+                                                <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
+                                                    {rate > 0 ? '+' : ''}{Number(rate).toFixed(1)}%
+                                                </span>
+                                            ) : null}
+                                            {rev.is_dividend_hike === 1 && (
+                                                <span style={{ fontSize: '0.75rem', color: '#fbbf24' }}>
+                                                    + 増配
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                }
+                                else {
+                                    // Earnings (Default)
+                                    const rate = rev.revision_rate_op;
+                                    const isZero = !rate || rate === 0;
+
+                                    if (isZero) {
+                                        // Unanalyzed or Zero -> Plain label
+                                        // Using old fallback logic if unanalyzed
+                                        const t = getRevisionType(rev);
+                                        badgeClass = t === 'up' ? 'up' : t === 'down' ? 'down' : 'neutral';
+                                        badgeLabel = t === 'up' ? '↗ 修正' : t === 'down' ? '↘ 修正' : '修正';
+
+                                        // If analyzed but 0% -> '修正'
+                                        if (rev.ai_analyzed) {
+                                            badgeClass = 'neutral';
+                                            badgeLabel = '修正';
+                                        }
+                                        valueDisplay = <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>;
+                                    } else {
+                                        const type = rev.is_upward === 1 ? 'up' : rev.is_upward === 0 ? 'down' : 'neutral';
+                                        badgeClass = type;
+                                        badgeLabel = type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : '修正';
+                                        valueDisplay = (
+                                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
+                                                {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
+                                            </span>
+                                        );
+                                    }
+                                }
 
                                 return (
                                     <tr key={rev.id}>
@@ -131,20 +214,10 @@ export default function TodayRevisionsPage() {
                                         </td>
                                         <td style={{ minWidth: '120px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                                <span className={`${styles.badge} ${styles[type]}`}>
-                                                    {type === 'up' ? '↗ 上方修正' : type === 'down' ? '↘ 下方修正' : type === 'neutral' ? '― 修正なし' : '―'}
+                                                <span className={`${styles.badge} ${styles[badgeClass]}`}>
+                                                    {badgeLabel}
                                                 </span>
-                                                {rate !== undefined && rate !== null && rate !== 0 ? (
-                                                    <span style={{
-                                                        fontSize: '0.85rem',
-                                                        fontWeight: 'bold',
-                                                        color: rate > 0 ? '#4ade80' : '#f87171'
-                                                    }}>
-                                                        {rate > 0 ? '+' : ''}{Number(rate).toFixed(2)}%
-                                                    </span>
-                                                ) : (
-                                                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>
-                                                )}
+                                                {valueDisplay}
                                             </div>
                                         </td>
                                         <td>
