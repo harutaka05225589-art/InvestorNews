@@ -191,8 +191,16 @@ export default function RevisionsPage() {
                             let badgeClass = 'neutral';
                             let valueDisplay = null;
 
+                            // Priority: Check AI Status
+                            if (rev.ai_analyzed === 0) {
+                                badgeLabel = '⏳ 解析待ち';
+                                badgeClass = 'neutral';
+                            } else if (rev.ai_analyzed === 2) {
+                                badgeLabel = '⚠️ 解析エラー';
+                                badgeClass = 'down'; // Warn user
+                            }
                             // Buyback Display
-                            if (displayMode === 'buyback') {
+                            else if (displayMode === 'buyback') {
                                 badgeClass = 'up';
                                 badgeLabel = '🚀 自社株買い';
                             }
