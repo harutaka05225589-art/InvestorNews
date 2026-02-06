@@ -215,16 +215,27 @@ def process_revisions():
                 # Use DB value as priority for Previous Comparison
                 final_prev = db_prev_div if db_prev_div is not None else div_previous
                 
-                # Robust Hike Calculation
-                calculated_hike = False
+                # Robust Hike Calculation (Supports Decrease)
+                is_div_hike = 0 # Default: Unchanged
+                if div_data.get('is_hike'):
+                    is_div_hike = 1
+                
+                calculated_diff = 0
                 if div_forecast is not None and final_prev is not None:
                      try:
-                         if float(div_forecast) > float(final_prev):
-                             calculated_hike = True
+                         # Ensure these are floats
+                         f_curr = float(div_forecast)
+                         f_prev = float(final_prev)
+                         calculated_diff = f_curr - f_prev
+                         
+                         if calculated_diff > 0:
+                             is_div_hike = 1
+                         elif calculated_diff < 0:
+                             is_div_hike = -1
+                         else:
+                             is_div_hike = 0
                      except:
                          pass
-
-                is_div_hike = 1 if (div_data.get('is_hike') or calculated_hike) else 0
                 rights_month = div_data.get('rights_month', None)
                 payment_month = div_data.get('payment_month', None)
 

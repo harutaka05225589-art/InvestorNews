@@ -199,8 +199,17 @@ export default function RevisionsPage() {
                             // Dividend Display
                             else if (displayMode === 'dividend') {
                                 // Dividend Mode
-                                badgeClass = rev.is_dividend_hike ? 'up' : 'neutral';
-                                badgeLabel = rev.is_dividend_hike ? '💰 増配' : '配当修正';
+                                if (rev.is_dividend_hike === 1) {
+                                    badgeClass = 'up';
+                                    badgeLabel = '💰 増配';
+                                } else if (rev.is_dividend_hike === -1) {
+                                    badgeClass = 'down'; // Uses .down styling (usually red or blue depending on CSS, assumes blue/neg)
+                                    badgeLabel = '📉 減配';
+                                } else {
+                                    badgeClass = 'neutral';
+                                    badgeLabel = '配当修正';
+                                }
+
                                 const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
                                 if (rev.dividend_forecast_annual) {
                                     valueDisplay = (
@@ -209,7 +218,7 @@ export default function RevisionsPage() {
                                                 {rev.dividend_forecast_annual}円
                                             </span>
                                             {rev.dividend_forecast_previous && divDiff !== 0 && (
-                                                <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#f87171' }}>
+                                                <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#ef4444' }}>
                                                     ({divDiff > 0 ? '+' : ''}{divDiff}円)
                                                 </span>
                                             )}
@@ -219,10 +228,20 @@ export default function RevisionsPage() {
                             }
                             // Both (Earnings + Dividend)
                             else if (displayMode === 'both') {
-                                badgeClass = 'up';
-                                badgeLabel = '🚀 上方・増配';
+                                const isHike = rev.is_dividend_hike === 1;
+                                const isDecrease = rev.is_dividend_hike === -1;
+
+                                if (isDecrease) {
+                                    badgeClass = 'down'; // Or custom color? Using 'down' (usually red/blue context)
+                                    badgeLabel = '上方・減配';
+                                } else {
+                                    badgeClass = 'up';
+                                    badgeLabel = '🚀 上方・増配';
+                                }
 
                                 const rate = rev.revision_rate_op;
+                                const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
+
                                 valueDisplay = (
                                     <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
                                         {rate && rate !== 0 ? (
@@ -230,10 +249,18 @@ export default function RevisionsPage() {
                                                 {rate > 0 ? '+' : ''}{Number(rate).toFixed(1)}%
                                             </span>
                                         ) : null}
-                                        {rev.is_dividend_hike === 1 && (
-                                            <span style={{ fontSize: '0.75rem', color: '#fbbf24' }}>
-                                                + 増配
-                                            </span>
+                                        {/* Display Dividend Amount & Diff */}
+                                        {rev.dividend_forecast_annual && (
+                                            <div style={{ fontSize: '0.75rem', marginTop: '2px' }}>
+                                                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                                                    配{rev.dividend_forecast_annual}円
+                                                </span>
+                                                {divDiff !== 0 && (
+                                                    <span style={{ marginLeft: '4px', color: divDiff > 0 ? '#4ade80' : '#ef4444' }}>
+                                                        ({divDiff > 0 ? '+' : ''}{divDiff})
+                                                    </span>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
                                 );

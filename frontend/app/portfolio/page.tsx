@@ -33,8 +33,8 @@ interface Holding {
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1919', '#19FFD7', '#F472B6'];
 
 export default function PortfolioPage() {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [holdings, setHoldings] = useState<Holding[]>([]);
+
+    const [transactions, setTransactions] = useState<Transaction[]>([]); const [holdings, setHoldings] = useState<Holding[]>([]);
     const [pendingDividends, setPendingDividends] = useState<{ ticker: string, name: string, amount: number, paymentMonth: number }[]>([]);
     // MonthlyData state REMOVED to avoid duplication with useMemo
 
@@ -464,7 +464,7 @@ export default function PortfolioPage() {
 
     const totalPortfolioValue = holdings.reduce((sum, h) => sum + (h.totalShares * h.averagePrice), 0);
     const totalNetDividend = holdings.reduce((sum, h) => sum + h.netDividend, 0);
-    const totalPendingDividend = pendingDividends.reduce((sum, p) => sum + p.amount, 0);
+    const totalPendingDividend = pendingDividends.reduce((sum, p) => sum + (p?.amount || 0), 0);
 
     return (
         <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem', overflowX: 'hidden' }}>
