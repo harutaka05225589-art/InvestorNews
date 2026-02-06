@@ -372,18 +372,27 @@ export default function PortfolioPage() {
                 }
             }
 
-            if (m1 !== -1) {
+            if (m1 !== -1 && !isNaN(m1)) {
+                // Bounds safety check
+                if (m1 < 1) m1 = 1;
+                if (m1 > 12) m1 = 12;
+
                 // Add first payment/rights
                 const idx1 = (m1 - 1) % 12;
-                data[idx1].amount += halfNet;
-                data[idx1].details.push({ ticker: h.ticker, name: h.name, partAmount: halfNet });
+                if (data[idx1]) {
+                    data[idx1].amount += halfNet;
+                    data[idx1].details.push({ ticker: h.ticker, name: h.name, partAmount: halfNet });
+                }
 
                 // Add second payment/rights (assuming +6 months)
                 let m2 = m1 + 6;
                 if (m2 > 12) m2 -= 12;
+
                 const idx2 = (m2 - 1) % 12;
-                data[idx2].amount += halfNet;
-                data[idx2].details.push({ ticker: h.ticker, name: h.name, partAmount: halfNet });
+                if (data[idx2]) {
+                    data[idx2].amount += halfNet;
+                    data[idx2].details.push({ ticker: h.ticker, name: h.name, partAmount: halfNet });
+                }
             }
         });
 
