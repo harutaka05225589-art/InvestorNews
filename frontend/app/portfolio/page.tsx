@@ -228,14 +228,15 @@ export default function PortfolioPage() {
             if (h.totalShares > 0) {
                 // Find dividend info (simplest: find latest tx for this ticker)
                 const tx = txs.find(t => t.ticker === h.ticker);
-                const divPerShare = tx?.latest_dividend || 0;
+                const rawDiv = tx?.latest_dividend;
+                const divPerShare = (rawDiv && !isNaN(Number(rawDiv))) ? Number(rawDiv) : 0;
 
                 const grossDiv = h.totalShares * divPerShare;
                 const taxRate = h.accountType === 'nisa' ? 0 : 0.20315;
                 const netDiv = grossDiv * (1 - taxRate);
 
-                h.projectedDividend = grossDiv;
-                h.netDividend = netDiv;
+                h.projectedDividend = isNaN(grossDiv) ? 0 : grossDiv;
+                h.netDividend = isNaN(netDiv) ? 0 : netDiv;
 
                 holdingsList.push(h);
             }
