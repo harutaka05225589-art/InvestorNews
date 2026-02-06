@@ -233,9 +233,15 @@ def process_revisions():
                          elif calculated_diff < 0:
                              is_div_hike = -1
                          else:
-                             is_div_hike = 0
+                             is_div_hike = 0 # Explicitly 0 if no change
                      except:
                          pass
+
+                # If calculation failed (e.g. missing prev), fall back to AI flag, but be careful
+                if calculated_diff == 0 and div_forecast is None and div_data.get('is_hike'):
+                     # Only rely on AI flag if we couldn't calculate
+                     is_div_hike = 1
+
                 rights_month = div_data.get('rights_month', None)
                 payment_month = div_data.get('payment_month', None)
 

@@ -464,7 +464,8 @@ export default function PortfolioPage() {
 
     const totalPortfolioValue = holdings.reduce((sum, h) => sum + (h.totalShares * h.averagePrice), 0);
     const totalNetDividend = holdings.reduce((sum, h) => sum + h.netDividend, 0);
-    const totalPendingDividend = pendingDividends.reduce((sum, p) => sum + (p?.amount || 0), 0);
+    const validPendingDividends = Array.isArray(pendingDividends) ? pendingDividends.filter(p => p && typeof p.amount === 'number') : [];
+    const totalPendingDividend = validPendingDividends.reduce((sum, p) => sum + p.amount, 0);
 
     return (
         <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem', overflowX: 'hidden' }}>
