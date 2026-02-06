@@ -306,7 +306,8 @@ export default function PortfolioPage() {
                 // Calculate Shares Held ON rightsDate
                 let sharesOnRights = 0;
                 txList.forEach(t => {
-                    const tDate = t.transaction_date ? new Date(t.transaction_date) : new Date(0);
+                    // If date is missing, assume bought TODAY (so not eligible for past rights)
+                    const tDate = t.transaction_date ? new Date(t.transaction_date) : new Date();
                     if (tDate <= rightsDate) {
                         sharesOnRights += t.shares; // Shares can be negative for sell
                     }
