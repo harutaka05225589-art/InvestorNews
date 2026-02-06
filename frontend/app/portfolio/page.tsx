@@ -489,15 +489,34 @@ export default function PortfolioPage() {
                     </div>
                     <div>
                         <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>年間配当予定 (保有分)</span>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4ade80' }}>¥{totalNetDividend.toLocaleString()}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4ade80' }}>¥{Math.round(totalNetDividend).toLocaleString()}</div>
                     </div>
                     {totalPendingDividend > 0 && (
                         <div>
-                            <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>支払待ち (権利確定済)</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>支払待ち (権利確定済)</span>
+                                <div
+                                    style={{
+                                        cursor: 'help',
+                                        background: '#334155',
+                                        color: '#cbd5e1',
+                                        borderRadius: '50%',
+                                        width: '18px',
+                                        height: '18px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        fontSize: '0.7rem'
+                                    }}
+                                    title="権利確定日を通過し、支払いが確定しているがまだ入金されていない配当金です（売却済みも含む）"
+                                >
+                                    ?
+                                </div>
+                            </div>
                             <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#f59e0b' }}>
-                                ¥{totalPendingDividend.toLocaleString()}
+                                ¥{Math.round(totalPendingDividend).toLocaleString()}
                                 <span style={{ fontSize: '0.8rem', marginLeft: '5px', color: '#cbd5e1' }}>
-                                    ({pendingDividends.length}件)
+                                    ({validPendingDividends.length}件)
                                 </span>
                             </div>
                         </div>
