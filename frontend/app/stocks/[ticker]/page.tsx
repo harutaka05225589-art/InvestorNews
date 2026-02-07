@@ -1,7 +1,8 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile } from '@/lib/db';
+import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats } from '@/lib/db';
 import DividendChart from '@/components/DividendChart';
+import FinancialChart from '@/components/FinancialChart';
 
 type Props = {
     params: Promise<{ ticker: string }>;
@@ -24,6 +25,9 @@ export default async function StockPage({ params }: Props) {
 
     // 4. Fetch Dividend History
     const history = getDividendHistory(decodedTicker);
+
+    // 5. Fetch Financial History (NEW)
+    const financialStats = getFinancialStats(decodedTicker);
 
     return (
         <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
@@ -123,7 +127,24 @@ export default async function StockPage({ params }: Props) {
                         </div>
                     )}
 
-                    {/* 3. Dividend History */}
+                    {/* 3. Financial Charts (NEW) */}
+                    <div style={{ marginBottom: '3rem' }}>
+                        <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            📊 業績・財務推移
+                        </h3>
+                        {financialStats && financialStats.length > 0 ? (
+                            <FinancialChart data={financialStats} ticker={decodedTicker} />
+                        ) : (
+                            <div style={{ textAlign: 'center', padding: '2rem', background: '#334155', borderRadius: '8px', color: '#94a3b8' }}>
+                                <p>財務データがまだ取得されていません。<br />次回の更新をお待ちください。</p>
+                            </div>
+                        )}
+                        <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem', textAlign: 'right' }}>
+                            データソース: 株探 / TDnet
+                        </p>
+                    </div>
+
+                    {/* 4. Dividend History */}
                     {history && history.length > 0 ? (
                         <div>
                             <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
