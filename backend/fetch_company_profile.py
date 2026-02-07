@@ -12,7 +12,8 @@ from database import get_db_connection
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
-model = genai.GenerativeModel('gemini-2.0-flash-exp')
+# model = genai.GenerativeModel('gemini-2.0-flash-exp')
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 def get_or_create_profile(ticker, company_name):
     """
