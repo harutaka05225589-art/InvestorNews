@@ -1,5 +1,9 @@
 import os
 import sqlite3
+import warnings
+# Suppress Google Gemini depreciation warning
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 import google.generativeai as genai
 from dotenv import load_dotenv
 from database import get_db_connection
