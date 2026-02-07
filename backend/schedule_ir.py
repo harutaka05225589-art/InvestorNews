@@ -13,6 +13,10 @@ if __name__ == "__main__":
     
     # Schedule for Daily check at 01:00 AM
     schedule.every().day.at("01:00").do(weekly_job)
+
+    # Calendar Alerts (Daily at 09:00)
+    from send_calendar_alerts import send_calendar_alerts
+    schedule.every().day.at("09:00").do(send_calendar_alerts)
     
     # Also run once on startup to ensure data is fresh? 
     # Maybe not, as it takes time. Let's just wait for schedule.
