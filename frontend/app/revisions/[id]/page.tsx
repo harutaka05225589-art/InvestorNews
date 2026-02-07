@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getRevisionsByTicker, getRevisionById } from '@/lib/db'; // Import shared helpers
+import { getRevisionsByTicker, getRevisionById, getDividendHistory } from '@/lib/db'; // Import shared helpers
+import DividendChart from '@/components/DividendChart';
 
 // Helper to format currency
 const formatNum = (num: any) => {
@@ -278,60 +279,21 @@ export default async function RevisionPage({ params }: Props) {
                 )}
             </div>
 
-            {/* Dividend History Chart (New) */}
             {(() => {
-                // Must be async/await or fetched in parent.
-                // Next.js App Router Server Components can await directly.
-                // But this file is default export ... wait, it's a Server Component!
-                // We can fetch data here? No, 'getDividendHistory' is sync/db call so it's fine.
-                // But we are inside JSX map/return stream?
-                // Wait, getRevisionsByTicker was called inline above so it works.
-                // Let's invoke it.
-                // Note: getDividendHistory is not imported yet, strict mode might fail.
-                // Ideally we fetch at top level. But for this quick insertion:
-
+                // Fetch dividend history (Sync DB Call)
                 try {
-                    const { getDividendHistory } = require('@/lib/db'); // Dynamic require if needed or ensure import at top
+                    // For Revision Page, we need to fetch history if not already available in props
+                    // Since this is a server component, we can call db helper directly
+                    // Note: getDividendHistory is imported at top level now
                     const history = getDividendHistory(revision.ticker);
 
                     if (history && history.length > 0) {
-                        // Find max for scaling
-                        const maxVal = Math.max(...history.map((h: any) => h.dividend_amount));
-
                         return (
                             <div style={{ marginTop: '4rem' }}>
                                 <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '0.5rem' }}>
                                     💰 配当の推移 (5年)
                                 </h3>
-                                <div style={{
-                                    display: 'flex', alignItems: 'flex-end', gap: '8px',
-                                    height: '180px', padding: '10px',
-                                    overflowX: 'auto', background: '#1e293b', borderRadius: '8px',
-                                    border: '1px solid #334155'
-                                }}>
-                                    {history.map((h: any, i: number) => {
-                                        const heightPct = maxVal > 0 ? (h.dividend_amount / maxVal) * 100 : 0;
-                                        return (
-                                            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: '40px', flex: 1 }}>
-                                                <span style={{ fontSize: '0.75rem', color: '#cbd5e1', marginBottom: '4px', fontWeight: 'bold' }}>{h.dividend_amount}</span>
-                                                <div style={{
-                                                    width: '100%',
-                                                    height: `${Math.max(heightPct, 2)}%`, // at least 2% visible
-                                                    background: h.is_forecast ?
-                                                        'repeating-linear-gradient(45deg, #10b981, #10b981 10px, #059669 10px, #059669 20px)' : // Striped for forecast
-                                                        '#10b981',
-                                                    borderRadius: '4px 4px 0 0',
-                                                    opacity: h.is_forecast ? 0.8 : 1
-                                                }}></div>
-                                                <span style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '6px', whiteSpace: 'nowrap', transform: 'rotate(-0deg)' }}>
-                                                    {h.period.split('.')[0]}
-                                                    <br />
-                                                    <span style={{ fontSize: '0.6rem' }}>({h.period.split('.')[1]})</span>
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                <DividendChart history={history} />
                                 <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem', textAlign: 'right' }}>
                                     ※ 棒グラフの縞模様は「予想」を示します
                                 </p>

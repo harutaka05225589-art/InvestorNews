@@ -4,6 +4,7 @@ import requests
 import tempfile
 import json
 import sqlite3
+import datetime
 import google.generativeai as genai
 from database import get_db_connection
 from dotenv import load_dotenv
@@ -278,9 +279,9 @@ def process_revisions():
                     print(f"  -> X Post SKIPPED (Already tweeted at {row['tweeted_at']})")
                 else:
                     # Check for duplicate tweet for same ticker TODAY (Prevent multiple tweets for same company)
-                    today_str = datetime.now().strftime('%Y-%m-%d')
-                    cursor.execute("SELECT id FROM revisions WHERE ticker = ? AND tweeted_at LIKE ? LIMIT 1", (ticker, f"{today_str}%"))
-                    existing_tweet = cursor.fetchone()
+                    today_str = datetime.datetime.now().strftime('%Y-%m-%d')
+                    c.execute("SELECT id FROM revisions WHERE ticker = ? AND tweeted_at LIKE ? LIMIT 1", (ticker, f"{today_str}%"))
+                    existing_tweet = c.fetchone()
                     
                     if existing_tweet:
                          print(f"  -> X Post SKIPPED (Already tweeted for ticker {ticker} today)")
@@ -339,7 +340,6 @@ def process_revisions():
 
                             # Date Check: Only Tweet if Revision Date is TODAY
                             # (Prevents spamming X when backfilling old data)
-                            import datetime
                             today_str = datetime.date.today().strftime('%Y-%m-%d')
                             rev_date = row['revision_date'] # String YYYY-MM-DD
                             

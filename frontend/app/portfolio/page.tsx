@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
 
 interface Transaction {
@@ -664,15 +665,17 @@ export default function PortfolioPage() {
                                     ) : (
                                         holdings.map(h => (
                                             <tr key={h.id} style={{ borderBottom: '1px solid #334155' }}>
-                                                <td style={{ padding: '0.8rem 0.5rem', fontWeight: 'bold' }}>
-                                                    {h.name ? (
-                                                        <>
-                                                            <div style={{ fontSize: '1em' }}>{h.ticker}</div>
-                                                            <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{h.name}</div>
-                                                        </>
-                                                    ) : (
-                                                        h.ticker
-                                                    )}
+                                                <td style={{ padding: 0, fontWeight: 'bold' }}>
+                                                    <Link href={`/stocks/${h.ticker}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '0.8rem 0.5rem' }} className="hover:opacity-75">
+                                                        {h.name ? (
+                                                            <>
+                                                                <div style={{ fontSize: '1em', color: '#38bdf8' }}>{h.ticker}</div>
+                                                                <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{h.name}</div>
+                                                            </>
+                                                        ) : (
+                                                            <span style={{ color: '#38bdf8' }}>{h.ticker}</span>
+                                                        )}
+                                                    </Link>
                                                 </td>
                                                 <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>
                                                     <span style={{
