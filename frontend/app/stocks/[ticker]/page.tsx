@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getRevisionsByTicker, getDividendHistory, getLatestDividend } from '@/lib/db';
+import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile } from '@/lib/db';
 import DividendChart from '@/components/DividendChart';
 
 type Props = {
@@ -11,27 +11,22 @@ export default async function StockPage({ params }: Props) {
     const { ticker } = await params;
     const decodedTicker = decodeURIComponent(ticker).toUpperCase();
 
-    // 1. Try to find the latest revision
-    // Fetch 1 latest revision
-    const revisions = getRevisionsByTicker(decodedTicker, 1);
-
-    if (revisions && revisions.length > 0) {
-        // Redirect to the latest revision page
-        const latestId = revisions[0].id; // id is string or number? db helper usually returns basic types.
-        redirect(`/revisions/${latestId}`);
-    }
-
-    // 2. If no revision found, Fallback: Show Dividend History
-    // Get Company Name
+    // 1. Fetch Basic Data
     const divInfo = getLatestDividend(decodedTicker);
     const companyName = divInfo.companyName || decodedTicker;
 
-    // Get History
+    // 2. Fetch Profile (Company Description)
+    const profile = getStockProfile(decodedTicker);
+
+    // 3. Fetch Latest AI Analysis (from Revisions)
+    const latestRevisions = getRevisionsByTicker(decodedTicker, 1);
+    const latestRevision = latestRevisions.length > 0 ? latestRevisions[0] : null;
+
+    // 4. Fetch Dividend History
     const history = getDividendHistory(decodedTicker);
-    // history object: { period: string, dividend_amount: number, is_forecast: number }
 
     return (
-        <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
+        <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
             <Link href="/portfolio" style={{ color: '#94a3b8', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
                 &larr; ポートフォリオに戻る
             </Link>
@@ -46,17 +41,92 @@ export default async function StockPage({ params }: Props) {
                         }}>
                             {decodedTicker}
                         </span>
+                        {profile?.sector && (
+                            <span style={{
+                                background: '#3b82f6', color: '#fff', padding: '0.2rem 0.6rem',
+                                borderRadius: '4px', fontSize: '0.8rem'
+                            }}>
+                                {profile.sector}
+                            </span>
+                        )}
                     </div>
                     <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem', lineHeight: 1.4 }}>
                         {companyName}
                     </h1>
-                    <p style={{ color: '#94a3b8' }}>直近の業績修正情報はありませんが、過去の配当履歴を表示します。</p>
                 </div>
 
                 <div style={{ padding: '2rem' }}>
+                    {/* 1. Company Profile */}
+                    {profile?.description ? (
+                        <div style={{ marginBottom: '3rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🏢 企業概要
+                            </h3>
+                            <p style={{ lineHeight: '1.8', color: '#cbd5e1' }}>
+                                {profile.description}
+                            </p>
+                        </div>
+                    ) : (
+                        <div style={{ marginBottom: '3rem', padding: '1.5rem', background: '#334155', borderRadius: '8px' }}>
+                            <p style={{ color: '#94a3b8' }}>
+                                企業情報はまだ生成されていません。<br />
+                                次回のデータ更新時に自動生成されます。
+                            </p>
+                        </div>
+                    )}
+
+                    {/* 2. Latest AI Analysis */}
+                    {latestRevision ? (
+                        <div style={{ marginBottom: '3rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🤖 最新のAI業績評価
+                                <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#94a3b8', marginLeft: 'auto' }}>
+                                    {new Date(latestRevision.revision_date).toLocaleDateString()} 更新
+                                </span>
+                            </h3>
+
+                            <div style={{ background: '#0f172a', padding: '1.5rem', borderRadius: '8px', border: '1px solid #334155' }}>
+                                {/* Rating Badge */}
+                                <div style={{ marginBottom: '1rem' }}>
+                                    {latestRevision.ai_rating && (
+                                        <span style={{
+                                            fontSize: '1.2rem', fontWeight: 'bold',
+                                            color: latestRevision.ai_rating === 'S' || latestRevision.ai_rating === 'A' ? '#facc15' : '#fff',
+                                            marginRight: '1rem'
+                                        }}>
+                                            評価: {latestRevision.ai_rating}
+                                        </span>
+                                    )}
+                                    <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                                        {latestRevision.title}
+                                    </span>
+                                </div>
+
+                                {/* Summary */}
+                                <p style={{ lineHeight: '1.8', color: '#cbd5e1' }}>
+                                    {latestRevision.ai_summary_text || "AIによる要約は生成されていません。"}
+                                </p>
+
+                                <div style={{ marginTop: '1rem' }}>
+                                    <Link href={`/revisions/${latestRevision.id}`} style={{ color: '#60a5fa', fontSize: '0.9rem', textDecoration: 'none' }}>
+                                        詳細レポートを見る &rarr;
+                                    </Link>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div style={{ marginBottom: '3rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                                🤖 最新のAI業績評価
+                            </h3>
+                            <p style={{ color: '#94a3b8' }}>直近の業績修正情報はありません。</p>
+                        </div>
+                    )}
+
+                    {/* 3. Dividend History */}
                     {history && history.length > 0 ? (
                         <div>
-                            <h3 style={{ fontSize: '1.4rem', fontWeight: 'bold', marginBottom: '1.5rem', borderBottom: '2px solid #334155', paddingBottom: '0.5rem' }}>
+                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                 💰 配当の推移 (5年)
                             </h3>
                             <DividendChart history={history} />

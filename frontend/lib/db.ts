@@ -339,3 +339,23 @@ export function getRevisionById(id: string | number) {
     }
 }
 
+// --- Stock Profile Helpers ---
+
+export interface StockProfile {
+    ticker: string;
+    company_name: string;
+    description: string | null;
+    sector: string | null;
+    website_url: string | null;
+    updated_at: string;
+}
+
+export function getStockProfile(ticker: string): StockProfile | undefined {
+    try {
+        const stmt = db.prepare('SELECT * FROM stock_profiles WHERE ticker = ?');
+        return stmt.get(ticker) as StockProfile | undefined;
+    } catch (e) {
+        console.error("Get stock profile error:", e);
+        return undefined;
+    }
+}
