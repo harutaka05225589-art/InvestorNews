@@ -18,11 +18,11 @@ if __name__ == "__main__":
     from send_calendar_alerts import send_calendar_alerts
     schedule.every().day.at("09:00").do(send_calendar_alerts)
 
-    # Promo Tweet (Daily at 08:00, 12:00, 18:00)
+    # Promo Tweet (Daily at 08:30, 12:00, 17:30)
     from send_promo import send_promo
-    schedule.every().day.at("08:00").do(send_promo)
+    schedule.every().day.at("08:30").do(send_promo)
     schedule.every().day.at("12:00").do(send_promo)
-    schedule.every().day.at("18:00").do(send_promo)
+    schedule.every().day.at("17:30").do(send_promo)
     
     # Also run once on startup to ensure data is fresh? 
     # Maybe not, as it takes time. Let's just wait for schedule.
