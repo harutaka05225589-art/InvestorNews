@@ -41,7 +41,7 @@ export default function DividendChart({ history }: { history: HistoryItem[] }) {
                         contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#fff' }}
                         itemStyle={{ color: '#4ade80' }}
                         cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                        formatter={(value: any, name: string, props: any) => [
+                        formatter={(value: any, name: any, props: any) => [
                             `${value}円 ${props.payload.is_forecast ? '(予想)' : ''}`,
                             '配当'
                         ]}
