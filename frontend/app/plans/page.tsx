@@ -1,3 +1,12 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    robots: {
+        index: false,
+        follow: false,
+    },
+};
+
 export default function PlansPage() {
     return (
         <div style={{ maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' }}>

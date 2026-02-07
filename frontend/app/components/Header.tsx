@@ -159,7 +159,7 @@ export default function Header() {
                     <Link href="/revisions" onClick={() => setMenuOpen(false)}>業績修正</Link>
                     <Link href="/portfolio" onClick={() => setMenuOpen(false)}>配当管理</Link>
                     <Link href="/alerts" onClick={() => setMenuOpen(false)}>通知リスト</Link>
-                    <Link href="/plans" onClick={() => setMenuOpen(false)}>プラン</Link>
+                    {/* <Link href="/plans" onClick={() => setMenuOpen(false)}>プラン</Link> */}
                     <Link href="/guide" onClick={() => setMenuOpen(false)}>使い方ガイド</Link>
                     <Link href="/introduction" onClick={() => setMenuOpen(false)}>投資家紹介</Link>
                     <Link href="/inquiry" onClick={() => setMenuOpen(false)}>お問い合わせ</Link>
