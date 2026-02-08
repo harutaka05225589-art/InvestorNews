@@ -1,8 +1,9 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats } from '@/lib/db';
+import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders } from '@/lib/db';
 import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
+import ShareholderList from '@/components/ShareholderList';
 
 type Props = {
     params: Promise<{ ticker: string }>;
@@ -28,6 +29,9 @@ export default async function StockPage({ params }: Props) {
 
     // 5. Fetch Financial History (NEW)
     const financialStats = getFinancialStats(decodedTicker);
+
+    // 6. Fetch Shareholder History (NEW)
+    const shareholders = getShareholders(decodedTicker);
 
     return (
         <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
