@@ -67,6 +67,25 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
+
+    # Financial Stats Table (Added 2026-02-08)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS financial_stats (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ticker TEXT NOT NULL,
+        period_type TEXT, -- 'annual' or 'quarter'
+        period_end TEXT, -- 'YYYY-MM'
+        sales REAL,
+        operating_profit REAL,
+        ordinary_profit REAL,
+        net_profit REAL,
+        eps REAL,
+        is_forecast BOOLEAN DEFAULT 0,
+        source TEXT,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(ticker, period_type, period_end)
+    )
+    ''')
     
     # Master Companies Table (Added 2026-02-08)
     c.execute('''
