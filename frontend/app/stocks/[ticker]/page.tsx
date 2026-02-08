@@ -228,7 +228,7 @@ export default async function StockPage({ params }: Props) {
                             </div>
                         )}
                         <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem', textAlign: 'right' }}>
-                            データソース: 株探 / TDnet
+                            データソース: TDnet / EDINET
                         </p>
                     </div>
 

@@ -109,7 +109,7 @@ export default function ShareholderList({ data }: ShareholderListProps) {
             </div>
 
             <div style={{ padding: '0.5rem 1rem', background: '#0f172a', textAlign: 'right', fontSize: '0.8rem', color: '#64748b' }}>
-                データの基準日: {selectedDate} (株探より取得)
+                データの基準日: {selectedDate}
             </div>
         </div>
     );
