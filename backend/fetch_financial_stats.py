@@ -113,7 +113,8 @@ def fetch_financial_stats(ticker):
                         continue
                 
                 def parse_val(idx):
-                    if idx not in idx_map: return 0.0
+                    if idx is None: return 0.0
+                    if idx >= len(cols): return 0.0
                     txt = cols[idx].get_text().strip()
                     if txt == "－" or not txt: return 0.0
                     # Remove commas
