@@ -11,7 +11,7 @@ def fetch_financial_stats(ticker):
     Returns: list of dicts
     """
     url = f"https://kabutan.jp/stock/finance?code={ticker}&mode=k"
-    print(f"Fetching financial stats for {ticker} from {url}")
+    # print(f"Fetching financial stats for {ticker} from {url}") # Reduce noise
     
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
@@ -48,9 +48,18 @@ def fetch_financial_stats(ticker):
                 elif "最終益" in h: idx_map['net'] = i_col
                 elif "修正1株益" in h or "１株益" in h: idx_map['eps'] = i_col
             
-            # Strict Column Check to avoid Sales/Profitability redundant tables
+            # Strict Column Check but also exclude useless/redundant tables
+            # Exclude "Correction History" tables which have "修正日" etc.
+            if "修正日" in h_cols or "修正方向" in h_cols:
+                continue
+
             # Annual/Quarter tables MUST have Net Profit (Profitability table has ROE/Margin instead)
             if 'period' not in idx_map or 'sales' not in idx_map or 'net' not in idx_map:
+                continue
+                
+            # Exclude Cumulative (累計) like Q3 Cumulative, and Half-Year (下期/上期)
+            # We want discrete 3-month quarters found in "Growthability" (成長性) table
+            if "累計" in prev_text or "下期" in prev_text or "上期" in prev_text:
                 continue
 
             # Determine Table Type
