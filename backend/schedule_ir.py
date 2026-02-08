@@ -24,8 +24,24 @@ if __name__ == "__main__":
     schedule.every().day.at("12:00").do(send_promo)
     schedule.every().day.at("17:30").do(send_promo)
     
-    # Also run once on startup to ensure data is fresh? 
-    # Maybe not, as it takes time. Let's just wait for schedule.
+    schedule.every().day.at("17:30").do(send_promo)
+    
+    # EDINET Financials (Daily Check twice)
+    from fetch_edinet_financials import fetch_edinet_financial_list, download_and_process_report
+    def daily_edinet_check():
+        print(f"Starting EDINET Daily Check at {datetime.datetime.now()}")
+        today = datetime.date.today()
+        # Check Today and Yesterday (just in case)
+        for i in range(2):
+            d_str = (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+            docs = fetch_edinet_financial_list(d_str)
+            for doc in docs:
+                code = doc.get('docTypeCode', '')
+                if code in ['120', '130', '140']:
+                    download_and_process_report(doc)
+    
+    schedule.every().day.at("09:30").do(daily_edinet_check) # Morning check for previous day/early reports
+    schedule.every().day.at("18:30").do(daily_edinet_check) # Evening check for today's reports
     
     while True:
         schedule.run_pending()
