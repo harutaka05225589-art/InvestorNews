@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import time
 import sqlite3
 import re
-from database import get_db_connection
+from database import get_db_connection, init_db
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
@@ -98,6 +98,8 @@ def fetch_company_info(ticker):
         return None
 
 def import_all_companies():
+    # Ensure DB tables exist
+    init_db()
     print("Starting brute-force import of companies (1300-9999)...")
     
     # Range of tickers
