@@ -15,7 +15,8 @@ def fetch_financial_stats(ticker):
     
     headers = {"User-Agent": "Mozilla/5.0"}
     try:
-        res = requests.get(url, headers=headers, timeout=15)
+        # Timeout: (connect, read)
+        res = requests.get(url, headers=headers, timeout=(5, 10))
         if res.status_code != 200:
             print(f"  Error: Status {res.status_code}")
             return []
