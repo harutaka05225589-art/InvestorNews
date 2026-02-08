@@ -26,41 +26,72 @@ def fetch_financial_stats(ticker):
         
         results = []
         
-        for table in tables:
+        for i_table, table in enumerate(tables):
             rows = table.find_all("tr")
             if not rows: continue
+            
+            header_text = rows[0].get_text().strip().replace("\n", " ")
+            
+            # Check preceding header for table type
+            # Removed "div" to avoid matching table wrappers and masking headers
+            prev = table.find_previous(["h2", "h3", "caption"])
+            prev_text = prev.get_text().strip() if prev else ""
             
             # Parse Headers First to find Date Column
             h_cols = [c.get_text().strip() for c in rows[0].find_all(["th", "td"])]
             idx_map = {}
-            for i, h in enumerate(h_cols):
-                if "決算期" in h: idx_map['period'] = i
-                elif "売上高" in h: idx_map['sales'] = i
-                elif "営業益" in h: idx_map['op'] = i
-                elif "経常益" in h: idx_map['ord'] = i
-                elif "最終益" in h: idx_map['net'] = i
-                elif "修正1株益" in h or "１株益" in h: idx_map['eps'] = i
+            for i_col, h in enumerate(h_cols):
+                if "決算期" in h: idx_map['period'] = i_col
+                elif "売上高" in h: idx_map['sales'] = i_col
+                elif "営業益" in h: idx_map['op'] = i_col
+                elif "経常益" in h: idx_map['ord'] = i_col
+                elif "最終益" in h: idx_map['net'] = i_col
+                elif "修正1株益" in h or "１株益" in h: idx_map['eps'] = i_col
             
-            # Must have at least Period and Sales
-            if 'period' not in idx_map or 'sales' not in idx_map:
+            # Strict Column Check to avoid Sales/Profitability redundant tables
+            # Annual/Quarter tables MUST have Net Profit (Profitability table has ROE/Margin instead)
+            if 'period' not in idx_map or 'sales' not in idx_map or 'net' not in idx_map:
                 continue
 
             # Determine Table Type
             period_type = None
-            if "四半期" in header_text or "３ヵ月" in header_text:
+            
+            # Explicit Preceding Header Check
+            if "3ヵ月" in prev_text or "四半期" in prev_text:
+                 period_type = 'quarter'
+            elif "業績推移" in prev_text or "通期" in prev_text:
+                 period_type = 'annual'
+            # Fallback: Check header row text
+            elif "四半期" in header_text or "３ヵ月" in header_text:
                  period_type = 'quarter'
             elif "通期" in header_text:
                  period_type = 'annual'
             else:
                 # Fallback Heuristic using Date Column
-                if len(rows) > 1:
-                    cols = rows[1].find_all(["td", "th"])
+                # Scan rows until we find a valid date
+                found_valid_date = False
+                for r_idx in range(1, min(6, len(rows))):
+                    cols = rows[r_idx].find_all(["td", "th"])
                     if len(cols) > idx_map['period']:
-                        first_date = cols[idx_map['period']].get_text().strip()
-                        if "-" in first_date: # e.g. 23.04-06
+                        date_txt = cols[idx_map['period']].get_text().strip()
+                        if not date_txt or date_txt == "－":
+                            continue
+                        
+                        found_valid_date = True
+                        if "-" in date_txt: # e.g. 23.04-06
                             period_type = 'quarter'
-                        else: # e.g. 2024.03
+                        else: # e.g. 2024.03 or 2024.03
                             period_type = 'annual'
+                        break
+                
+                if not found_valid_date:
+                    # Default to annual if no date found (or maybe skip?)
+                    # If we can't determine type, usually safer to skip or assume annual
+                    # But checking structure: usually "Year.Month" implies annual.
+                    period_type = 'annual'
+            
+            if not period_type:
+                continue
 
             for row in rows[1:]:
                 cols = row.find_all(["td", "th"])
@@ -126,12 +157,6 @@ def fetch_financial_stats(ticker):
                 net = parse_val(idx_map.get('net'))
                 eps = parse_val(idx_map.get('eps'))
                 
-                # Scale check: Kabutan Sales/Profits are usually in Million Yen (百万円)
-                # EPS is in Yen.
-                # We should store as is, but be aware for UI. 
-                # Actually Kabutan header says (百万円). Confirm.
-                # Yes, standard is Million Yen.
-                
                 results.append({
                     "ticker": ticker,
                     "period_type": period_type,
@@ -178,7 +203,6 @@ def save_financial_stats(stats):
     print(f"  Saved {count} financial records.")
 
 if __name__ == "__main__":
-    # Test
     ticker = "7203"
     data = fetch_financial_stats(ticker)
     save_financial_stats(data)
