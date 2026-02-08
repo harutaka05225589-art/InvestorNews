@@ -112,24 +112,36 @@ def download_and_parse_xbrl(doc_id):
         return None
 
 if __name__ == "__main__":
-    # Test Run
-    # 1. Fetch list for today or yesterday
-    date_str = (datetime.date.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d') # Yesterday (likely to have docs)
-    # date_str = "2025-05-15" # Expected big day? Or verify recent date.
+    # Test Run: Search backwards up to 7 days to find a report
+    today = datetime.date.today()
+    found_any = False
     
-    docs = fetch_edinet_financial_list(date_str)
-    
-    # 2. Filter for a Financial Report (Yuho/Tanshin)
-    target_doc = None
-    for d in docs:
-        code = d.get('docTypeCode', '')
-        # 120: Yuho, 130: Quarterly, 140: Tanshin
-        if code == '120' or code == '130' or code == '140':
-            print(f"Found candidate: {d.get('filerName')} - {d.get('docDescription')} ({d.get('docID')})")
-            target_doc = d
-            break
+    for i in range(1, 8):
+        date_str = (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+        print(f"\n--- Checking {date_str} ---")
+        
+        docs = fetch_edinet_financial_list(date_str)
+        if not docs:
+            print("  No docs found.")
+            continue
             
-    if target_doc:
-        download_and_parse_xbrl(target_doc.get('docID'))
-    else:
-        print("No financial reports found for this date.")
+        # Filter for a Financial Report (Yuho/Tanshin)
+        target_doc = None
+        for d in docs:
+            code = d.get('docTypeCode', '')
+            # 120: Yuho, 130: Quarterly, 140: Tanshin
+            if code == '120' or code == '130' or code == '140':
+                print(f"  Found candidate: {d.get('filerName')} - {d.get('docDescription')} ({d.get('docID')})")
+                target_doc = d
+                break
+        
+        if target_doc:
+            result = download_and_parse_xbrl(target_doc.get('docID'))
+            if result:
+                found_any = True
+                break # Stop after finding one successful parse
+        else:
+            print("  No financial reports (Yuho/Tanshin) found.")
+            
+    if not found_any:
+        print("\nCould not find any financial reports with XBRL in the last 7 days.")
