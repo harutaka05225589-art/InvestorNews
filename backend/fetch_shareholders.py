@@ -30,7 +30,8 @@ def fetch_shareholders(ticker):
             rows = table.find_all("tr")
             if not rows: continue
             header_text = rows[0].get_text().strip()
-            if "株主" in header_text and ("持株" in header_text or "株式数" in header_text or "比率" in header_text):
+            # Match "株主" AND ("持株" OR "持ち株" OR "株式数" OR "比率")
+            if "株主" in header_text and ("持株" in header_text or "持ち株" in header_text or "株式数" in header_text or "比率" in header_text):
                 target_table = table
                 break
         
