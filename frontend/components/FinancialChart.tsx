@@ -218,7 +218,7 @@ export default function FinancialChart({ data, ticker }: FinancialChartProps) {
                                 />
                                 <Tooltip
                                     contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
-                                    formatter={(value: number) => [
+                                    formatter={(value: any) => [
                                         selectedMetric === 'eps' ? `${value}円` : `${(value / 100).toLocaleString()}億円`,
                                         currentMetricInfo?.label
                                     ]}
