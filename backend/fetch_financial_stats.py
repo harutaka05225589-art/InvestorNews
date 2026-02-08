@@ -34,14 +34,12 @@ def fetch_financial_stats(ticker):
             
             # Determine Table Type
             period_type = None
-            if "売上高" in header_text and "経常益" in header_text and "最終益" in header_text:
-                # Could be Annual or Quarterly
-                # Check the first data row or look for "四半期" in nearby text
-                # Kabutan layout: 
-                # Table 1: 通期 (Annual) - has "予" for forecasts
-                # Table 2: 四半期 (Quarterly) - dates look like 23.04-06
-                
-                # Heuristic: Check date format of first row
+            if "四半期" in header_text or "３ヵ月" in header_text:
+                 period_type = 'quarter'
+            elif "通期" in header_text:
+                 period_type = 'annual'
+            else:
+                # Fallback Heuristic
                 if len(rows) > 1:
                     first_date = rows[1].find("td").get_text().strip()
                     if "-" in first_date: # e.g. 23.04-06
