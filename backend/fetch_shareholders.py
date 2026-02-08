@@ -42,7 +42,11 @@ def fetch_shareholders(ticker):
                 target_table = div.find("table")
         
         if not target_table:
-            print("  Shareholder table not found.")
+            print(f"  Shareholder table not found. (Checked {len(tables)} tables)")
+            for i, tbl in enumerate(tables):
+                rows = tbl.find_all("tr")
+                if rows:
+                    print(f"    Table {i} Header: {rows[0].get_text().strip()[:30]}...")
             return []
 
         results = []
