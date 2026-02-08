@@ -29,14 +29,20 @@ def send_promo():
         except Exception as e:
             print(f"Error reading lock file: {e}")
 
-    # 2. Post
+    # 2. Update lock file FIRST (to prevent race conditions)
+    # Even if posting fails, we wait another hour to be safe.
+    with open(LOCK_FILE, "w") as f:
+        f.write(datetime.datetime.now().isoformat())
+
+    # 3. Post
+    print("  [INFO] Sending promo tweet...")
     msg = random.choice(MESSAGES)
     tweet_id = post_to_x(msg)
     
-    # 3. Update lock file
     if tweet_id:
-        with open(LOCK_FILE, "w") as f:
-            f.write(datetime.datetime.now().isoformat())
+        print(f"  [SUCCESS] Tweet sent: {tweet_id}")
+    else:
+        print("  [ERROR] Failed to send tweet.")
             
 if __name__ == "__main__":
     send_promo()
