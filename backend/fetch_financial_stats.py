@@ -30,31 +30,8 @@ def fetch_financial_stats(ticker):
             rows = table.find_all("tr")
             if not rows: continue
             
-            header_text = rows[0].get_text().strip().replace("\n", " ")
-            
-            # Determine Table Type
-            period_type = None
-            if "四半期" in header_text or "３ヵ月" in header_text:
-                 period_type = 'quarter'
-            elif "通期" in header_text:
-                 period_type = 'annual'
-            else:
-                # Fallback Heuristic
-                if len(rows) > 1:
-                    first_date = rows[1].find("td").get_text().strip()
-                    if "-" in first_date: # e.g. 23.04-06
-                        period_type = 'quarter'
-                    else: # e.g. 2024.03
-                        period_type = 'annual'
-            
-            if not period_type:
-                continue
-                
-            # Parse Rows
-            # Headers: [Period, Sales, OP, Ord, Net, EPS, ...] (Indices vary)
-            # We need to map columns dynamically based on header text
+            # Parse Headers First to find Date Column
             h_cols = [c.get_text().strip() for c in rows[0].find_all(["th", "td"])]
-            
             idx_map = {}
             for i, h in enumerate(h_cols):
                 if "決算期" in h: idx_map['period'] = i
@@ -67,6 +44,23 @@ def fetch_financial_stats(ticker):
             # Must have at least Period and Sales
             if 'period' not in idx_map or 'sales' not in idx_map:
                 continue
+
+            # Determine Table Type
+            period_type = None
+            if "四半期" in header_text or "３ヵ月" in header_text:
+                 period_type = 'quarter'
+            elif "通期" in header_text:
+                 period_type = 'annual'
+            else:
+                # Fallback Heuristic using Date Column
+                if len(rows) > 1:
+                    cols = rows[1].find_all(["td", "th"])
+                    if len(cols) > idx_map['period']:
+                        first_date = cols[idx_map['period']].get_text().strip()
+                        if "-" in first_date: # e.g. 23.04-06
+                            period_type = 'quarter'
+                        else: # e.g. 2024.03
+                            period_type = 'annual'
 
             for row in rows[1:]:
                 cols = row.find_all(["td", "th"])
