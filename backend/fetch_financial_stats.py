@@ -203,6 +203,23 @@ def save_financial_stats(stats):
     print(f"  Saved {count} financial records.")
 
 if __name__ == "__main__":
-    ticker = "7203"
-    data = fetch_financial_stats(ticker)
-    save_financial_stats(data)
+    conn = get_db_connection()
+    c = conn.cursor()
+    
+    # Get all tickers
+    try:
+        tickers = [row['ticker'] for row in c.execute("SELECT ticker FROM companies")]
+    except:
+        # Fallback if companies table empty or missing
+        print("Companies table not found or empty. Using fallback list.")
+        tickers = ["7203", "1726", "8593", "5401", "9101", "8306"] # Add more or load from file
+
+    conn.close()
+
+    print(f"Starting financial stats update for {len(tickers)} companies...")
+    
+    for i, ticker in enumerate(tickers):
+        print(f"[{i+1}/{len(tickers)}] Processing {ticker}...")
+        data = fetch_financial_stats(ticker)
+        save_financial_stats(data)
+        time.sleep(1) # Be polite to Kabutan
