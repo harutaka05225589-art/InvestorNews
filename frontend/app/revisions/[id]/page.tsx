@@ -87,12 +87,15 @@ export default async function RevisionPage({ params }: Props) {
                 {/* Header */}
                 <div style={{ background: '#0f172a', padding: '2rem', borderBottom: '1px solid #334155' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-                        <span style={{
-                            background: '#334155', color: '#fff', padding: '0.2rem 0.6rem',
-                            borderRadius: '4px', fontSize: '0.9rem', fontFamily: 'monospace'
-                        }}>
-                            {revision.ticker}
-                        </span>
+                        <Link href={`/stocks/${revision.ticker}`} style={{ textDecoration: 'none' }}>
+                            <span style={{
+                                background: '#3b82f6', color: '#fff', padding: '0.2rem 0.6rem',
+                                borderRadius: '4px', fontSize: '0.9rem', fontFamily: 'monospace',
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem'
+                            }}>
+                                {revision.ticker} <span style={{ fontSize: '0.7rem' }}>↗</span>
+                            </span>
+                        </Link>
                         <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
                             {new Date(revision.revision_date).toLocaleDateString()}
                         </span>
