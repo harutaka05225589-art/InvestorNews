@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import Link from 'next/link';
 import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions } from '@/lib/db';
 import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
