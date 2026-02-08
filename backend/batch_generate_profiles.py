@@ -48,12 +48,21 @@ def batch_generate_profiles():
             else:
                 stats = fetch_financial_stats(ticker)
                 save_financial_stats(stats)
-                
-                # Fetch Shareholders immediately after
-                shareholders = fetch_shareholders(ticker)
-                save_shareholders(shareholders)
-                
-                time.sleep(4) # Sleep only if scraped
+                time.sleep(2)
+
+            # Check Shareholders independently
+            check_sh_conn = get_db_connection()
+            check_sh_c = check_sh_conn.cursor()
+            chk_sh = check_sh_c.execute("SELECT 1 FROM stock_shareholders WHERE ticker = ? LIMIT 1", (ticker,)).fetchone()
+            check_sh_conn.close()
+
+            if chk_sh:
+                 print(f"  [SKIP] Shareholders already exist.")
+            else:
+                 print(f"Fetching shareholders for {ticker}...")
+                 shareholders = fetch_shareholders(ticker)
+                 save_shareholders(shareholders)
+                 time.sleep(2)
             
         except Exception as e:
             print(f"  Finance Stats Error: {e}")
