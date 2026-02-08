@@ -68,6 +68,17 @@ def init_db():
     )
     ''')
     
+    # Master Companies Table (Added 2026-02-08)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS companies (
+        ticker TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        market TEXT,
+        sector TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+    ''')
+    
     # Notifications Table
     c.execute('''
     CREATE TABLE IF NOT EXISTS notifications (

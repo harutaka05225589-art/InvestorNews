@@ -117,12 +117,14 @@ def fetch_financial_stats(ticker):
                     if idx >= len(cols): return 0.0
                     txt = cols[idx].get_text().strip()
                     if txt == "－" or not txt: return 0.0
-                    # Remove commas
-                    # Handle "赤字", "黒字" etc? Usually numbers.
-                    # Sometimes "－"
+                    
+                    # Handle negative symbols (▲, −)
+                    txt = txt.replace("▲", "-").replace("−", "-") # Replace full-width minus if any
+                    
                     try:
-                        val = float(re.sub(r'[^\d\.-]', '', txt))
-                        return val
+                        # Remove everything except digits, minus, dot
+                        val_str = re.sub(r'[^\d\.-]', '', txt)
+                        return float(val_str)
                     except:
                         return 0.0
 

@@ -8,9 +8,13 @@ def backfill_financials():
     conn = get_db_connection()
     c = conn.cursor()
     
-    # Get all tickers from revisions (active companies)
-    print("Fetching tickers list from revisions...")
-    tickers = [row['ticker'] for row in c.execute("SELECT DISTINCT ticker FROM revisions").fetchall()]
+    # Get all tickers from companies table (Full Market)
+    print("Fetching tickers list from companies (Full Market)...")
+    tickers = [row['ticker'] for row in c.execute("SELECT ticker FROM companies ORDER BY ticker").fetchall()]
+    # Fallback if companies empty?
+    if not tickers:
+        print("Warning: companies table empty. Fallback to revisions.")
+        tickers = [row['ticker'] for row in c.execute("SELECT DISTINCT ticker FROM revisions").fetchall()]
     conn.close()
     
     print(f"Found {len(tickers)} tickers to check for financial stats.")

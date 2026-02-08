@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './Header.module.css';
 
+import SearchCompanies from './SearchCompanies'; // Added
+
 export default function Header() {
     const { user, loading, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -70,6 +72,12 @@ export default function Header() {
 
                 {/* Brand Logo */}
                 <Link href="/" className={styles.brand}>億り人・決算速報</Link>
+
+                {/* Search Bar (Centered or Left of Nav) */}
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', marginLeft: '1rem', marginRight: '1rem' }}>
+                    <SearchCompanies />
+                </div>
+
 
                 {/* Desktop Navigation (Hidden on Mobile) */}
                 <nav className={styles.desktopNav}>

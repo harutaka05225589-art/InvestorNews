@@ -456,3 +456,44 @@ export function getShareholders(ticker: string): Shareholder[] {
         return [];
     }
 }
+
+// --- Company Search Helpers (Added 2026-02-08) ---
+
+export interface CompanySearchResult {
+    ticker: string;
+    name: string;
+    market: string | null;
+    sector: string | null;
+}
+
+export function searchCompanies(query: string, limit: number = 10): CompanySearchResult[] {
+    try {
+        const stmt = db.prepare(`
+            SELECT ticker, name, market, sector 
+            FROM companies 
+            WHERE ticker LIKE ? OR name LIKE ?
+            ORDER BY 
+              CASE WHEN ticker = ? THEN 1 ELSE 2 END, -- Exact match first
+              ticker ASC
+            LIMIT ?
+        `);
+        const searchPattern = `%${query}%`;
+        return stmt.all(searchPattern, searchPattern, query, limit) as CompanySearchResult[];
+    } catch (e) {
+        // Table might not exist yet if migration didn't run?
+        // Fallback to searching ir_events/revisions
+        try {
+            const stmt = db.prepare(`
+                SELECT DISTINCT ticker, company_name as name, 'Unknown' as market, '' as sector
+                FROM ir_events
+                WHERE ticker LIKE ? OR company_name LIKE ?
+                LIMIT ?
+             `);
+            const searchPattern = `%${query}%`;
+            return stmt.all(searchPattern, searchPattern, limit) as CompanySearchResult[];
+        } catch (e2) {
+            console.error("Search companies error:", e);
+            return [];
+        }
+    }
+}
