@@ -3,6 +3,7 @@ import time
 from database import get_db_connection
 from fetch_company_profile import get_or_create_profile
 from fetch_financial_stats import fetch_financial_stats, save_financial_stats
+from fetch_shareholders import fetch_shareholders, save_shareholders
 
 def batch_generate_profiles():
     conn = get_db_connection()
@@ -32,17 +33,31 @@ def batch_generate_profiles():
         except Exception as e:
             print(f"  Profile Error: {e}")
 
-        # 2. Financial Stats (New)
+        # 2. Financial Stats (New) & Shareholders
         try:
-            # Check if stats exist first to avoid scraping every time (Optional optimization)
-            # For now, just fetch.
-            stats = fetch_financial_stats(ticker)
-            save_financial_stats(stats)
+            # Re-open connection for checking preventing "closed database" error
+            check_conn = get_db_connection()
+            check_c = check_conn.cursor()
+            
+            # Check if stats exist (Simple Resume Logic)
+            chk = check_c.execute("SELECT 1 FROM financial_stats WHERE ticker = ? LIMIT 1", (ticker,)).fetchone()
+            check_conn.close()
+            
+            if chk:
+                print(f"  [SKIP] Financial stats already exist.")
+            else:
+                stats = fetch_financial_stats(ticker)
+                save_financial_stats(stats)
+                
+                # Fetch Shareholders immediately after
+                shareholders = fetch_shareholders(ticker)
+                save_shareholders(shareholders)
+                
+                time.sleep(4) # Sleep only if scraped
+            
         except Exception as e:
             print(f"  Finance Stats Error: {e}")
-        
-        # Sleep to avoid hitting API rate limits (Gemini) AND Scraping limits
-        time.sleep(4) 
+ 
 
 if __name__ == "__main__":
     batch_generate_profiles()
