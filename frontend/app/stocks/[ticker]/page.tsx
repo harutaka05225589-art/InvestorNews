@@ -68,9 +68,18 @@ export default async function StockPage({ params }: Props) {
 
     return (
         <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
-            <Link href="/portfolio" style={{ color: '#94a3b8', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
-                &larr; ポートフォリオに戻る
-            </Link>
+            <div style={{ marginBottom: '2rem' }}>
+                <Link href="/portfolio" style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                    background: '#334155', color: '#fff',
+                    padding: '0.6rem 1.2rem', borderRadius: '8px',
+                    textDecoration: 'none', fontWeight: 'bold',
+                    transition: 'background 0.2s'
+                }}>
+                    <span>&larr;</span>
+                    <span>ポートフォリオに戻る</span>
+                </Link>
+            </div>
 
             {/* My Holdings Card (Unified View) */}
             {isHolder && (
