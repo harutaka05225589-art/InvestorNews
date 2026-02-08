@@ -166,6 +166,16 @@ export default async function StockPage({ params }: Props) {
                     )}
                 </div>
             </article>
+
+            {/* 5. Shareholder History (New) */}
+            <article style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden', marginTop: '2rem' }}>
+                <div style={{ padding: '2rem' }}>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        👥 大株主の推移
+                    </h3>
+                    <ShareholderList data={shareholders} />
+                </div>
+            </article>
         </div>
     );
 }
