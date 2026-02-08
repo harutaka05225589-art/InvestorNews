@@ -89,11 +89,15 @@ export default async function RevisionPage({ params }: Props) {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
                         <Link href={`/stocks/${revision.ticker}`} style={{ textDecoration: 'none' }}>
                             <span style={{
-                                background: '#3b82f6', color: '#fff', padding: '0.2rem 0.6rem',
-                                borderRadius: '4px', fontSize: '0.9rem', fontFamily: 'monospace',
-                                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem'
+                                background: '#3b82f6', color: '#fff',
+                                padding: '0.4rem 0.8rem', borderRadius: '6px',
+                                fontSize: '0.9rem', fontFamily: 'sans-serif', fontWeight: 'bold',
+                                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                                transition: 'background 0.2s'
                             }}>
-                                {revision.ticker} <span style={{ fontSize: '0.7rem' }}>↗</span>
+                                <span>📊 {revision.ticker} 銘柄詳細</span>
+                                <span style={{ fontSize: '0.8rem' }}>&rarr;</span>
                             </span>
                         </Link>
                         <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
