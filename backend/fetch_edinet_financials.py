@@ -126,22 +126,47 @@ if __name__ == "__main__":
             continue
             
         # Filter for a Financial Report (Yuho/Tanshin)
-        target_doc = None
+        # We want to find a standard company to verify tags (NetSales etc)
+        # Investment Trusts (like Fidelity) have different tags.
+        
+        candidates = []
         for d in docs:
             code = d.get('docTypeCode', '')
             # 120: Yuho, 130: Quarterly, 140: Tanshin
             if code == '120' or code == '130' or code == '140':
-                print(f"  Found candidate: {d.get('filerName')} - {d.get('docDescription')} ({d.get('docID')})")
-                target_doc = d
-                break
+                candidates.append(d)
         
-        if target_doc:
-            result = download_and_parse_xbrl(target_doc.get('docID'))
+        print(f"  Found {len(candidates)} financial report candidates.")
+        
+        # Try up to 3 candidates, preferably with a secCode (Ticker)
+        count = 0
+        for d in candidates:
+            sec_code = d.get('secCode')
+            submitter = d.get('filerName')
+            
+            # Skip Investment Trusts/Funds if possible (heuristics)
+            if '投信' in submitter or 'ファンド' in submitter:
+                continue
+                
+            # If secCode is missing, it's likely unlisted or fund
+            if not sec_code:
+                continue
+                
+            print(f"  Testing: {submitter} ({sec_code}) - {d.get('docDescription')}")
+            
+            result = download_and_parse_xbrl(d.get('docID'))
             if result:
-                found_any = True
-                break # Stop after finding one successful parse
-        else:
-            print("  No financial reports (Yuho/Tanshin) found.")
+                if result.get('sales') or result.get('net_profit'):
+                    print(f"  !!! SUCCESS !!! Found valid financial data.")
+                    found_any = True
+                    break # Success!
+                else:
+                    print("  Parsed, but key fields were empty (might be specific accounting standard).")
+            
+            count += 1
+            if count >= 3: break # Don't spam too much
+            
+        if found_any: break
             
     if not found_any:
-        print("\nCould not find any financial reports with XBRL in the last 7 days.")
+        print("\nCould not find any standard financial reports with parseable Sales/Profit in the last 7 days.")
