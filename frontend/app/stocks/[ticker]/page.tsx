@@ -1,6 +1,5 @@
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders } from '@/lib/db';
+import { cookies } from 'next/headers';
+import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions } from '@/lib/db';
 import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
 import ShareholderList from '@/components/ShareholderList';
@@ -12,6 +11,12 @@ type Props = {
 export default async function StockPage({ params }: Props) {
     const { ticker } = await params;
     const decodedTicker = decodeURIComponent(ticker).toUpperCase();
+
+    // 0. Fetch User ID (Mock/Cookie)
+    // TODO: Use actual auth
+    const cookieStore = await cookies();
+    const userIdCookie = cookieStore.get('userId');
+    const userId = userIdCookie ? parseInt(userIdCookie.value, 10) : 1;
 
     // 1. Fetch Basic Data
     const divInfo = getLatestDividend(decodedTicker);
@@ -27,17 +32,82 @@ export default async function StockPage({ params }: Props) {
     // 4. Fetch Dividend History
     const history = getDividendHistory(decodedTicker);
 
-    // 5. Fetch Financial History (NEW)
+    // 5. Fetch Financial History
     const financialStats = getFinancialStats(decodedTicker);
 
-    // 6. Fetch Shareholder History (NEW)
+    // 6. Fetch Shareholder History
     const shareholders = getShareholders(decodedTicker);
+
+    // 7. Fetch Portfolio Holdings (NEW)
+    const transactions = getPortfolioTransactions(userId);
+    const myTransactions = transactions.filter(t => t.ticker === decodedTicker);
+
+    // Calculate Holdings
+    let totalShares = 0;
+    let totalInvested = 0;
+    // Separate by account? For simple view, aggregate.
+    // Or show breakdown. Let's show aggregate for now.
+
+    myTransactions.forEach(t => {
+        if (t.shares > 0) { // Buy
+            totalShares += t.shares;
+            totalInvested += t.shares * t.price;
+        } else { // Sell
+            const sold = Math.abs(t.shares);
+            totalShares -= sold;
+            // Reduce invested proportionally? Or FIFO?
+            // Simple approach: Avg price stays same
+            const avg = totalShares > 0 ? totalInvested / (totalShares + sold) : 0; // Pre-sell avg
+            totalInvested = totalShares * avg;
+        }
+    });
+
+    const avgPrice = totalShares > 0 ? totalInvested / totalShares : 0;
+    const isHolder = totalShares > 0;
 
     return (
         <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
             <Link href="/portfolio" style={{ color: '#94a3b8', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
                 &larr; ポートフォリオに戻る
             </Link>
+
+            {/* My Holdings Card (Unified View) */}
+            {isHolder && (
+                <div style={{
+                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                    borderRadius: '12px',
+                    border: '1px solid #3b82f6',
+                    padding: '1.5rem',
+                    marginBottom: '2rem',
+                    boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.2)'
+                }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '1rem', color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        💰 あなたの保有状況
+                    </h3>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.5rem' }}>
+                        <div>
+                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>保有株数</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>{totalShares.toLocaleString()}株</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>平均取得単価</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>@{Math.round(avgPrice).toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>投資総額</div>
+                            <div style={{ fontSize: '1.4rem', fontWeight: 'bold' }}>¥{Math.round(totalInvested).toLocaleString()}</div>
+                        </div>
+                        {divInfo.amount > 0 && (
+                            <div>
+                                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>受取配当予想(年)</div>
+                                <div style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#4ade80' }}>
+                                    ¥{Math.round(totalShares * divInfo.amount).toLocaleString()}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <article style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden', minHeight: '300px' }}>
                 {/* Header */}
