@@ -232,14 +232,13 @@ export default function FinancialChart({ data, ticker }: FinancialChartProps) {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div style={{
-                            height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: #64748b' }}>
+                        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
                             四半期データがありません
                         </div>
-            )}
-        </div>
-    )
-}
+                    )}
+                </div>
+            )
+            }
         </div >
     );
 }
