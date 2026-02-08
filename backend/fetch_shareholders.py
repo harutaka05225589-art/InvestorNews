@@ -57,7 +57,23 @@ def fetch_shareholders(ticker):
         # Row 1: Headers
         # Row 2+: Data
         
-        today = datetime.date.today().strftime("%Y-%m-%d")
+        # Try to find "As Of" date
+        # Pattern: 2024年9月30日現在 or 24/09/30現在
+        # Also Kabutan might have: 【2024年9月30日現在】
+        page_text = soup.get_text()
+        date_match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日現在', page_text)
+        
+        entry_date = datetime.date.today().strftime("%Y-%m-%d")
+        if date_match:
+            y, m, d = date_match.groups()
+            entry_date = f"{y}-{int(m):02d}-{int(d):02d}"
+            print(f"  Found shareholder date: {entry_date}")
+        else:
+             # Fallback: check for YY/MM format?
+             # But default to Today is safer than wrong guess.
+             # However, if we run this daily, we might create duplicate entries for same "real" date.
+             # Ideally we want the "real" underlying date.
+             pass
         
         for i, row in enumerate(rows[1:]):
             cols = row.find_all(["td", "th"])
@@ -79,7 +95,9 @@ def fetch_shareholders(ticker):
                 
                 # Ratio
                 try:
-                    ratio = float(texts[2].replace('%', ''))
+                    ratio_str = texts[2].replace('%', '')
+                    if not ratio_str: ratio = 0.0
+                    else: ratio = float(ratio_str)
                 except:
                     ratio = 0.0
                 
@@ -88,7 +106,7 @@ def fetch_shareholders(ticker):
                 
                 results.append({
                     "ticker": ticker,
-                    "date": today,
+                    "date": entry_date,
                     "shareholder_name": name,
                     "share_count": count_str,
                     "share_ratio": ratio,
