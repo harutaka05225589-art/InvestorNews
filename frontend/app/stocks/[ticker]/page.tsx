@@ -140,6 +140,10 @@ export default async function StockPage({ params }: Props) {
                     </div>
                     <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem', lineHeight: 1.4 }}>
                         {companyName}
+                        <a href={`https://finance.yahoo.co.jp/quote/${decodedTicker}.T`} target="_blank" rel="noopener noreferrer"
+                            style={{ fontSize: '0.9rem', color: '#94a3b8', marginLeft: '1rem', textDecoration: 'none', border: '1px solid #334155', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                            Yahoo! <span style={{ fontSize: '0.8rem' }}>↗</span>
+                        </a>
                     </h1>
                 </div>
 

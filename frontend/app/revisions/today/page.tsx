@@ -229,9 +229,9 @@ export default function TodayRevisionsPage() {
                                     <tr key={rev.id}>
                                         <td style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#ccc' }}>{rev.revision_date}</td>
                                         <td>
-                                            <a href={`https://finance.yahoo.co.jp/quote/${rev.ticker}.T`} target="_blank" rel="noopener noreferrer" className={styles.tickerLink}>
+                                            <Link href={`/stocks/${rev.ticker}`} className={styles.tickerLink} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}>
                                                 {rev.ticker}
-                                            </a>
+                                            </Link>
                                         </td>
                                         <td style={{ minWidth: '250px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

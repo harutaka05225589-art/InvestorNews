@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import styles from '../revisions.module.css';
 
 // Revisions Ranking Page (Weekly Price Surge)
@@ -75,9 +76,9 @@ export default function RevisionRankingPage() {
                                         </span>
                                     </td>
                                     <td>
-                                        <a href={`https://finance.yahoo.co.jp/quote/${item.ticker}.T`} target="_blank" rel="noopener noreferrer" className={styles.tickerLink}>
+                                        <Link href={`/stocks/${item.ticker}`} className={styles.tickerLink} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}>
                                             {item.ticker}
-                                        </a>
+                                        </Link>
                                     </td>
                                     <td>{item.name}</td>
                                     <td style={{ fontWeight: 'bold', color: item.change_pct > 0 ? '#4ade80' : '#f87171' }}>
