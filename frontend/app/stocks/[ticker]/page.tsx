@@ -196,7 +196,7 @@ export default async function StockPage({ params }: Props) {
 
                                 {/* Summary */}
                                 <p style={{ lineHeight: '1.8', color: '#cbd5e1' }}>
-                                    {latestRevision.ai_summary_text || "AIによる要約は生成されていません。"}
+                                    {latestRevision.ai_summary || "AIによる要約は生成されていません。"}
                                 </p>
 
                                 <div style={{ marginTop: '1rem' }}>
