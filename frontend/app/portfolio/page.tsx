@@ -134,7 +134,7 @@ export default function PortfolioPage() {
             const res = await fetch(`/api/search/companies?q=${encodeURIComponent(q)}`);
             if (res.ok) {
                 const data = await res.json();
-                setSuggestions(data.companies);
+                setSuggestions(data.results || []);
                 setShowSuggestions(true);
             }
         } catch (e) {
