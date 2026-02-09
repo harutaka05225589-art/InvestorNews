@@ -251,11 +251,14 @@ def update_dividend_months():
                     print(f"  Scraped: Dividend={amount}", flush=True)
             
             if updates:
-                sql = f"UPDATE revisions SET {', '.join(updates)} WHERE id = ?"
-                params.append(rev_id)
+                # Update ALL recent revisions for this ticker to ensure getLatestDividend picks it up
+                # regardless of which specific revision it selects (e.g. one with forecast vs one without)
+                sql = f"UPDATE revisions SET {', '.join(updates)} WHERE ticker = ? AND id IN (SELECT id FROM revisions WHERE ticker = ? ORDER BY revision_date DESC LIMIT 50)"
+                params.append(ticker)
+                params.append(ticker)
                 c.execute(sql, params)
                 conn.commit()
-                print("  Updated DB.", flush=True)
+                print("  Updated DB (Top 50 revisions).", flush=True)
             else:
                 print("  No updates needed (Data matches or partial scrape failed).", flush=True)
         else:
