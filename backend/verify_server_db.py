@@ -23,7 +23,18 @@ def check_db():
                     FROM revisions 
                     WHERE ticker = '1726' 
                     ORDER BY revision_date DESC 
-                    LIMIT 5
+                    LIMIT 2
+                """)
+                for r in rows: print(r)
+
+                # Check 9251
+                print("Checking 9251 Revisions (Top 5):")
+                c.execute("""
+                    SELECT id, revision_date, title, dividend_rights_month, dividend_payment_month, dividend_forecast_annual
+                    FROM revisions 
+                    WHERE ticker = '9251' 
+                    ORDER BY revision_date DESC 
+                    LIMIT 2
                 """)
                 rows = c.fetchall()
                 for r in rows:
