@@ -486,12 +486,18 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
     if (results.length === 0) {
         try {
             const stmt = db.prepare(`
-                SELECT DISTINCT ticker, company_name as name, 'Unknown' as market, '' as sector
-                FROM ir_events
-                WHERE ticker LIKE ? OR company_name LIKE ?
+                SELECT ticker, name, 'Unknown' as market, '' as sector FROM (
+                    SELECT DISTINCT ticker, company_name as name FROM ir_events
+                    WHERE ticker LIKE ? OR company_name LIKE ?
+                    UNION
+                    SELECT DISTINCT ticker, company_name as name FROM revisions
+                    WHERE ticker LIKE ? OR company_name LIKE ?
+                )
+                ORDER BY ticker
                 LIMIT ?
              `);
-            results = stmt.all(searchPattern, searchPattern, limit) as CompanySearchResult[];
+            const searchPattern = `%${query}%`;
+            results = stmt.all(searchPattern, searchPattern, searchPattern, searchPattern, limit) as CompanySearchResult[];
         } catch (e2) {
             console.error("Search fallback error:", e2);
         }
