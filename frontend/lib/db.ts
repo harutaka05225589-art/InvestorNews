@@ -169,7 +169,7 @@ export function getLatestDividend(ticker: string): DividendInfo {
         return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
     }
 }
-}
+
 
 export function getDividendHistory(ticker: string) {
     try {
