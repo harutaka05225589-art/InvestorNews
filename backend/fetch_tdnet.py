@@ -141,9 +141,25 @@ def fetch_tdnet_revisions(target_date=None, trigger_ai=True):
                         #
                         # The AI Analysis is triggered at the end of this script.
                         
+
                         # (Optional) We could still send LINE here if we want instant alerts for ALL?
                         # But let's unify to AI for quality control.
                         
+                        # --- NEW: Auto-Add to Companies Master Table ---
+                        # If a company is in TDnet, it should be searchable.
+                        # This progressively heals the 'companies' table for missing tickers.
+                        try:
+                            c.execute("""
+                                INSERT INTO companies (ticker, name, market, sector, created_at)
+                                VALUES (?, ?, 'TDnet', '', CURRENT_TIMESTAMP)
+                                ON CONFLICT(ticker) DO UPDATE SET
+                                    name=excluded.name,
+                                    market=excluded.market
+                            """, (ticker, name_text))
+                            # print(f"    -> Updated companies master for {ticker}")
+                        except Exception as e_comp:
+                            print(f"    Warning: Could not auto-add to companies table: {e_comp}")
+
                         pass
 
                     # count += 1 
