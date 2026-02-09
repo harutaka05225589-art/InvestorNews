@@ -463,6 +463,10 @@ export interface CompanySearchResult {
 }
 
 export function searchCompanies(query: string, limit: number = 10): CompanySearchResult[] {
+    let results: CompanySearchResult[] = [];
+    const searchPattern = `%${query}%`;
+
+    // 1. Try "companies" master table
     try {
         const stmt = db.prepare(`
             SELECT ticker, name, market, sector 
@@ -473,11 +477,13 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
               ticker ASC
             LIMIT ?
         `);
-        const searchPattern = `%${query}%`;
-        return stmt.all(searchPattern, searchPattern, query, limit) as CompanySearchResult[];
+        results = stmt.all(searchPattern, searchPattern, query, limit) as CompanySearchResult[];
     } catch (e) {
-        // Table might not exist yet if migration didn't run?
-        // Fallback to searching ir_events/revisions
+        // Table might not exist yet, ignore
+    }
+
+    // 2. Fallback to "ir_events" if no results found (or table missing)
+    if (results.length === 0) {
         try {
             const stmt = db.prepare(`
                 SELECT DISTINCT ticker, company_name as name, 'Unknown' as market, '' as sector
@@ -485,11 +491,11 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
                 WHERE ticker LIKE ? OR company_name LIKE ?
                 LIMIT ?
              `);
-            const searchPattern = `%${query}%`;
-            return stmt.all(searchPattern, searchPattern, limit) as CompanySearchResult[];
+            results = stmt.all(searchPattern, searchPattern, limit) as CompanySearchResult[];
         } catch (e2) {
-            console.error("Search companies error:", e);
-            return [];
+            console.error("Search fallback error:", e2);
         }
     }
+
+    return results;
 }
