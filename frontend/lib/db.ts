@@ -6,6 +6,7 @@ import { Investor, NewsItem } from './types';
 // Robust DB Path Resolution
 const possiblePaths = [
     path.join(process.cwd(), 'investor_news.db'),
+    path.join(process.cwd(), '..', 'investor_news.db'), // Check parent directory (Root)
     path.join(process.cwd(), 'frontend', 'investor_news.db')
 ];
 
