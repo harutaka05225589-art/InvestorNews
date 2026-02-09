@@ -94,11 +94,12 @@ export interface DividendInfo {
 
 export function getLatestDividend(ticker: string): DividendInfo {
     try {
-        // 1. Try Revisions (Primary Source for "Revised Forecasts")
+        // 1. Try Revisions (Primary Source)
+        // Relaxed query: match if EITHER forecast OR months are present
         const stmt = db.prepare(`
             SELECT dividend_forecast_annual, dividend_rights_month, dividend_payment_month, company_name
             FROM revisions 
-            WHERE ticker = ? AND dividend_forecast_annual IS NOT NULL
+            WHERE ticker = ? AND (dividend_forecast_annual IS NOT NULL OR dividend_rights_month IS NOT NULL)
             ORDER BY revision_date DESC, id DESC
             LIMIT 1
         `);
@@ -109,56 +110,49 @@ export function getLatestDividend(ticker: string): DividendInfo {
             company_name: string
         } | undefined;
 
-        if (row) {
-            return {
-                amount: row.dividend_forecast_annual || 0,
-                rightsMonth: row.dividend_rights_month,
-                paymentMonth: row.dividend_payment_month,
-                companyName: row.company_name
-            };
-        }
+        let amount = row?.dividend_forecast_annual || 0;
+        let rightsMonth = row?.dividend_rights_month || null;
+        let paymentMonth = row?.dividend_payment_month || null;
+        let companyName = row?.company_name || null;
 
-        // 2. Fallback: Check Dividend History (Secondary Source)
-        // Look for the latest "Forecast" (is_forecast=1)
-        try {
-            const histStmt = db.prepare(`
-                SELECT dividend_amount 
-                FROM dividend_history 
-                WHERE ticker = ? AND is_forecast = 1
-                ORDER BY period DESC 
-                LIMIT 1
-            `);
-            const histRow = histStmt.get(ticker) as { dividend_amount: number } | undefined;
-
-            if (histRow) {
-                // We found a forecast amount!
-                // We still need Company Name if possible
-                let companyName = null;
-                try {
-                    const nameStmt = db.prepare('SELECT company_name FROM stock_profiles WHERE ticker = ?');
-                    const nameRow = nameStmt.get(ticker) as { company_name: string } | undefined;
-                    if (nameRow) companyName = nameRow.company_name;
-                } catch (e) { }
-
-                // If not in profile, try ir_events
-                if (!companyName) {
-                    try {
-                        const nameStmt2 = db.prepare('SELECT company_name FROM ir_events WHERE ticker = ? LIMIT 1');
-                        const nameRow2 = nameStmt2.get(ticker) as { company_name: string } | undefined;
-                        if (nameRow2) companyName = nameRow2.company_name;
-                    } catch (e) { }
+        // 2. Fallback for AMOUNT: Check Dividend History if revision amount is missing
+        if (!amount) {
+            try {
+                const histStmt = db.prepare(`
+                    SELECT dividend_amount 
+                    FROM dividend_history 
+                    WHERE ticker = ? AND is_forecast = 1
+                    ORDER BY period DESC 
+                    LIMIT 1
+                `);
+                const histRow = histStmt.get(ticker) as { dividend_amount: number } | undefined;
+                if (histRow) {
+                    amount = histRow.dividend_amount;
                 }
-
-                return {
-                    amount: histRow.dividend_amount,
-                    rightsMonth: null, // History doesn't have rights month stored explicitly usually
-                    paymentMonth: null,
-                    companyName: companyName
-                };
-            }
-        } catch (e) {
-            console.error("Fallback dividend history error:", e);
+            } catch (e) { }
         }
+
+        // 3. Fallback for NAME if still missing
+        if (!companyName) {
+            try {
+                const nameStmt2 = db.prepare('SELECT company_name FROM stock_profiles WHERE ticker = ?');
+                const nameRow2 = nameStmt2.get(ticker) as { company_name: string } | undefined;
+                if (nameRow2) companyName = nameRow2.company_name;
+                else {
+                    const nameStmt3 = db.prepare('SELECT company_name FROM ir_events WHERE ticker = ? LIMIT 1');
+                    const nameRow3 = nameStmt3.get(ticker) as { company_name: string } | undefined;
+                    if (nameRow3) companyName = nameRow3.company_name;
+                }
+            } catch (e) { }
+        }
+
+        return {
+            amount,
+            rightsMonth,
+            paymentMonth,
+            companyName
+        };
+
 
         // 3. Last Fallback: Just get name
         try {
@@ -174,6 +168,7 @@ export function getLatestDividend(ticker: string): DividendInfo {
         console.error("Get latest dividend error:", e);
         return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: null };
     }
+}
 }
 
 export function getDividendHistory(ticker: string) {
