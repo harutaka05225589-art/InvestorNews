@@ -159,7 +159,7 @@ export function getLatestDividend(ticker: string): DividendInfo {
             const nameStmt = db.prepare('SELECT company_name FROM ir_events WHERE ticker = ? LIMIT 1');
             const nameRow = nameStmt.get(ticker) as { company_name: string } | undefined;
             if (nameRow) {
-                return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: nameRow.company_name };
+                return { amount: 0, rightsMonth: null, paymentMonth: null, companyName: nameRow!.company_name };
             }
         } catch (e) { /* ignore */ }
 
