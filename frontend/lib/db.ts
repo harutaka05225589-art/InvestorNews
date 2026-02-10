@@ -505,3 +505,4 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
 
     return results;
 }
+
