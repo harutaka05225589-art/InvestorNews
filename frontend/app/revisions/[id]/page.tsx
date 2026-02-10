@@ -72,10 +72,23 @@ export default async function RevisionPage({ params }: Props) {
         return notFound();
     }
 
-    const isUpward = revision.is_upward === 1;
-    const bgColor = isUpward ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)';
-    const borderColor = isUpward ? '#22c55e' : '#ef4444';
-    const textColor = isUpward ? '#4ade80' : '#f87171';
+    const isUpward = revision.revision_rate_op > 0;
+    const isNeutral = !revision.revision_rate_op || revision.revision_rate_op === 0;
+
+    let bgColor, borderColor, textColor;
+    if (isNeutral) {
+        bgColor = 'rgba(148, 163, 184, 0.2)'; // Gray
+        borderColor = '#94a3b8';
+        textColor = '#cbd5e1';
+    } else if (isUpward) {
+        bgColor = 'rgba(59, 130, 246, 0.2)'; // Blue
+        borderColor = '#3b82f6';
+        textColor = '#60a5fa';
+    } else {
+        bgColor = 'rgba(239, 68, 68, 0.2)'; // Red
+        borderColor = '#ef4444';
+        textColor = '#f87171';
+    }
 
     return (
         <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
