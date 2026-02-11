@@ -28,6 +28,9 @@ export default function DisclaimerPage() {
 
             <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>運営者情報</h2>
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                    <img src="/profile_logo.jpg" alt="Rich Investor News Logo" style={{ width: '120px', height: '120px', borderRadius: '50%', border: '4px solid #3b82f6', objectFit: 'cover' }} />
+                </div>
                 <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '1rem' }}>
                     <tbody>
                         <tr style={{ borderBottom: '1px solid #334155' }}>
@@ -37,6 +40,19 @@ export default function DisclaimerPage() {
                         <tr style={{ borderBottom: '1px solid #334155' }}>
                             <th style={{ textAlign: 'left', padding: '1rem' }}>運営者</th>
                             <td style={{ padding: '1rem' }}>Investor News Operations</td>
+                        </tr>
+                        <tr style={{ borderBottom: '1px solid #334155' }}>
+                            <th style={{ textAlign: 'left', padding: '1rem' }}>公式SNS</th>
+                            <td style={{ padding: '1rem' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                    <a href="https://x.com/stock_calendar" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span>𝕏 (旧Twitter):</span> @stock_calendar
+                                    </a>
+                                    <span style={{ color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        <span style={{ color: '#00b900', fontWeight: 'bold' }}>LINE:</span> 公式アカウント準備中
+                                    </span>
+                                </div>
+                            </td>
                         </tr>
                         <tr style={{ borderBottom: '1px solid #334155' }}>
                             <th style={{ textAlign: 'left', padding: '1rem' }}>お問い合わせ</th>
