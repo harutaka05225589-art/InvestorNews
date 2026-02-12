@@ -1,6 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+// Define types if not already defined
+interface User {
+    id: number;
+    account_id: string; // Added
+    nickname: string;
+    email: string;
+    created_at: string;
+}
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './admin.module.css';
@@ -194,6 +202,7 @@ export default function AdminPage() {
                             <thead>
                                 <tr>
                                     <th>ニックネーム</th>
+                                    <th>Account ID</th>
                                     <th>Email</th>
                                     <th>登録日時</th>
                                 </tr>
@@ -202,6 +211,7 @@ export default function AdminPage() {
                                 {recentUsers.map((u, i) => (
                                     <tr key={i}>
                                         <td>{u.nickname}</td>
+                                        <td style={{ fontFamily: 'monospace' }}>@{u.account_id}</td>
                                         <td>{u.email}</td>
                                         <td>{new Date(u.created_at).toLocaleString()}</td>
                                     </tr>

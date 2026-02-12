@@ -133,10 +133,6 @@ export default function SettingsPage() {
                         <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.9rem', marginBottom: '0.3rem' }}>アカウントID</label>
                         <div style={{ fontFamily: 'monospace', color: '#cbd5e1', fontSize: '1.1rem' }}>@{user.accountId}</div>
                     </div>
-                    <div>
-                        <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.9rem', marginBottom: '0.3rem' }}>ユーザーID (会員No.)</label>
-                        <div style={{ fontFamily: 'monospace', color: '#64748b' }}>#{user.userId}</div>
-                    </div>
                 </div>
             </section >
 

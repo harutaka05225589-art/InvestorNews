@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         const notifCount = db.prepare('SELECT COUNT(*) as count FROM notifications').get() as { count: number };
 
         // Fetch recent users (Limit 5)
-        const recentUsers = db.prepare('SELECT nickname, email, created_at FROM users ORDER BY created_at DESC LIMIT 5').all();
+        const recentUsers = db.prepare('SELECT id, account_id, nickname, email, created_at FROM users ORDER BY created_at DESC LIMIT 10').all();
 
         return NextResponse.json({
             stats: {
