@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 type User = {
     id: number;
     userId: number;
+    accountId: string;
     nickname: string;
     email: string;
     plan?: string;
