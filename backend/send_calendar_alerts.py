@@ -11,6 +11,9 @@ def send_calendar_alerts():
     c = conn.cursor()
 
     try:
+        # Dictionary to aggregate messages: { line_id: { 'nickname': str, 'sections': [] } }
+        alerts_by_user = {}
+
         today = datetime.date.today()
         target_dates = [
             (today, "今日", "【決算発表】今日"),
@@ -56,10 +59,33 @@ def send_calendar_alerts():
                     line_id = user['line_user_id']
                     nickname = user['nickname'] or "ゲスト"
                     
-                    msg = f"{prefix} ({target_str}) は\n{company_name} ({ticker}) の決算発表日です！\n\n保有/ウォッチ銘柄の動向に注目しましょう。"
+                    if line_id not in alerts_by_user:
+                        alerts_by_user[line_id] = {
+                            'nickname': nickname,
+                            'sections': []
+                        }
                     
-                    print(f"  -> Sending LINE to {nickname} (ID: ...{line_id[-4:]}) for {ticker}")
-                    send_line_push(line_id, msg)
+                    # Create a section for this date if it doesn't exist
+                    # We want to group by date label inside the message
+                    # But simpler: just append "【明日】社名 (Code)" lines
+                    alerts_by_user[line_id]['sections'].append(f"{prefix} ({target_str}): {company_name} ({ticker})")
+
+        # 3. Send aggregated messages
+        print(f"Aggregated alerts for {len(alerts_by_user)} users.")
+        
+        for line_id, data in alerts_by_user.items():
+            nickname = data['nickname']
+            sections = data['sections']
+            
+            if not sections:
+                continue
+                
+            # Join all alerts
+            body = "\n".join(sections)
+            msg = f"📅 決算カレンダー通知\n\n{body}\n\n保有/ウォッチ銘柄の動向に注目しましょう。"
+            
+            print(f"  -> Sending LINE to {nickname} (ID: ...{line_id[-4:]}) with {len(sections)} items")
+            send_line_push(line_id, msg)
 
     except Exception as e:
         print(f"Error in send_calendar_alerts: {e}")
