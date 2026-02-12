@@ -11,17 +11,31 @@ export async function DELETE() {
     try {
         // Transaction to delete everything related to the user
         const deleteUser = db.transaction(() => {
-            // 1. Delete Alerts
+            // 1. Delete Alerts (includes memos)
             db.prepare('DELETE FROM alerts WHERE user_id = ?').run(session.userId);
 
-            // 2. Delete Notifications (if table exists, future proofing)
+            // 2. Delete Portfolio Transactions
+            try {
+                db.prepare('DELETE FROM portfolio_transactions WHERE user_id = ?').run(session.userId);
+            } catch (e) {
+                // Table might not exist
+            }
+
+            // 3. Unlink Invitation Codes (keep code but remove user association)
+            try {
+                db.prepare('UPDATE invitation_codes SET used_by_user_id = NULL WHERE used_by_user_id = ?').run(session.userId);
+            } catch (e) {
+                // Table might not exist
+            }
+
+            // 4. Delete Notifications (if table exists, future proofing)
             try {
                 db.prepare('DELETE FROM notifications WHERE user_id = ?').run(session.userId);
             } catch (e) {
                 // Table might not exist yet, ignore
             }
 
-            // 3. Delete User
+            // 5. Delete User
             db.prepare('DELETE FROM users WHERE id = ?').run(session.userId);
         });
 
