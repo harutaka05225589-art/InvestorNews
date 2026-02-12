@@ -56,11 +56,12 @@ export default function SignUpPage() {
                 {error && <p className={styles.error}>{error}</p>}
                 <form onSubmit={handleSubmit} className={styles.form}>
                     <div className={styles.field}>
-                        <label>アカウントID <span className={styles.note}>(半角英数)</span></label>
+                        <label>アカウントID <span className={styles.note}>(半角英数, 10文字以上)</span></label>
                         <input
                             name="account_id"
                             type="text"
                             pattern="^[a-zA-Z0-9_]+$"
+                            minLength={10}
                             value={formData.account_id}
                             onChange={handleChange}
                             required
