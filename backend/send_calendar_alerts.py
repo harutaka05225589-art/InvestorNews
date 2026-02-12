@@ -14,6 +14,7 @@ def send_calendar_alerts():
         today = datetime.date.today()
         target_dates = [
             (today, "今日", "【決算発表】今日"),
+            (today + datetime.timedelta(days=1), "明日", "【決算予告】明日"),
             (today + datetime.timedelta(days=2), "明後日", "【決算予告】明後日")
         ]
 
