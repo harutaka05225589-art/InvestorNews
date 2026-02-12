@@ -272,8 +272,41 @@ def process_revisions():
                 """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, final_prev, is_div_hike, rights_month, payment_month, category, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
+                
+                # --- LINE Notification (Registered Users Only) ---
+                # Check for interested users (Portfolio OR Alerts) who have LINE linked
+                query = """
+                    SELECT DISTINCT u.line_user_id, u.nickname
+                    FROM users u
+                    WHERE u.line_user_id IS NOT NULL
+                    AND (
+                        EXISTS (SELECT 1 FROM portfolio_transactions p WHERE p.user_id = u.id AND p.ticker = ?)
+                        OR
+                        EXISTS (SELECT 1 FROM alerts a WHERE a.user_id = u.id AND a.ticker = ?)
+                    )
+                """
+                users = c.execute(query, (ticker, ticker)).fetchall()
 
-                # Post to X
+                if users:
+                    # Construct Message
+                    header_emoji = "📈" if is_upward else "📉"
+                    if category == 'dividend': header_emoji = "💰"
+                    if category == 'buyback': header_emoji = "🚀"
+                    
+                    line_msg = f"{header_emoji} 【速報】登録銘柄のアラート\n\n{company_name} ({ticker})\n{title}\n\n💡 AI要約:\n{summary}\n\n詳細:\nhttps://rich-investor-news.com/revisions/{rev_id}"
+                    
+                    try:
+                        from send_line import send_line_push
+                        for user in users:
+                            line_id = user['line_user_id']
+                            print(f"  -> Sending LINE to {user['nickname']} (ID: ...{line_id[-4:]})")
+                            send_line_push(line_id, line_msg)
+                    except Exception as e_line:
+                        print(f"  [ERROR] Failed to send LINE: {e_line}")
+                else:
+                    print(f"  -> No registered users for {ticker}. Skipping LINE.")
+                
+                # --- Post to X (Public) ---
                 # Check if already tweeted
                 if row['tweeted_at']:
                     print(f"  -> X Post SKIPPED (Already tweeted at {row['tweeted_at']})")
@@ -293,7 +326,7 @@ def process_revisions():
                     hashtags = "#日本株 #決算速報 #上方修正 #増配 #高配当株"
 
                     if category == 'buyback':
-                        should_post = True
+                        should_post = False # User request: Disable X post for buybacks
                         header_text = "🚀 【AI速報: 自社株買い判定】"
                     else:
                         # Unified Logic: Check for Earnings Hike OR Dividend Hike
@@ -324,34 +357,17 @@ def process_revisions():
                             
                             x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n{hashtags}"
                             
-                            # Download OGP Image to attach (Fix for missing cards)
-                            media_path = None
-                            try:
-                                print(f"  Downloading OGP image from: {og_url}")
-                                r_img = requests.get(og_url, timeout=10)
-                                if r_img.status_code == 200:
-                                    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tf:
-                                        tf.write(r_img.content)
-                                        media_path = tf.name
-                                else:
-                                    print(f"  [WARNING] Failed to download OGP image: {r_img.status_code}")
-                            except Exception as e:
-                                print(f"  [WARNING] OGP download error: {e}")
-
                             # Date Check: Only Tweet if Revision Date is TODAY
                             # (Prevents spamming X when backfilling old data)
                             today_str = datetime.date.today().strftime('%Y-%m-%d')
                             rev_date = row['revision_date'] # String YYYY-MM-DD
                             
                             if rev_date == today_str:
-                                tweet_id = post_to_x(x_msg, media_path=media_path)
+                                # Post without media_path to let Twitter Card render via OGP
+                                tweet_id = post_to_x(x_msg)
                             else:
                                 tweet_id = None
                                 print(f"  -> X Post SKIPPED (Old Date: {rev_date}, Today: {today_str})")
-
-                            # Cleanup temp file
-                            if media_path and os.path.exists(media_path):
-                                os.remove(media_path)
 
                             if tweet_id:
                                 print(f"  -> Posted to X successfully: {tweet_id}")
@@ -367,9 +383,41 @@ def process_revisions():
                 
             else:
                 print("  Analysis returned No Data.")
-                # Mark as 2 (Failed)
-                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Analysis Failed' WHERE id = ?", (rev_id,))
+                # Mark as analyzed first
+                c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = ?, ai_rating = ?, is_upward = ?, category = ? WHERE id = ?", (summary, 0, is_upward, category, rev_id))
                 conn.commit()
+                
+                # --- LINE Notification (Registered Users Only) ---
+                # Check for interested users (Portfolio OR Alerts) who have LINE linked
+                query = """
+                    SELECT DISTINCT u.line_user_id, u.nickname
+                    FROM users u
+                    WHERE u.line_user_id IS NOT NULL
+                    AND (
+                        EXISTS (SELECT 1 FROM portfolio_transactions p WHERE p.user_id = u.id AND p.ticker = ?)
+                        OR
+                        EXISTS (SELECT 1 FROM alerts a WHERE a.user_id = u.id AND a.ticker = ?)
+                    )
+                """
+                users = c.execute(query, (ticker, ticker)).fetchall()
+
+                if users:
+                    # Construct Message
+                    header_emoji = "📈" if is_upward else "📉"
+                    if category == 'dividend': header_emoji = "💰"
+                    if category == 'buyback': header_emoji = "🚀"
+                    
+                    line_msg = f"{header_emoji} 【速報】登録銘柄のアラート\n\n{company_name} ({ticker})\n{title}\n\n💡 AI要約:\n{summary}\n\n詳細:\nhttps://rich-investor-news.com/revisions/{rev_id}"
+                    
+                    from send_line import send_line_push
+                    for user in users:
+                        line_id = user['line_user_id']
+                        print(f"  -> Sending LINE to {user['nickname']} (ID: ...{line_id[-4:]})")
+                        send_line_push(line_id, line_msg)
+                else:
+                    print(f"  -> No registered users for {ticker}. Skipping LINE.")
+                    
+                # --- Post to X (Public) ---
                 
             # Sleep longer to be safe (15s)
             print("  Sleeping 15s to respect Rate Limits...")
