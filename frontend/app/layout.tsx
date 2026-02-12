@@ -79,7 +79,7 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "億り人・決算速報",
               "url": "https://rich-investor-news.com",
-              "logo": "https://rich-investor-news.com/icon.png",
+              "logo": "https://rich-investor-news.com/icon.jpg",
               "description": "日本株市場で注目される著名投資家の動向やニュースを自動収集・配信するメディア。",
               "sameAs": []
             })
@@ -101,7 +101,7 @@ export default function RootLayout({
             <Link href="/inquiry" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>お問い合わせ</Link>
             <Link href="/about" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>サイトについて</Link>
             <Link href="/guide" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>使い方ガイド</Link>
-            <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>免責事項</Link>
+            <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>運営者情報・公式LINE</Link>
             <Link href="/privacy" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>プライバシーポリシー</Link>
           </div>
           <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
