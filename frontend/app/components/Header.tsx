@@ -138,7 +138,7 @@ export default function Header() {
                                     <div className={styles.dropdown}>
                                         <div className={styles.userInfo}>
                                             <p className={styles.userName}>{user.nickname}</p>
-                                            <p className={styles.userId}>ID: {user.userId}</p>
+                                            <p className={styles.userId} style={{ fontFamily: 'monospace' }}>@{user.accountId}</p>
                                         </div>
                                         <hr className={styles.divider} />
                                         <Link href="/settings" className={styles.menuItem}>アカウント編集</Link>
