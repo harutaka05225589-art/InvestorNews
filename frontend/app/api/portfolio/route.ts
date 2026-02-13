@@ -3,22 +3,15 @@ import { NextResponse } from 'next/server';
 import { addPortfolioTransaction, getPortfolioTransactions, deletePortfolioTransaction, getLatestDividend } from '@/lib/db';
 import { cookies } from 'next/headers';
 
-// Mock User ID retrieval (Replace with actual auth logic if available)
-// For now, assuming we use the 'userId' cookie or a default test user
-async function getUserId(req: Request): Promise<number> {
-    // Check header or cookie
-    const cookieStore = await cookies();
-    const userIdCookie = cookieStore.get('userId');
-    if (userIdCookie) {
-        return parseInt(userIdCookie.value, 10);
-    }
-    // Default fallback for dev/demo if no auth implemented yet
-    return 1;
-}
+import { getSession } from '@/lib/auth';
 
 export async function GET(req: Request) {
     try {
-        const userId = await getUserId(req);
+        const session = await getSession();
+        if (!session || !session.userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const userId = Number(session.userId);
         const transactions = getPortfolioTransactions(userId);
 
         // Enhance with Dividend Data
@@ -42,7 +35,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const userId = await getUserId(req);
+        const session = await getSession();
+        if (!session || !session.userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const userId = Number(session.userId);
         const body = await req.json();
         console.log("Portfolio POST Body:", body, "UserID:", userId);
 
@@ -76,7 +73,11 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
     try {
-        const userId = await getUserId(req);
+        const session = await getSession();
+        if (!session || !session.userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        const userId = Number(session.userId);
         const { searchParams } = new URL(req.url);
         const id = searchParams.get('id');
 

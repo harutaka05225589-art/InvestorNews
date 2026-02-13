@@ -68,6 +68,19 @@ export function middleware(request: NextRequest) {
         }
     }
 
+    // 3. Auth Protection (Middleware layer)
+    // Basic check: if session cookie is missing, redirect key pages to login.
+    const protectedPaths = ['/portfolio', '/settings', '/admin'];
+    if (protectedPaths.some(path => request.nextUrl.pathname.startsWith(path))) {
+        const session = request.cookies.get('session');
+        if (!session) {
+            const url = request.nextUrl.clone();
+            url.pathname = '/auth/login';
+            url.searchParams.set('callbackUrl', request.nextUrl.pathname); // Friendly redirect
+            return NextResponse.redirect(url);
+        }
+    }
+
     return response;
 }
 

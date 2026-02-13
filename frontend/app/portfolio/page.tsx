@@ -151,6 +151,11 @@ export default function PortfolioPage() {
     const fetchData = async () => {
         try {
             const res = await fetch('/api/portfolio');
+            if (res.status === 401) {
+                // Redirect if unauthorized
+                window.location.href = '/auth/login';
+                return;
+            }
             const data = await res.json();
             if (data.transactions) {
                 // Sort by date ascending for correct AVG price calc
@@ -709,7 +714,9 @@ export default function PortfolioPage() {
                                     {transactions.slice(0).reverse().map(tx => (
                                         <tr key={tx.id} style={{ borderBottom: '1px solid #334155' }}>
                                             <td style={{ padding: '0.5rem' }}>
-                                                <div>{tx.ticker}</div>
+                                                <Link href={`/stocks/${tx.ticker}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                    <div style={{ fontWeight: 'bold', cursor: 'pointer' }}>{tx.ticker}</div>
+                                                </Link>
                                                 <div style={{ fontSize: '0.8em', color: tx.shares > 0 ? '#4ade80' : '#ef4444' }}>
                                                     {tx.shares > 0 ? '買い' : '売り'}
                                                 </div>
