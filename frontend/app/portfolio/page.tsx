@@ -153,7 +153,7 @@ export default function PortfolioPage() {
             const res = await fetch('/api/portfolio');
             if (res.status === 401) {
                 // Redirect if unauthorized
-                window.location.href = '/auth/login';
+                window.location.href = '/auth/signin';
                 return;
             }
             const data = await res.json();

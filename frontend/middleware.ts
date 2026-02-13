@@ -75,7 +75,7 @@ export function middleware(request: NextRequest) {
         const session = request.cookies.get('session');
         if (!session) {
             const url = request.nextUrl.clone();
-            url.pathname = '/auth/login';
+            url.pathname = '/auth/signin'; // Changed from /auth/login
             url.searchParams.set('callbackUrl', request.nextUrl.pathname); // Friendly redirect
             return NextResponse.redirect(url);
         }
