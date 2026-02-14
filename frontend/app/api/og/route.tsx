@@ -3,6 +3,18 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
+// Font loader helper
+async function loadGoogleFont(text: string) {
+    const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
+    const css = await (await fetch(url)).text();
+    const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/);
+
+    if (resource) {
+        return await fetch(resource[1]).arrayBuffer();
+    }
+    throw new Error('Failed to load font');
+}
+
 export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
@@ -11,6 +23,9 @@ export async function GET(request: NextRequest) {
         const title = searchParams.get('title') || 'Investor News';
         const subtitle = searchParams.get('subtitle') || '億り人のポートフォリオ・決算速報';
         const type = searchParams.get('type') || 'default'; // default, alert, profile
+
+        // Load Font (Subsetted)
+        const fontData = await loadGoogleFont(title + subtitle + "Invester News");
 
         return new ImageResponse(
             (
@@ -122,6 +137,14 @@ export async function GET(request: NextRequest) {
             {
                 width: 1200,
                 height: 630,
+                fonts: [
+                    {
+                        name: 'Noto Sans JP',
+                        data: fontData,
+                        style: 'normal',
+                        weight: 700,
+                    },
+                ],
             },
         );
     } catch (e: any) {

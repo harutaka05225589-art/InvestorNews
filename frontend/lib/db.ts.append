@@ -1,0 +1,55 @@
+
+// --- Financial Stats Helpers ---
+
+export interface FinancialStat {
+    ticker: string;
+    period_type: 'annual' | 'quarter';
+    period_end: string;
+    sales: number;
+    operating_profit: number;
+    ordinary_profit: number;
+    net_profit: number;
+    eps: number;
+    is_forecast: number;
+    source: string;
+}
+
+export function getFinancialStats(ticker: string): FinancialStat[] {
+    try {
+        const stmt = db.prepare(`
+            SELECT * FROM financial_stats 
+            WHERE ticker = ?
+            ORDER BY period_end DESC
+        `);
+        return stmt.all(ticker) as FinancialStat[];
+    } catch (e) {
+        console.error("Get financial stats error:", e);
+        return [];
+    }
+}
+
+// --- Shareholder Helpers ---
+
+export interface Shareholder {
+    ticker: string;
+    entry_date: string;
+    shareholder_name: string;
+    share_count: string;
+    share_ratio: number;
+    rank: number;
+}
+
+export function getShareholders(ticker: string): Shareholder[] {
+    try {
+        // Fetch all history
+        const stmt = db.prepare(`
+            SELECT * FROM stock_shareholders 
+            WHERE ticker = ?
+            ORDER BY entry_date DESC, rank ASC
+        `);
+        return stmt.all(ticker) as Shareholder[];
+    } catch (e) {
+        console.error("Get shareholders error:", e);
+        return [];
+    }
+}

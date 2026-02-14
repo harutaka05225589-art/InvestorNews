@@ -9,9 +9,12 @@ type Props = {
     params: Promise<{ ticker: string }>;
 }
 
+import AdSenseDisplay from '../../../components/ads/AdSenseDisplay';
+
 export default async function StockPage({ params }: Props) {
     const { ticker } = await params;
     const decodedTicker = decodeURIComponent(ticker).toUpperCase();
+
 
     // 0. Fetch User ID (Mock/Cookie)
     // TODO: Use actual auth
@@ -260,6 +263,9 @@ export default async function StockPage({ params }: Props) {
                     <ShareholderList data={shareholders} />
                 </div>
             </article>
+
+            {/* AdSense (Bottom of Page) */}
+            <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} style={{ marginTop: '2rem' }} />
         </div>
     );
 }

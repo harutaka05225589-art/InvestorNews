@@ -14,32 +14,48 @@ export default function AboutPage() {
             </h1>
 
             <section style={{ marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>私たちのミッション</h2>
+                <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>当サイトの目的</h2>
                 <p>
-                    「億り人・決算速報」は、個人投資家が株式市場で勝つために必要な「一次情報」と「トップ投資家の思考」を、
-                    テクノロジーの力で効率的に届けることを目的としています。
-                </p>
-                <p style={{ marginTop: '1rem' }}>
-                    機関投資家や専業トレーダーは、有料の端末や専門チームを使って膨大な情報を処理しています。
-                    しかし、個人の兼業投資家には時間もリソースも限られています。
-                    私たちは、AIによる自動解析とデータ収集技術を駆使し、
-                    「今、市場で何が起きているか」「勝っている投資家は何を見ているか」を瞬時に可視化します。
+                    「億り人・決算速報」は、個人投資家が機関投資家に負けないための情報武装ツールです。<br />
+                    膨大な適時開示情報（TDnet）の中から、株価に影響を与える重要なニュースだけを厳選し、AIによる即時分析を加えてお届けします。
                 </p>
             </section>
 
             <section style={{ marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>主な機能とデータソース</h2>
+                <h2 style={{ fontSize: '1.4rem', color: '#38bdf8', marginBottom: '1rem' }}>3つの特徴</h2>
 
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.5rem' }}>1. 業績修正・決算速報</h3>
-                <p>
-                    企業の適時開示情報（TDnet）をリアルタイムで監視し、AIが内容を解析しています。
-                    単にPDFへのリンクを貼るだけでなく、「上方修正」「下方修正」「増配」「自社株買い」などの重要なイベントを自動タグ付けし、理由を要約します。
-                </p>
+                <div style={{ marginBottom: '1.5rem', background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#4ade80', marginBottom: '0.5rem' }}>1. AI決算分析</h3>
+                    <p style={{ fontSize: '0.95rem' }}>
+                        決算短信PDFをAIが読み込み、「なぜ上方修正したのか？」「増配の余力はあるか？」を瞬時に要約。<br />
+                        ポジティブ・ネガティブの判定も自動で行い、忙しい投資家の皆様の判断をサポートします。
+                    </p>
+                </div>
 
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '1.5rem', marginBottom: '0.5rem' }}>2. 著名投資家の動向</h3>
-                <p>
-                    大量保有報告書（EDINET）や信頼できるニュースソースから、市場で注目される大口個人投資家（いわゆる「億り人」）の保有銘柄や発言を収集しています。
-                </p>
+                <div style={{ marginBottom: '1.5rem', background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>2. 資産管理＆配当グラフ</h3>
+                    <p style={{ fontSize: '0.95rem' }}>
+                        保有株を登録するだけで、資産推移やポートフォリオの構成比、月々の配当金受け取り予定が一目でわかります。<br />
+                        NISA口座や特定口座の税金計算にも簡易対応しています。
+                    </p>
+                </div>
+
+                <div style={{ marginBottom: '1.5rem', background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#06c755', marginBottom: '0.5rem' }}>3. LINEリアルタイム通知</h3>
+                    <p style={{ fontSize: '0.95rem' }}>
+                        あなたの保有銘柄に動き（決算発表、上方修正、増配など）があった瞬間、LINEで通知を受け取れます。<br />
+                        もう重要なニュースを見逃すことはありません。
+                    </p>
+                </div>
+            </section>
+
+            <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.4rem', color: '#f59e0b', marginBottom: '1rem' }}>データソース</h2>
+                <ul style={{ listStyle: 'disc', paddingLeft: '1.5rem', color: '#cbd5e1' }}>
+                    <li style={{ marginBottom: '0.5rem' }}>適時開示情報閲覧サービス (TDnet)</li>
+                    <li style={{ marginBottom: '0.5rem' }}>EDINET (金融庁)</li>
+                    <li style={{ marginBottom: '0.5rem' }}>株探 (Kabutan) - ※一部データ参照</li>
+                </ul>
             </section>
 
             <div style={{ marginBottom: '3rem' }}>

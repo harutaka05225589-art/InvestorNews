@@ -47,11 +47,23 @@ export default function Sidebar() {
                 </nav>
 
                 <div className={styles.footer}>
+                    {/* Affiliate Area (Top of Footer) */}
+                    <div style={{ marginBottom: '1rem' }}>
+                        {/* Example: Replace with actual AffiliateBanner when ready */}
+                        {/* <AffiliateBanner href="..." imgSrc="..." alt="..." /> */}
+                    </div>
+
                     <Link href="/request" className={styles.requestBtn}>
                         + 投資家リクエスト
                     </Link>
+
+                    {/* AdSense (Bottom) */}
+                    <AdSenseDisplay slotId="6065455983" format="rectangle" style={{ marginTop: '1rem' }} />
                 </div>
             </div>
         </aside>
     );
 }
+
+import AdSenseDisplay from '../../components/ads/AdSenseDisplay';
+import AffiliateBanner from '../../components/ads/AffiliateBanner';

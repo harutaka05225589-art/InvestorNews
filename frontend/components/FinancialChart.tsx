@@ -204,41 +204,44 @@ export default function FinancialChart({ data, ticker }: FinancialChartProps) {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={quarterlyData} margin={{ top: 10, right: 10, left: 0, bottom: 5 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
-                                <XAxis
-                                    dataKey="period_end"
-                                    stroke="#94a3b8"
-                                    tickFormatter={(val) => val.split('-')[1] + '月'} // Show Month
-                                    tick={{ fontSize: 12 }}
-                                />
-                                <YAxis
-                                    stroke="#94a3b8"
-                                    tickFormatter={(val) => selectedMetric === 'eps' ? val : (val / 100).toFixed(0)}
-                                    width={40}
-                                    tick={{ fontSize: 10 }}
-                                />
-                                <Tooltip
-                                    contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
-                                    formatter={(value: any) => [
-                                        selectedMetric === 'eps' ? `${value}円` : `${(value / 100).toLocaleString()}億円`,
-                                        currentMetricInfo?.label
-                                    ]}
-                                    labelFormatter={(label) => `${label} (四半期)`}
-                                />
-                                <Bar
-                                    dataKey={selectedMetric}
-                                    fill={currentMetricInfo?.color}
-                                    radius={[4, 4, 0, 0]}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    ) : (
-                        <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
-                            四半期データがありません
-                        </div>
-                    )}
-                </div>
-            )
+                                    <XAxis
+                                        dataKey="period_end"
+                                        stroke="#94a3b8"
+                                        tickFormatter={(val) => val.split('-')[1] + '月'} // Show Month
+                                        tick={{ fontSize: 12 }}
+                                    />
+                                    <YAxis
+                                        stroke="#94a3b8"
+                                        tickFormatter={(val) => selectedMetric === 'eps' ? val : (val / 100).toFixed(0)}
+                                        width={40}
+                                        tick={{ fontSize: 10 }}
+                                    />
+                                    <Tooltip
+                                        contentStyle={{ background: '#1e293b', border: '1px solid #475569' }}
+                                        formatter={(value: any) => [
+                                            selectedMetric === 'eps' ? `${value}円` : `${(value / 100).toLocaleString()}億円`,
+                                            currentMetricInfo?.label
+                                        ]}
+                                        labelFormatter={(label) => `${label} (四半期)`}
+                                    />
+                                    <Bar
+                                        dataKey={selectedMetric}
+                                        fill={currentMetricInfo?.color}
+                                        radius={[4, 4, 0, 0]}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b' }}>
+                                四半期データがありません
+                            </div>
+                        )}
+                    </div>
+                )
             }
+            <div style={{ textAlign: 'right', fontSize: '0.75rem', color: '#64748b', marginTop: '0.5rem' }}>
+                データソース: TDnet
+            </div>
         </div >
     );
 }

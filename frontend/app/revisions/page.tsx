@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import Link from 'next/link';
 import styles from './revisions.module.css';
+import AdSenseInFeed from '../../components/ads/AdSenseInFeed';
 
 // Helper to determine revision type
 interface Revision {
@@ -173,7 +174,7 @@ export default function RevisionsPage() {
                         </tr>
                     </thead>
                     <tbody>
-                        {validRevisions.map((rev) => {
+                        {validRevisions.map((rev, index) => {
                             // Display Logic based on Tab
                             let displayMode = category === 'all' ? (rev.category || 'earnings') : category;
 
@@ -297,45 +298,59 @@ export default function RevisionsPage() {
                             }
 
                             return (
-                                <tr key={rev.id}>
-                                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#ccc' }}>{rev.revision_date}</td>
-                                    <td>
-                                        <Link href={`/stocks/${rev.ticker}`} className={styles.tickerLink} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}>
-                                            {rev.ticker}
-                                        </Link>
-                                    </td>
-                                    <td style={{ minWidth: '250px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                                <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }} className={styles.companyLink}>
-                                                    {rev.company_name}
-                                                </span>
+                                <React.Fragment key={rev.id}>
+                                    <tr key={rev.id}>
+                                        <td style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#ccc' }}>{rev.revision_date}</td>
+                                        <td>
+                                            <Link href={`/stocks/${rev.ticker}`} className={styles.tickerLink} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}>
+                                                {rev.ticker}
                                             </Link>
-                                        </div>
-                                        {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
-                                            <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem', lineHeight: '1.4' }}>
-                                                🤖 {rev.ai_summary}
-                                            </p>
-                                        )}
-                                    </td>
-                                    <td style={{ minWidth: '120px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                            <span className={`${styles.badge} ${styles[badgeClass]}`}>
-                                                {badgeLabel}
-                                            </span>
-                                            {valueDisplay}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                            {rev.source_url ? (
-                                                <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
-                                                    📄 PDF
-                                                </a>
-                                            ) : '-'}
-                                        </div>
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td style={{ minWidth: '250px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <Link href={`/revisions/${rev.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                                    <span style={{ fontWeight: 600, cursor: 'pointer', textDecoration: 'underline', textUnderlineOffset: '4px', textDecorationColor: '#475569' }} className={styles.companyLink}>
+                                                        {rev.company_name}
+                                                    </span>
+                                                </Link>
+                                            </div>
+                                            {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
+                                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem', lineHeight: '1.4' }}>
+                                                    🤖 {rev.ai_summary}
+                                                </p>
+                                            )}
+                                        </td>
+                                        <td style={{ minWidth: '120px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                                <span className={`${styles.badge} ${styles[badgeClass]}`}>
+                                                    {badgeLabel}
+                                                </span>
+                                                {valueDisplay}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                {rev.source_url ? (
+                                                    <a href={rev.source_url} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
+                                                        📄 PDF
+                                                    </a>
+                                                ) : '-'}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {
+                                        (index + 1) % 10 === 0 && (
+                                            <tr key={`ad-${index}`}>
+                                                <td colSpan={5} style={{ padding: 0, background: 'transparent', border: 'none' }}>
+                                                    <AdSenseInFeed
+                                                        slotId="3072451399"
+                                                        layoutKey="-fb+5w+4e-db+86"
+                                                    />
+                                                </td>
+                                            </tr>
+                                        )
+                                    }
+                                </React.Fragment>
                             );
                         })}
 

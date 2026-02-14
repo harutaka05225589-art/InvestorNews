@@ -1,12 +1,52 @@
-import Link from 'next/link';
-import { getInvestors, getDailyIREvents, getLatestEdinetDocs } from '@/lib/db';
+import Link from 'next/link'; // Added Link import
+import { getInvestors, getDailyIREvents, getLatestEdinetDocs, getRevisions } from '@/lib/db';
 import { Investor } from '@/lib/types';
 import styles from './home.module.css';
+import AdSenseDisplay from '../components/ads/AdSenseDisplay';
+import { isHoliday } from 'japanese-holidays';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-import { isHoliday } from 'japanese-holidays';
+// Simple Component to Render Revisions (Server Component Logic in same file for simplicity)
+const RevisionsFeed = () => {
+  const revisions = getRevisions(6); // Fetch 6 latest
+
+  if (revisions.length === 0) return <div style={{ color: '#94a3b8' }}>データがありません</div>;
+
+  return (
+    <>
+      {revisions.map((rev: any) => {
+        let badgeClass = 'neutral';
+        let badgeLabel = '修正';
+        // Simple logic for card (detailed logic is in RevisionsPage)
+        if (rev.is_upward === 1) { badgeClass = '#4ade80'; badgeLabel = '上方修正'; }
+        else if (rev.is_upward === 0) { badgeClass = '#f87171'; badgeLabel = '下方修正'; }
+        if (rev.category === 'buyback') { badgeClass = '#fbbf24'; badgeLabel = '自社株買い'; } // Wait, user said buyback tweets off, but here we can show? Maybe user meant "notification". 
+        // User: "Information about share buybacks does not need to be tweeted on X."
+        // So showing it on site is fine.
+
+        return (
+          <Link href={`/revisions/${rev.id}`} key={rev.id} style={{ textDecoration: 'none' }}>
+            <div style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', transition: 'transform 0.2s', cursor: 'pointer' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{rev.revision_date}</span>
+                <span style={{ fontSize: '0.75rem', background: badgeClass, color: '#000', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 'bold' }}>
+                  {badgeLabel}
+                </span>
+              </div>
+              <div style={{ fontWeight: 'bold', color: '#fff' }}>{rev.company_name}</div>
+              <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>{rev.ticker}</div>
+              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: 'auto', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {rev.ai_summary || rev.title}
+              </div>
+            </div>
+          </Link>
+        );
+      })}
+    </>
+  );
+};
 
 export default function Home() {
   const investors = getInvestors() as Investor[];
@@ -73,73 +113,94 @@ export default function Home() {
           </div>
         </div>
 
-
-        {/* Right Sidebar: Widgets */}
-        <div className={styles.sidebar}>
-          {/* EDINET Breaking News Widget */}
-          {edinetDocs.length > 0 && (
-            <section className={styles.breakingWidget} style={{ marginBottom: '1.5rem' }}>
-              <h2 className={styles.breakingTitle}>
-                ⚡ 速報 (EDINET)
-              </h2>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                {edinetDocs.map((doc: any) => (
-                  <li key={doc.id} style={{ marginBottom: '0.5rem', fontSize: '0.9rem', borderBottom: '1px dashed rgba(0,0,0,0.1)', paddingBottom: '0.5rem' }}>
-                    <span style={{ fontWeight: 'bold' }}>{doc.submitter_name}</span>
-                    <br />
-                    <span style={{ fontSize: '0.85rem' }}>{doc.doc_description}</span>
-                    <div style={{ marginTop: '0.2rem' }}>
-                      <a href={doc.pdf_link} target="_blank" rel="noopener noreferrer" style={{ color: '#533f03', textDecoration: 'underline', fontSize: '0.8rem' }}>
-                        PDF確認 &rarr;
-                      </a>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-              <div style={{ textAlign: 'right', marginTop: '0.5rem' }}>
-                <Link href="/reports" style={{ fontSize: '0.85rem', fontWeight: 'bold', textDecoration: 'underline', color: '#856404' }}>
-                  すべて見る &rarr;
-                </Link>
-              </div>
-            </section>
-          )}
-
-          {/* Dashboard Widget */}
-          <section className={styles.widget}>
-            <h2 className={styles.widgetTitle}>
-              📅 {displayLabel}
-            </h2>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline' }}>
-                <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
-                  {count}
-                </span>
-                <span style={{ fontSize: '1rem', marginLeft: '0.3rem' }}>件</span>
-              </div>
-
-              {count > 0 && (
-                <div style={{ fontSize: '0.9rem', color: '#666' }}>
-                  注目: {events.slice(0, 3).map(e => e.name).join(', ')} ...
-                </div>
-              )}
-
-              <Link href="/calendar" style={{
-                background: 'var(--accent)',
-                color: '#000',
-                padding: '0.6rem 0',
-                borderRadius: '20px',
-                fontWeight: 'bold',
-                textDecoration: 'none',
-                fontSize: '0.9rem',
-                display: 'block',
-                textAlign: 'center'
-              }}>
-                カレンダーを見る &rarr;
-              </Link>
-            </div>
-          </section>
-        </div>
+        {/* AdSense (After Investors) */}
+        <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} style={{ margin: '2rem 0' }} />
       </div>
+
+
+      {/* Right Sidebar: Widgets */}
+      <div className={styles.sidebar}>
+        {/* Dashboard Widget */}
+        <section className={styles.widget} style={{ marginBottom: '1.5rem' }}>
+          <h2 className={styles.widgetTitle}>
+            📅 {displayLabel}
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline' }}>
+              <span style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--primary)' }}>
+                {count}
+              </span>
+              <span style={{ fontSize: '1rem', marginLeft: '0.3rem' }}>件</span>
+            </div>
+
+            {count > 0 && (
+              <div style={{ fontSize: '0.9rem', color: '#cbd5e1', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>注目銘柄:</div>
+                {events.slice(0, 5).map(e => (
+                  <Link key={e.ticker} href={`/stocks/${e.ticker}`} style={{ color: '#60a5fa', textDecoration: 'none', display: 'block' }}>
+                    {e.name} ({e.ticker})
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            <Link href="/calendar" style={{
+              background: 'var(--accent)',
+              color: '#000',
+              padding: '0.6rem 0',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              fontSize: '0.9rem',
+              display: 'block',
+              textAlign: 'center',
+              marginTop: '0.5rem'
+            }}>
+              カレンダーを見る &rarr;
+            </Link>
+          </div>
+        </section>
+
+        {/* New: Latest Revisions Widget (Mini) */}
+        <section className={styles.breakingWidget}>
+          <h2 className={styles.breakingTitle}>
+            📊 最新の業績修正
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+            {/* This will be hydrated by a Client Component or passed as prop. 
+                   For now, let's just link to the revisions page as main content area is for Investors. 
+                   OR, better, add the Feed to the Main Column below Investors.
+               */}
+            <p style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
+              市場の最新動向をチェック
+            </p>
+            <Link href="/revisions" style={{ display: 'block', padding: '0.8rem', background: '#334155', borderRadius: '8px', color: '#fff', textDecoration: 'none', textAlign: 'center' }}>
+              業績修正一覧を見る &rarr;
+            </Link>
+          </div>
+        </section>
+
+        {/* AdSense In-Feed Widget */}
+        <section className={styles.widget} style={{ marginTop: '1.5rem', padding: 0, background: 'transparent', border: 'none' }}>
+          <AdSenseDisplay slotId="6065455983" format="rectangle" />
+        </section>
+      </div>
+
+      {/* Main Content Area 2: Latest Revisions Feed */}
+      <section style={{ marginTop: '3rem' }}>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid var(--accent)', paddingLeft: '1rem' }}>
+          最新の決算速報
+        </h2>
+        {/* We need to fetch revisions here. I'll add the data fetching at top of file. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+          <RevisionsFeed />
+        </div>
+        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+          <Link href="/revisions" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: 'var(--accent)', color: '#000', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
+            もっと見る
+          </Link>
+        </div>
+      </section>
 
       {/* SEO & About Site Content */}
       <section style={{ marginTop: '4rem', padding: '2rem', background: '#0f172a', borderRadius: '12px', border: '1px solid #334155', color: '#e2e8f0' }}>
@@ -184,6 +245,6 @@ export default function Home() {
           </p>
         </div>
       </section>
-    </div>
+    </div >
   );
 }
