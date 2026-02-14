@@ -340,8 +340,8 @@ export default function RevisionsPage() {
                                     </tr>
                                     {
                                         (index + 1) % 10 === 0 && (
-                                            <tr key={`ad-${index}`}>
-                                                <td colSpan={5} style={{ padding: 0, background: 'transparent', border: 'none' }}>
+                                            <tr key={`ad-${index}`} className={styles.adRow}>
+                                                <td colSpan={5} className={styles.adCell} style={{ padding: 0, background: 'transparent', border: 'none' }}>
                                                     <AdSenseInFeed
                                                         slotId="3072451399"
                                                         layoutKey="-fb+5w+4e-db+86"

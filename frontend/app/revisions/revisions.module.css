@@ -305,4 +305,20 @@
     .pdfLink:hover {
         background: #475569;
     }
+
+    /* Ad Row Overrides */
+    .table tr.adRow {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .table tr.adRow td.adCell {
+        position: static !important;
+        text-align: center;
+        width: 100%;
+        padding: 1rem 0;
+        margin: 0;
+    }
 }
