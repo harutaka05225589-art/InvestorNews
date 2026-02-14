@@ -10,7 +10,8 @@ async function loadGoogleFont(text: string) {
     const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/);
 
     if (resource) {
-        return await fetch(resource[1]).arrayBuffer();
+        const res = await fetch(resource[1]);
+        return await res.arrayBuffer();
     }
     throw new Error('Failed to load font');
 }
