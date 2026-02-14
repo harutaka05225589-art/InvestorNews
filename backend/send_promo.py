@@ -35,8 +35,39 @@ def send_promo():
         f.write(datetime.datetime.now().isoformat())
 
     # 3. Post
+    # 3. Post
     print("  [INFO] Sending promo tweet...")
-    msg = random.choice(MESSAGES)
+    
+    # Round-Robin Selection
+    idx = 0
+    index_file = "promo_index.txt"
+    
+    if os.path.exists(index_file):
+        try:
+            with open(index_file, "r") as f:
+                content = f.read().strip()
+                if content.isdigit():
+                    idx = int(content)
+        except Exception as e:
+            print(f"  [WARN] Failed to read promo index: {e}")
+
+    # Ensure index is within bounds
+    if idx >= len(MESSAGES):
+        idx = 0
+        
+    msg = MESSAGES[idx]
+    
+    # Calculate next index
+    next_idx = (idx + 1) % len(MESSAGES)
+    
+    # Save next index
+    try:
+        with open(index_file, "w") as f:
+            f.write(str(next_idx))
+    except Exception as e:
+        print(f"  [WARN] Failed to save promo index: {e}")
+
+    print(f"  [INFO] Selected Message #{idx + 1}/{len(MESSAGES)}")
     tweet_id = post_to_x(msg)
     
     if tweet_id:

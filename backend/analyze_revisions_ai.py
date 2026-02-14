@@ -312,8 +312,12 @@ def process_revisions():
                     print(f"  -> X Post SKIPPED (Already tweeted at {row['tweeted_at']})")
                 else:
                     # Check for duplicate tweet for same ticker TODAY (Prevent multiple tweets for same company)
+                    # Fix: Adjust UTC tweeted_at to JST (+9h) for correct day comparison
                     today_str = datetime.datetime.now().strftime('%Y-%m-%d')
-                    c.execute("SELECT id FROM revisions WHERE ticker = ? AND tweeted_at LIKE ? LIMIT 1", (ticker, f"{today_str}%"))
+                    
+                    # SQLite 'date' function returns YYYY-MM-DD
+                    check_query = "SELECT id FROM revisions WHERE ticker = ? AND date(tweeted_at, '+9 hours') = ? LIMIT 1"
+                    c.execute(check_query, (ticker, today_str))
                     existing_tweet = c.fetchone()
                     
                     if existing_tweet:
