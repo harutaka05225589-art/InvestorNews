@@ -431,7 +431,11 @@ export default function CalendarPage() {
                                         <div className={styles.ticker}>
                                             コード: <Link href={`/stocks/${e.ticker}`} className="hover:underline text-blue-400" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{e.ticker}</Link>
                                         </div>
-                                        <div className={styles.companyName}>{e.name}</div>
+                                        <div className={styles.companyName}>
+                                            <Link href={`/stocks/${e.ticker}`} style={{ color: 'inherit', textDecoration: 'none' }} className="hover:underline">
+                                                {e.name}
+                                            </Link>
+                                        </div>
                                     </div>
                                     {/* Use Background Style for Labels in Details */}
                                     <span className={`${styles.typeLabel} ${getTypeClass(e.type, true)}`}>
