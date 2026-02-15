@@ -74,40 +74,40 @@ export default async function ShareholderPage({ params }: Props) {
                 </div>
 
                 {holdings.length > 0 ? (
-                    <div className="overflow-x-auto w-full">
-                        <table className="w-full min-w-[500px] text-sm md:text-xs" style={{ borderCollapse: 'collapse' }}>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
                             <thead>
-                                <tr style={{ background: '#334155', color: '#cbd5e1' }}>
-                                    <th className="py-2 px-1 text-left whitespace-nowrap">コード</th>
-                                    <th className="py-2 px-1 text-left">銘柄名</th>
-                                    <th className="py-2 px-1 text-right whitespace-nowrap">保有比率</th>
-                                    <th className="py-2 px-1 text-right whitespace-nowrap">保有株数</th>
-                                    <th className="py-2 px-1 text-right whitespace-nowrap">報告日</th>
+                                <tr style={{ background: '#334155', color: '#cbd5e1', fontSize: '0.9rem' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'left', whiteSpace: 'nowrap' }}>コード</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>銘柄名</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>保有比率</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>保有株数</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', width: '120px', whiteSpace: 'nowrap' }}>報告日</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {holdings.map((h, i) => (
                                     <Fragment key={i}>
                                         <tr style={{ borderBottom: '1px solid #334155' }}>
-                                            <td className="py-2 px-1 whitespace-nowrap">
+                                            <td style={{ padding: '1rem' }}>
                                                 <Link href={`/stocks/${h.ticker}`} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none', fontFamily: 'monospace' }}>
                                                     {h.ticker}
                                                 </Link>
                                             </td>
-                                            <td className="py-2 px-1 font-bold break-words whitespace-normal">
+                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>
                                                 <Link href={`/stocks/${h.ticker}`} style={{ color: '#fff', textDecoration: 'none' }}>
                                                     {h.company_name}
                                                 </Link>
                                             </td>
-                                            <td className="py-2 px-1 text-right whitespace-nowrap">
+                                            <td style={{ padding: '1rem', textAlign: 'right' }}>
                                                 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
                                                     {h.share_ratio.toFixed(2)}%
                                                 </span>
                                             </td>
-                                            <td className="py-2 px-1 text-right text-slate-300 whitespace-nowrap">
+                                            <td style={{ padding: '1rem', textAlign: 'right', color: '#cbd5e1' }}>
                                                 {h.share_count}
                                             </td>
-                                            <td className="py-2 px-1 text-right text-slate-400 text-xs whitespace-nowrap">
+                                            <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8' }}>
                                                 {h.entry_date}
                                             </td>
                                         </tr>
