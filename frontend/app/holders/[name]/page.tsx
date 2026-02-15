@@ -74,40 +74,40 @@ export default async function ShareholderPage({ params }: Props) {
                 </div>
 
                 {holdings.length > 0 ? (
-                    <div className="overflow-x-auto md:overflow-visible w-full">
-                        <table className="w-full min-w-[600px] md:min-w-0 text-sm" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full min-w-[500px] text-sm md:text-xs" style={{ borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ background: '#334155', color: '#cbd5e1' }}>
-                                    <th className="p-2 text-left whitespace-nowrap">コード</th>
-                                    <th className="p-2 text-left w-full">銘柄名</th>
-                                    <th className="p-2 text-right whitespace-nowrap">保有比率</th>
-                                    <th className="p-2 text-right whitespace-nowrap">保有株数</th>
-                                    <th className="p-2 text-right whitespace-nowrap min-w-[100px]">報告日</th>
+                                    <th className="py-2 px-1 text-left whitespace-nowrap">コード</th>
+                                    <th className="py-2 px-1 text-left">銘柄名</th>
+                                    <th className="py-2 px-1 text-right whitespace-nowrap">保有比率</th>
+                                    <th className="py-2 px-1 text-right whitespace-nowrap">保有株数</th>
+                                    <th className="py-2 px-1 text-right whitespace-nowrap">報告日</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {holdings.map((h, i) => (
                                     <Fragment key={i}>
                                         <tr style={{ borderBottom: '1px solid #334155' }}>
-                                            <td className="p-2 whitespace-nowrap">
+                                            <td className="py-2 px-1 whitespace-nowrap">
                                                 <Link href={`/stocks/${h.ticker}`} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none', fontFamily: 'monospace' }}>
                                                     {h.ticker}
                                                 </Link>
                                             </td>
-                                            <td className="p-2 font-bold break-words whitespace-normal">
+                                            <td className="py-2 px-1 font-bold break-words whitespace-normal">
                                                 <Link href={`/stocks/${h.ticker}`} style={{ color: '#fff', textDecoration: 'none' }}>
                                                     {h.company_name}
                                                 </Link>
                                             </td>
-                                            <td className="p-2 text-right whitespace-nowrap">
+                                            <td className="py-2 px-1 text-right whitespace-nowrap">
                                                 <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
                                                     {h.share_ratio.toFixed(2)}%
                                                 </span>
                                             </td>
-                                            <td className="p-2 text-right text-slate-300 whitespace-nowrap">
+                                            <td className="py-2 px-1 text-right text-slate-300 whitespace-nowrap">
                                                 {h.share_count}
                                             </td>
-                                            <td className="p-2 text-right text-slate-400 text-xs whitespace-nowrap">
+                                            <td className="py-2 px-1 text-right text-slate-400 text-xs whitespace-nowrap">
                                                 {h.entry_date}
                                             </td>
                                         </tr>
