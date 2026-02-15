@@ -21,7 +21,10 @@ export default async function ShareholderPage({ params }: Props) {
 
     // Calculate strict total value if we had price data, but we don't here easily.
     // Just count companies.
-    const companyCount = holdings.length;
+    // Calculate latest entry date
+    const lastUpdated = holdings.length > 0
+        ? holdings.reduce((max, h) => (h.entry_date > max ? h.entry_date : max), '')
+        : null;
 
     return (
         <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
@@ -45,10 +48,17 @@ export default async function ShareholderPage({ params }: Props) {
                         </span>
                     </h1>
                 </div>
-                <p style={{ color: '#cbd5e1', lineHeight: '1.6', marginLeft: '4rem' }}>
-                    大株主として記載されている銘柄の一覧です。<br />
-                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>※ 直近の有価証券報告書や決算短信に基づくデータです。現在の実際の保有状況とは異なる場合があります。</span>
-                </p>
+                <div style={{ marginLeft: '4rem' }}>
+                    {lastUpdated && (
+                        <p style={{ color: '#4ade80', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                            最終更新日: {lastUpdated}
+                        </p>
+                    )}
+                    <p style={{ color: '#cbd5e1', lineHeight: '1.6' }}>
+                        大株主として記載されている銘柄の一覧です。<br />
+                        <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>※ 直近の有価証券報告書や決算短信に基づくデータです。現在の実際の保有状況とは異なる場合があります。</span>
+                    </p>
+                </div>
             </header>
 
             <div style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden' }}>
@@ -62,15 +72,15 @@ export default async function ShareholderPage({ params }: Props) {
                 </div>
 
                 {holdings.length > 0 ? (
-                    <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                    <div className="overflow-x-auto md:overflow-visible">
+                        <table className="w-full min-w-[600px] md:min-w-0" style={{ borderCollapse: 'collapse' }}>
                             <thead>
                                 <tr style={{ background: '#334155', color: '#cbd5e1', fontSize: '0.9rem' }}>
-                                    <th style={{ padding: '1rem', textAlign: 'left' }}>コード</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left', whiteSpace: 'nowrap' }}>コード</th>
                                     <th style={{ padding: '1rem', textAlign: 'left' }}>銘柄名</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right' }}>保有比率</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right' }}>保有株数</th>
-                                    <th style={{ padding: '1rem', textAlign: 'right', width: '120px' }}>報告日</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>保有比率</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', whiteSpace: 'nowrap' }}>保有株数</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', width: '120px', whiteSpace: 'nowrap' }}>報告日</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -82,7 +92,7 @@ export default async function ShareholderPage({ params }: Props) {
                                                     {h.ticker}
                                                 </Link>
                                             </td>
-                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>
+                                            <td style={{ padding: '1rem', fontWeight: 'bold' }} className="break-words whitespace-normal">
                                                 <Link href={`/stocks/${h.ticker}`} style={{ color: '#fff', textDecoration: 'none' }}>
                                                     {h.company_name}
                                                 </Link>
