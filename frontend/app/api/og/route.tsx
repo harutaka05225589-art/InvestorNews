@@ -3,17 +3,27 @@ import { NextRequest } from 'next/server';
 
 export const runtime = 'edge';
 
-// Font loader helper
+// Font loader helper with timeout and fallback
 async function loadGoogleFont(text: string) {
-    const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
-    const css = await (await fetch(url)).text();
-    const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/);
+    try {
+        const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
 
-    if (resource) {
-        const res = await fetch(resource[1]);
-        return await res.arrayBuffer();
+        const cssRes = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        const css = await cssRes.text();
+
+        const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/);
+
+        if (resource) {
+            const res = await fetch(resource[1]);
+            return await res.arrayBuffer();
+        }
+    } catch (e) {
+        console.error('Font load failed:', e);
     }
-    throw new Error('Failed to load font');
+    return null;
 }
 
 export async function GET(request: NextRequest) {
@@ -21,12 +31,28 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
 
         // Dynamic params
-        const title = searchParams.get('title') || 'Investor News';
-        const subtitle = searchParams.get('subtitle') || '億り人のポートフォリオ・決算速報';
+        const title = (searchParams.get('title') || 'Investor News').slice(0, 100); // Limit length
+        const subtitle = (searchParams.get('subtitle') || '億り人のポートフォリオ・決算速報').slice(0, 100);
         const type = searchParams.get('type') || 'default'; // default, alert, profile
 
         // Load Font (Subsetted)
         const fontData = await loadGoogleFont(title + subtitle + "Invester News");
+
+        const imageOptions: any = {
+            width: 1200,
+            height: 630,
+        };
+
+        if (fontData) {
+            imageOptions.fonts = [
+                {
+                    name: 'Noto Sans JP',
+                    data: fontData,
+                    style: 'normal',
+                    weight: 700,
+                },
+            ];
+        }
 
         return new ImageResponse(
             (
@@ -45,7 +71,7 @@ export async function GET(request: NextRequest) {
                             radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 20%)
                         `,
                         color: '#f8fafc',
-                        fontFamily: '"Noto Sans JP", sans-serif',
+                        fontFamily: fontData ? '"Noto Sans JP", sans-serif' : 'sans-serif',
                         position: 'relative',
                         overflow: 'hidden',
                     }}
@@ -135,21 +161,11 @@ export async function GET(request: NextRequest) {
                     }} />
                 </div>
             ),
-            {
-                width: 1200,
-                height: 630,
-                fonts: [
-                    {
-                        name: 'Noto Sans JP',
-                        data: fontData,
-                        style: 'normal',
-                        weight: 700,
-                    },
-                ],
-            },
+            imageOptions
         );
     } catch (e: any) {
         console.log(`${e.message}`);
+        // Fallback or Error Image could be returned here if needed
         return new Response(`Failed to generate the image`, {
             status: 500,
         });
