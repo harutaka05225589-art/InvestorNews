@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getInvestors } from '@/lib/db';
 import { Investor } from '@/lib/types';
+import AdSenseDisplay from '../../components/ads/AdSenseDisplay';
 
 import type { Metadata } from 'next';
 
@@ -56,6 +57,11 @@ export default function IntroductionPage() {
                         </div>
                     </Link>
                 ))}
+            </div>
+
+            {/* Bottom Ad */}
+            <div style={{ marginTop: '3rem' }}>
+                <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
             </div>
         </div>
     );

@@ -1,0 +1,82 @@
+﻿Fetching https://kabutan.jp/stock/finance?code=1726&mode=k...
+Found 21 tables.
+--- Table 1 ---
+Preceding Element Text: None
+Header Row Text: 譌･邨悟ｹｳ蝮・15:30      邀ｳ繝峨Ν蜀・06:59      ・ｮ・ｹ繝繧ｦ 邨ょ､      荳頑ｵｷ邱丞粋 邨ょ､
+First Data Row: 54,253.68 +435.64 157.23 +0.19 50,115.67 +1,206.95 4,065.58 -10.33
+--- Table 2 ---
+Preceding Element Text: None
+Header Row Text: 縲梧ｪ謗｢縲阪〒驟堺ｿ｡縺励◆繝九Η繝ｼ繧ｹ險倅ｺ九ｒ讀懃ｴ｢縺励∪縺・
+--- Table 3 ---
+Preceding Element Text: 1726縲・｢・抵ｼ趣ｼｨ・､
+Header Row Text: PER PBR 蛻ｩ蝗槭ｊ 菫｡逕ｨ蛟咲紫
+First Data Row: 10.7蛟・1.53蛟・1.55・・51.50蛟・
+--- Table 4 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 豎ｺ邂玲悄 螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣1譬ｪ逶・菫ｮ豁｣1譬ｪ驟・逋ｺ陦ｨ譌･
+First Data Row: 
+--- Table 5 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 豎ｺ邂玲悄 菫ｮ豁｣譌･ ・債 菫ｮ豁｣譁ｹ蜷・螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣驟榊ｽ・
+First Data Row: 2021.03 20/05/15 蛻・ﾂﾂﾂﾂﾂﾂﾂﾂﾂﾂ 36,000 2,250 2,150 1,400 10
+--- Table 6 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 
+--- Table 7 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 竊鯛・竊鯛・竊・
+--- Table 8 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 竊凪・竊鯛・竊・
+--- Table 9 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 
+--- Table 10 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 竊凪・竊凪・竊・
+--- Table 11 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 豎ｺ邂玲悄 螢ｲ荳企ｫ・蜑榊ｹｴ豈・蝟ｶ讌ｭ逶・蜑榊ｹｴ豈・邨悟ｸｸ逶・蜑榊ｹｴ豈・菫ｮ豁｣1譬ｪ逶・蜑榊ｹｴ豈・
+First Data Row: 2003.03ﾂﾂ 22,591 ・・ 蛻ｩ逶企・岼繝・・繧ｿ縺ｯ縲∵ｪ謗｢繝励Ξ繝溘い繝繧ｳ繝ｳ繝・Φ繝・〒縺吶・竕ｫ竕ｫ縲梧ｪ謗｢繝励Ξ繝溘い繝縲阪↓逕ｳ縺苓ｾｼ繧 窶ｻ繝励Ξ繝溘い繝莨壼藤縺ｮ譁ｹ縺ｯ縲≫懊Ο繧ｰ繧､繝ｳ窶昴＠縺ｦ縺上□縺輔＞縲・
+--- Table 12 ---
+Preceding Element Text: 蜿守寢諤ｧ
+Header Row Text: 豎ｺ邂玲悄 縲螢ｲ荳企ｫ・縲蝟ｶ讌ｭ逶・螢ｲ荳雁霧讌ｭ蛻ｩ逶顔紫 縲・ｲ・ｯ・･ 縲・ｲ・ｯ・｡ 邱剰ｳ・肇蝗櫁ｻ｢邇・菫ｮ豁｣1譬ｪ逶・
+First Data Row: 
+--- Table 13 ---
+Preceding Element Text: 驕主悉譛鬮・縲仙ｮ溽ｸｾ縲・
+Header Row Text: 螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣1譬ｪ逶・
+First Data Row: 驕主悉譛鬮・40,770 3,045 2,954 1,948 49.7
+--- Table 14 ---
+Preceding Element Text: 荳区悄讌ｭ邵ｾ
+Header Row Text: 豎ｺ邂玲悄 螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣1譬ｪ逶・菫ｮ豁｣1譬ｪ驟・逋ｺ陦ｨ譌･
+First Data Row: 22.10-03ﾂﾂ 19,506 1,283 1,260 813 18.0 6 23/05/12
+--- Table 15 ---
+Preceding Element Text: 騾壽悄
+Header Row Text: 豎ｺ邂玲悄 蝟ｶ讌ｭ逶・繝輔Μ繝ｼCF 蝟ｶ讌ｭCF 謚戊ｳ④F 雋｡蜍僂F 迴ｾ驥醍ｭ画ｮ矩ｫ・迴ｾ驥第ｯ皮紫
+First Data Row: 
+--- Table 16 ---
+Preceding Element Text: 隨ｬ・灘屁蜊頑悄邏ｯ險域ｱｺ邂励仙ｮ溽ｸｾ縲・
+Header Row Text: 豎ｺ邂玲悄 螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣1譬ｪ逶・蟇ｾ騾壽悄騾ｲ謐礼紫 逋ｺ陦ｨ譌･
+First Data Row: 23.04-12ﾂﾂ 30,314 1,560 1,529 970 21.3 75.1 24/02/07
+--- Table 17 ---
+Preceding Element Text: 謌宣聞諤ｧ
+Header Row Text: 豎ｺ邂玲悄 螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣1譬ｪ逶・螢ｲ荳雁霧讌ｭ謳咲寢邇・逋ｺ陦ｨ譌･
+First Data Row: 
+--- Table 18 ---
+Preceding Element Text: 謌宣聞諤ｧ
+Header Row Text: 豎ｺ邂玲悄 螢ｲ荳企ｫ・蜑榊ｹｴ蜷梧悄豈・蝟ｶ讌ｭ逶・蜑榊ｹｴ蜷梧悄豈・邨悟ｸｸ逶・蜑榊ｹｴ蜷梧悄豈・菫ｮ豁｣1譬ｪ逶・蜑榊ｹｴ蜷梧悄豈・
+First Data Row: 21.01-03ﾂﾂ 10,474 +17.9 
+ 蛻ｩ逶企・岼繝・・繧ｿ縺ｯ縲∵ｪ謗｢繝励Ξ繝溘い繝繧ｳ繝ｳ繝・Φ繝・〒縺吶・竕ｫ竕ｫ縲梧ｪ謗｢繝励Ξ繝溘い繝縲阪↓逕ｳ縺苓ｾｼ繧
+ 窶ｻ繝励Ξ繝溘い繝莨壼藤縺ｮ譁ｹ縺ｯ縲≫懊Ο繧ｰ繧､繝ｳ窶昴＠縺ｦ縺上□縺輔＞縲・
+--- Table 19 ---
+Preceding Element Text: 3繝ｵ譛域ｱｺ邂鈴℃蜴ｻ譛鬮・縲仙ｮ溽ｸｾ縲・
+Header Row Text: 螢ｲ荳企ｫ・蝟ｶ讌ｭ逶・邨悟ｸｸ逶・譛邨ら寢 菫ｮ豁｣1譬ｪ逶・
+First Data Row: 驕主悉譛鬮・12,110 1,147 1,069 755 21.6
+--- Table 20 ---
+Preceding Element Text: 雋｡蜍・縲仙ｮ溽ｸｾ縲・
+Header Row Text: 豎ｺ邂玲悄 ・第ｪ邏碑ｳ・肇 閾ｪ蟾ｱ雉・悽豈皮紫 邱剰ｳ・肇 閾ｪ蟾ｱ雉・悽 蜑ｰ菴咎≡ 譛牙茜蟄占ｲ蛯ｵ蛟咲紫 逋ｺ陦ｨ譌･
+First Data Row: 
+--- Table 21 ---
+Preceding Element Text: 譌･邨悟ｹｳ蝮・
+Header Row Text: 譌･荳ｭ雜ｳ
+First Data Row: 譌･縲雜ｳ

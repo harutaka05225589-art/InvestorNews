@@ -2,6 +2,9 @@ import { getInvestorById, getNewsByInvestor } from '@/lib/db';
 import { Investor, NewsItem } from '@/lib/types';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Fragment } from 'react';
+import AdSenseInFeed from '../../../components/ads/AdSenseInFeed';
+import AdSenseDisplay from '../../../components/ads/AdSenseDisplay';
 // Removed duplicate import
 
 export const dynamic = 'force-dynamic';
@@ -165,42 +168,50 @@ export default async function InvestorPage({
 
                 {freeNews.length === 0 ? <p style={{ color: 'var(--secondary)', marginTop: '1rem' }}>このページの表示範囲に記事はありません</p> : null}
 
-                {freeNews.map(item => (
-                    <div key={item.id} className="news-item">
-                        <div className="news-meta">
-                            <span className="label-free">FREE</span>
-                            <span>{item.domain}</span>
-                            <span>{new Date(item.published_at).toLocaleDateString()}</span>
-                        </div>
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="news-title">
-                            {item.title}
-                        </a>
-                        <div className="news-summary">
-                            {item.summary}
-                        </div>
+                {freeNews.map((item, index) => (
+                    <Fragment key={item.id}>
+                        <div className="news-item">
+                            <div className="news-meta">
+                                <span className="label-free">FREE</span>
+                                <span>{item.domain}</span>
+                                <span>{new Date(item.published_at).toLocaleDateString()}</span>
+                            </div>
+                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="news-title">
+                                {item.title}
+                            </a>
+                            <div className="news-summary">
+                                {item.summary}
+                            </div>
 
-                        {/* AI Summary Widget */}
-                        {item.ai_summary && (
-                            <div style={{
-                                marginTop: '0.8rem',
-                                padding: '0.8rem',
-                                background: 'rgba(59, 130, 246, 0.1)',
-                                borderLeft: '3px solid #3b82f6',
-                                borderRadius: '4px',
-                                fontSize: '0.9rem',
-                                color: '#e2e8f0'
-                            }}>
-                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.3rem', color: '#60a5fa', fontWeight: 'bold', fontSize: '0.8rem' }}>
-                                    <span style={{ marginRight: '0.3rem' }}>🤖</span> AI要約
+                            {/* AI Summary Widget */}
+                            {item.ai_summary && (
+                                <div style={{
+                                    marginTop: '0.8rem',
+                                    padding: '0.8rem',
+                                    background: 'rgba(59, 130, 246, 0.1)',
+                                    borderLeft: '3px solid #3b82f6',
+                                    borderRadius: '4px',
+                                    fontSize: '0.9rem',
+                                    color: '#e2e8f0'
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '0.3rem', color: '#60a5fa', fontWeight: 'bold', fontSize: '0.8rem' }}>
+                                        <span style={{ marginRight: '0.3rem' }}>🤖</span> AI要約
+                                    </div>
+                                    {item.ai_summary}
                                 </div>
-                                {item.ai_summary}
+                            )}
+
+                            <a href={item.url} target="_blank" rel="noopener noreferrer" className="read-more">
+                                本文を読む &rarr;
+                            </a>
+                        </div>
+                        {/* Ad every 5 items */}
+                        {(index + 1) % 5 === 0 && (
+                            <div style={{ margin: '2rem 0' }}>
+                                <AdSenseInFeed slotId="3072451399" layoutKey="-fb+5w+4e-db+86" />
                             </div>
                         )}
-
-                        <a href={item.url} target="_blank" rel="noopener noreferrer" className="read-more">
-                            本文を読む &rarr;
-                        </a>
-                    </div>
+                    </Fragment>
                 ))}
             </section>
 
@@ -269,6 +280,11 @@ export default async function InvestorPage({
                         </Link>
                     )}
                 </div>
+            </div>
+
+            {/* Bottom Ad */}
+            <div style={{ marginTop: '3rem' }}>
+                <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
             </div>
         </div>
     );

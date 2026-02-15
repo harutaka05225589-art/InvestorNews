@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '../../hooks/useAuth';
 import styles from './calendar.module.css';
+import AdSenseDisplay from '../../components/ads/AdSenseDisplay';
 
 // Mock Data
 const MOCK_EVENTS = [
@@ -363,6 +364,11 @@ export default function CalendarPage() {
                 </div>
             </section>
 
+            {/* Middle Ad */}
+            <div style={{ margin: '2rem 0' }}>
+                <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
+            </div>
+
             {/* Monthly View (Continued...) */}
             <section className={styles.layoutSplit}>
                 <div>
@@ -443,8 +449,14 @@ export default function CalendarPage() {
                         </p>
                     )}
                 </div>
-            </section>
-        </main>
+            </div>
+        </section>
+
+            {/* Bottom Ad */ }
+    <div style={{ marginTop: '3rem' }}>
+        <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
+    </div>
+        </main >
     );
 }
 

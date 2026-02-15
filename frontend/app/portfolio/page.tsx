@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, AreaChart, Area, LineChart, Line } from 'recharts';
+import AdSenseInFeed from '../../components/ads/AdSenseInFeed';
+import AdSenseDisplay from '../../components/ads/AdSenseDisplay';
 
 interface Transaction {
     id: number;
@@ -668,38 +670,48 @@ export default function PortfolioPage() {
                                     {holdings.length === 0 ? (
                                         <tr><td colSpan={5} style={{ padding: '1rem', textAlign: 'center', color: '#64748b' }}>データがありません</td></tr>
                                     ) : (
-                                        holdings.map(h => (
-                                            <tr key={h.id} style={{ borderBottom: '1px solid #334155' }}>
-                                                <td style={{ padding: 0, fontWeight: 'bold' }}>
-                                                    <Link href={`/stocks/${h.ticker}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '0.8rem 0.5rem' }} className="hover:opacity-75">
-                                                        {h.name ? (
-                                                            <>
-                                                                <div style={{ fontSize: '1em', color: '#38bdf8' }}>{h.ticker}</div>
-                                                                <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{h.name}</div>
-                                                            </>
-                                                        ) : (
-                                                            <span style={{ color: '#38bdf8' }}>{h.ticker}</span>
-                                                        )}
-                                                    </Link>
-                                                </td>
-                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>
-                                                    <span style={{
-                                                        padding: '2px 6px',
-                                                        borderRadius: '4px',
-                                                        fontSize: '0.8em',
-                                                        background: h.accountType === 'nisa' ? '#ef4444' : '#64748b',
-                                                        color: '#fff'
-                                                    }}>
-                                                        {h.accountType === 'nisa' ? 'NISA' : '特定'}
-                                                    </span>
-                                                </td>
-                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{h.totalShares.toLocaleString()}株</td>
-                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>@{Math.round(h.averagePrice).toLocaleString()}</td>
-                                                <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right', color: '#4ade80' }}>
-                                                    {Math.round(h.projectedDividend).toLocaleString()}
-                                                    <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(税引前)</span>
-                                                </td>
-                                            </tr>
+                                        holdings.map((h, index) => (
+                                            <React.Fragment key={h.id}>
+                                                <tr style={{ borderBottom: '1px solid #334155' }}>
+                                                    <td style={{ padding: 0, fontWeight: 'bold' }}>
+                                                        <Link href={`/stocks/${h.ticker}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '0.8rem 0.5rem' }} className="hover:opacity-75">
+                                                            {h.name ? (
+                                                                <>
+                                                                    <div style={{ fontSize: '1em', color: '#38bdf8' }}>{h.ticker}</div>
+                                                                    <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{h.name}</div>
+                                                                </>
+                                                            ) : (
+                                                                <span style={{ color: '#38bdf8' }}>{h.ticker}</span>
+                                                            )}
+                                                        </Link>
+                                                    </td>
+                                                    <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>
+                                                        <span style={{
+                                                            padding: '2px 6px',
+                                                            borderRadius: '4px',
+                                                            fontSize: '0.8em',
+                                                            background: h.accountType === 'nisa' ? '#ef4444' : '#64748b',
+                                                            color: '#fff'
+                                                        }}>
+                                                            {h.accountType === 'nisa' ? 'NISA' : '特定'}
+                                                        </span>
+                                                    </td>
+                                                    <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>{h.totalShares.toLocaleString()}株</td>
+                                                    <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right' }}>@{Math.round(h.averagePrice).toLocaleString()}</td>
+                                                    <td style={{ padding: '0.8rem 0.5rem', textAlign: 'right', color: '#4ade80' }}>
+                                                        {Math.round(h.projectedDividend).toLocaleString()}
+                                                        <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>(税引前)</span>
+                                                    </td>
+                                                </tr>
+                                                {/* In-feed Ad every 10 rows */}
+                                                {(index + 1) % 10 === 0 && (
+                                                    <tr>
+                                                        <td colSpan={5} style={{ padding: 0, border: 'none' }}>
+                                                            <AdSenseInFeed slotId="3072451399" layoutKey="-fb+5w+4e-db+86" />
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
                                         ))
                                     )}
                                 </tbody>
@@ -1032,6 +1044,10 @@ export default function PortfolioPage() {
                     </section>
 
                 </div>
+            </div>
+            {/* Bottom Ad */}
+            <div style={{ marginTop: '3rem' }}>
+                <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
             </div>
         </main>
     );
