@@ -21,6 +21,8 @@ export default async function ShareholderPage({ params }: Props) {
 
     // Calculate strict total value if we had price data, but we don't here easily.
     // Just count companies.
+    const companyCount = holdings.length;
+
     // Calculate latest entry date
     const lastUpdated = holdings.length > 0
         ? holdings.reduce((max, h) => (h.entry_date > max ? h.entry_date : max), '')
