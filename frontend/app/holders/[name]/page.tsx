@@ -1,7 +1,9 @@
 import { getHoldingsByShareholder } from '@/lib/db';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { Fragment } from 'react';
 import AdSenseDisplay from '../../../components/ads/AdSenseDisplay';
+import AdSenseInFeed from '../../../components/ads/AdSenseInFeed';
 
 type Props = {
     params: Promise<{ name: string }>;
@@ -73,29 +75,42 @@ export default async function ShareholderPage({ params }: Props) {
                             </thead>
                             <tbody>
                                 {holdings.map((h, i) => (
-                                    <tr key={i} style={{ borderBottom: '1px solid #334155' }}>
-                                        <td style={{ padding: '1rem' }}>
-                                            <Link href={`/stocks/${h.ticker}`} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none', fontFamily: 'monospace' }}>
-                                                {h.ticker}
-                                            </Link>
-                                        </td>
-                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>
-                                            <Link href={`/stocks/${h.ticker}`} style={{ color: '#fff', textDecoration: 'none' }}>
-                                                {h.company_name}
-                                            </Link>
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
-                                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
-                                                {h.share_ratio.toFixed(2)}%
-                                            </span>
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right', color: '#cbd5e1' }}>
-                                            {h.share_count}
-                                        </td>
-                                        <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8' }}>
-                                            {h.entry_date}
-                                        </td>
-                                    </tr>
+                                    <Fragment key={i}>
+                                        <tr style={{ borderBottom: '1px solid #334155' }}>
+                                            <td style={{ padding: '1rem' }}>
+                                                <Link href={`/stocks/${h.ticker}`} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none', fontFamily: 'monospace' }}>
+                                                    {h.ticker}
+                                                </Link>
+                                            </td>
+                                            <td style={{ padding: '1rem', fontWeight: 'bold' }}>
+                                                <Link href={`/stocks/${h.ticker}`} style={{ color: '#fff', textDecoration: 'none' }}>
+                                                    {h.company_name}
+                                                </Link>
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                                <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                                                    {h.share_ratio.toFixed(2)}%
+                                                </span>
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right', color: '#cbd5e1' }}>
+                                                {h.share_count}
+                                            </td>
+                                            <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                                {h.entry_date}
+                                            </td>
+                                        </tr>
+                                        {/* Insert Ad every 10 rows */}
+                                        {(i + 1) % 10 === 0 && (
+                                            <tr key={`ad-${i}`}>
+                                                <td colSpan={5} style={{ padding: 0, background: 'transparent', border: 'none' }}>
+                                                    <AdSenseInFeed
+                                                        slotId="3072451399"
+                                                        layoutKey="-fb+5w+4e-db+86"
+                                                    />
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </Fragment>
                                 ))}
                             </tbody>
                         </table>
