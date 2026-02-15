@@ -429,7 +429,7 @@ export default function CalendarPage() {
                                 <div key={e.id || `${e.ticker}-${e.date}`} className={styles.detailItem}>
                                     <div>
                                         <div className={styles.ticker}>
-                                            コード: <a href={`https://finance.yahoo.co.jp/quote/${e.ticker}.T`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{e.ticker}</a>
+                                            コード: <Link href={`/stocks/${e.ticker}`} className="hover:underline text-blue-400" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{e.ticker}</Link>
                                         </div>
                                         <div className={styles.companyName}>{e.name}</div>
                                     </div>
@@ -482,9 +482,9 @@ function WeeklyDayBox({ date, events, isToday, getTypeClass }: { date: Date, eve
                             <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
                                 {/* Use Text Color Style for Weekly List */}
                                 <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span>
-                                <a href={`https://finance.yahoo.co.jp/quote/${e.ticker}.T`} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none', marginLeft: '0.3rem' }} className="hover:underline">
+                                <Link href={`/stocks/${e.ticker}`} style={{ color: 'inherit', textDecoration: 'none', marginLeft: '0.3rem' }} className="hover:underline">
                                     {e.name}
-                                </a>
+                                </Link>
                             </div>
                         ))}
                         {hasMore && (
