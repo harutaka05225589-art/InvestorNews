@@ -1,6 +1,7 @@
 import { getHoldingsByShareholder } from '@/lib/db';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import AdSenseDisplay from '../../../components/ads/AdSenseDisplay';
 
 type Props = {
     params: Promise<{ name: string }>;
@@ -105,6 +106,9 @@ export default async function ShareholderPage({ params }: Props) {
                     </div>
                 )}
             </div>
+
+            {/* AdSense (Bottom) */}
+            <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} style={{ marginTop: '3rem' }} />
         </div>
     );
 }
