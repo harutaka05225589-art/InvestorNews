@@ -533,6 +533,24 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
         }
     }
 
+
     return results;
+}
+
+export function getAllCompanies(): { ticker: string }[] {
+    try {
+        // Try active companies from companies table
+        const stmt = db.prepare('SELECT ticker FROM companies ORDER BY ticker');
+        const res = stmt.all() as { ticker: string }[];
+        if (res.length > 0) return res;
+    } catch (e) { }
+
+    // Fallback: Get unique tickers from stock_profiles
+    try {
+        const stmt = db.prepare('SELECT ticker FROM stock_profiles ORDER BY ticker');
+        return stmt.all() as { ticker: string }[];
+    } catch (e) {
+        return [];
+    }
 }
 

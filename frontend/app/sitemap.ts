@@ -1,4 +1,4 @@
-import { getInvestors, getRevisionsForSitemap } from '@/lib/db';
+import { getAllCompanies, getInvestors, getRevisionsForSitemap } from '@/lib/db';
 import { Investor } from '@/lib/types';
 import { MetadataRoute } from 'next';
 
@@ -32,6 +32,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
         lastModified: new Date(),
         changeFrequency: 'weekly' as const, // Content changes less often than news
         priority: 0.9,
+    }));
+
+    // Dynamic Routes: Stock Detail Page
+    const allCompanies = getAllCompanies();
+    const stockUrls = allCompanies.map((c) => ({
+        url: `${BASE_URL}/stocks/${c.ticker}`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const, // Financial data changes quarterly, stock price daily but we don't index daily price
+        priority: 0.8,
     }));
 
     // Static Routes
@@ -133,5 +142,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         ...investorIntroUrls,
         ...investorNewsUrls,
         ...revisionUrls,
+        ...stockUrls,
     ];
 }
