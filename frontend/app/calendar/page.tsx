@@ -449,13 +449,12 @@ export default function CalendarPage() {
                         </p>
                     )}
                 </div>
-            </div>
-        </section>
+            </section>
 
-            {/* Bottom Ad */ }
-    <div style={{ marginTop: '3rem' }}>
-        <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
-    </div>
+            {/* Bottom Ad */}
+            <div style={{ marginTop: '3rem' }}>
+                <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
+            </div>
         </main >
     );
 }
