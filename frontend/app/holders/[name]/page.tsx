@@ -1,0 +1,110 @@
+import { getHoldingsByShareholder } from '@/lib/db';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
+
+type Props = {
+    params: Promise<{ name: string }>;
+}
+
+export default async function ShareholderPage({ params }: Props) {
+    const { name } = await params;
+    const decodedName = decodeURIComponent(name);
+
+    if (!decodedName) {
+        notFound();
+    }
+
+    const holdings = getHoldingsByShareholder(decodedName);
+
+    // Calculate strict total value if we had price data, but we don't here easily.
+    // Just count companies.
+    const companyCount = holdings.length;
+
+    return (
+        <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
+            <div style={{ marginBottom: '2rem' }}>
+                <Link href="/" style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
+                    color: '#94a3b8', textDecoration: 'none', fontSize: '0.9rem'
+                }}>
+                    <span>&larr;</span>
+                    <span>ホームに戻る</span>
+                </Link>
+            </div>
+
+            <header style={{ marginBottom: '3rem', borderBottom: '1px solid #334155', paddingBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '2.5rem' }}>👥</span>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>
+                        {decodedName}
+                        <span style={{ fontSize: '1rem', fontWeight: 'normal', color: '#94a3b8', marginLeft: '1rem' }}>
+                            の保有銘柄
+                        </span>
+                    </h1>
+                </div>
+                <p style={{ color: '#cbd5e1', lineHeight: '1.6', marginLeft: '4rem' }}>
+                    大株主として記載されている銘柄の一覧です。<br />
+                    <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>※ 直近の有価証券報告書や決算短信に基づくデータです。現在の実際の保有状況とは異なる場合があります。</span>
+                </p>
+            </header>
+
+            <div style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden' }}>
+                <div style={{ padding: '1.5rem', background: '#0f172a', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <h2 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff' }}>
+                        保有銘柄リスト
+                    </h2>
+                    <span style={{ background: '#3b82f6', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: '4px', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                        {companyCount} 銘柄
+                    </span>
+                </div>
+
+                {holdings.length > 0 ? (
+                    <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+                            <thead>
+                                <tr style={{ background: '#334155', color: '#cbd5e1', fontSize: '0.9rem' }}>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>コード</th>
+                                    <th style={{ padding: '1rem', textAlign: 'left' }}>銘柄名</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right' }}>保有比率</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right' }}>保有株数</th>
+                                    <th style={{ padding: '1rem', textAlign: 'right', width: '120px' }}>報告日</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {holdings.map((h, i) => (
+                                    <tr key={i} style={{ borderBottom: '1px solid #334155' }}>
+                                        <td style={{ padding: '1rem' }}>
+                                            <Link href={`/stocks/${h.ticker}`} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none', fontFamily: 'monospace' }}>
+                                                {h.ticker}
+                                            </Link>
+                                        </td>
+                                        <td style={{ padding: '1rem', fontWeight: 'bold' }}>
+                                            <Link href={`/stocks/${h.ticker}`} style={{ color: '#fff', textDecoration: 'none' }}>
+                                                {h.company_name}
+                                            </Link>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right' }}>
+                                            <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
+                                                {h.share_ratio.toFixed(2)}%
+                                            </span>
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right', color: '#cbd5e1' }}>
+                                            {h.share_count}
+                                        </td>
+                                        <td style={{ padding: '1rem', textAlign: 'right', fontSize: '0.85rem', color: '#94a3b8' }}>
+                                            {h.entry_date}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div style={{ padding: '3rem', textAlign: 'center', color: '#94a3b8' }}>
+                        <p>現在登録されている保有銘柄はありません。</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}

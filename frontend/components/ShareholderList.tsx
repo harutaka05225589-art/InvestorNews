@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface Shareholder {
     ticker: string;
@@ -94,7 +95,14 @@ export default function ShareholderList({ data }: ShareholderListProps) {
                             <tr key={i} style={{ borderBottom: '1px solid #334155' }}>
                                 <td style={{ padding: '1rem', textAlign: 'center', color: '#94a3b8' }}>{s.rank}</td>
                                 <td style={{ padding: '1rem', fontWeight: 'bold', color: '#fff' }}>
-                                    {s.shareholder_name}
+                                    {/* Link if not "Self" */}
+                                    {s.shareholder_name.includes('自社') || s.shareholder_name.includes('自己') ? (
+                                        s.shareholder_name
+                                    ) : (
+                                        <Link href={`/holders/${encodeURIComponent(s.shareholder_name)}`} style={{ color: '#60a5fa', textDecoration: 'none' }}>
+                                            {s.shareholder_name}
+                                        </Link>
+                                    )}
                                 </td>
                                 <td style={{ padding: '1rem', textAlign: 'right', color: '#fbbf24' }}>
                                     {s.share_ratio.toFixed(2)}%

@@ -453,6 +453,36 @@ export function getShareholders(ticker: string): Shareholder[] {
     }
 }
 
+export function getHoldingsByShareholder(shareholderName: string): (Shareholder & { company_name: string })[] {
+    try {
+        // Get the latest entry for each ticker this shareholder owns
+        const stmt = db.prepare(`
+            SELECT 
+                s.ticker, 
+                s.entry_date, 
+                s.shareholder_name, 
+                s.share_count, 
+                s.share_ratio, 
+                s.rank,
+                COALESCE(p.company_name, s.ticker) as company_name
+            FROM stock_shareholders s
+            LEFT JOIN stock_profiles p ON s.ticker = p.ticker
+            WHERE s.shareholder_name = ?
+            AND s.entry_date = (
+                SELECT MAX(entry_date) 
+                FROM stock_shareholders s2 
+                WHERE s2.ticker = s.ticker 
+                AND s2.shareholder_name = s.shareholder_name
+            )
+            ORDER BY s.share_ratio DESC
+        `);
+        return stmt.all(shareholderName) as (Shareholder & { company_name: string })[];
+    } catch (e) {
+        console.error("Get holdings by shareholder error:", e);
+        return [];
+    }
+}
+
 // --- Company Search Helpers (Added 2026-02-08) ---
 
 export interface CompanySearchResult {
