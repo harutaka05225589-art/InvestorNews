@@ -79,6 +79,8 @@ export default function SearchCompanies() {
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+                        autoFocus={false}
+                        autoComplete="off"
                         style={{
                             width: '100%',
                             padding: '0.5rem 0.5rem 0.5rem 2.2rem',

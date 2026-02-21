@@ -492,9 +492,16 @@ export interface CompanySearchResult {
     sector: string | null;
 }
 
+function normalizeSearchQuery(query: string): string {
+    // 1. Convert Full-width Alphanumeric to Half-width, and normalize Unicode
+    // 2. Convert to lowercase for case-insensitive matching
+    return query.normalize('NFKC').toLowerCase().trim();
+}
+
 export function searchCompanies(query: string, limit: number = 10): CompanySearchResult[] {
     let results: CompanySearchResult[] = [];
-    const searchPattern = `%${query}%`;
+    const normalizedQuery = normalizeSearchQuery(query);
+    const searchPattern = `%${normalizedQuery}%`;
 
     // 1. Try "companies" master table
     try {
@@ -507,7 +514,7 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
               ticker ASC
             LIMIT ?
         `);
-        results = stmt.all(searchPattern, searchPattern, query, limit) as CompanySearchResult[];
+        results = stmt.all(searchPattern, searchPattern, normalizedQuery, limit) as CompanySearchResult[];
     } catch (e) {
         // Table might not exist yet, ignore
     }

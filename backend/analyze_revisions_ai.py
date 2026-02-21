@@ -307,30 +307,34 @@ def process_revisions():
                     print(f"  -> No registered users for {ticker}. Skipping LINE.")
                 
                 # --- Post to X (Public) ---
-                # Check if already tweeted
-                if row['tweeted_at']:
-                    print(f"  -> X Post SKIPPED (Already tweeted at {row['tweeted_at']})")
+                # Re-fetch latest status to avoid race conditions
+                latest = c.execute("SELECT tweeted_at, ai_analyzed FROM revisions WHERE id = ?", (rev_id,)).fetchone()
+                if not latest: continue
+                
+                if latest['tweeted_at']:
+                    print(f"  -> X Post SKIPPED (Already tweeted at {latest['tweeted_at']})")
                 else:
-                    # Check for duplicate tweet for same ticker TODAY (Prevent multiple tweets for same company)
-                    # Fix: Adjust UTC tweeted_at to JST (+9h) for correct day comparison
-                    today_str = datetime.datetime.now().strftime('%Y-%m-%d')
+                    # Check for duplicate tweet for same ticker TODAY (JST)
+                    # We use JST for both 'today' and the DB comparison
+                    jst_now = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+                    today_str_jst = jst_now.strftime('%Y-%m-%d')
                     
-                    # SQLite 'date' function returns YYYY-MM-DD
+                    # SQLite 'date' function with '+9 hours' to convert UTC to JST
                     check_query = "SELECT id FROM revisions WHERE ticker = ? AND date(tweeted_at, '+9 hours') = ? LIMIT 1"
-                    c.execute(check_query, (ticker, today_str))
+                    c.execute(check_query, (ticker, today_str_jst))
                     existing_tweet = c.fetchone()
                     
                     if existing_tweet:
-                         print(f"  -> X Post SKIPPED (Already tweeted for ticker {ticker} today)")
+                         print(f"  -> X Post SKIPPED (Already tweeted for ticker {ticker} today JST)")
                          should_post = False
                     else:
-                        # Logic: Post if (Upward & Rate>=5%) OR (Dividend Hike)
                         should_post = False
                     header_text = "📈 【AI速報: 上方修正判定】"
                     hashtags = "#日本株 #決算速報 #上方修正 #増配 #高配当株"
 
                     if category == 'buyback':
                         should_post = False # User request: Disable X post for buybacks
+                        print("  -> X Post SKIPPED (Category: Buyback)")
                         header_text = "🚀 【AI速報: 自社株買い判定】"
                     else:
                         # Unified Logic: Check for Earnings Hike OR Dividend Hike
