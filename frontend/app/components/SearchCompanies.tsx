@@ -16,6 +16,7 @@ export default function SearchCompanies() {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [isFocused, setIsFocused] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
@@ -23,6 +24,7 @@ export default function SearchCompanies() {
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
+                setIsFocused(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -69,14 +71,28 @@ export default function SearchCompanies() {
         if (/^\d{4}$/.test(query)) {
             router.push(`/stocks/${query}`);
             setIsOpen(false);
+            setIsFocused(false);
             setQuery('');
         }
     };
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', width: '100%', maxWidth: '400px', marginRight: '1rem' }}>
-            <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{ position: 'relative', width: '100%' }}>
+        <div ref={wrapperRef} style={{
+            position: isFocused ? 'absolute' : 'relative',
+            top: isFocused ? 0 : 'auto',
+            left: isFocused ? 0 : 'auto',
+            width: isFocused ? '100%' : '100%',
+            maxWidth: isFocused ? '100%' : '400px',
+            height: isFocused ? '60px' : 'auto', // Match header height
+            marginRight: isFocused ? 0 : '1rem',
+            zIndex: isFocused ? 1000 : 1,
+            background: isFocused ? 'var(--background)' : 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            padding: isFocused ? '0 1rem' : 0
+        }}>
+            <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                <div style={{ position: 'relative', width: '100%', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
                         🔍
                     </span>
@@ -85,9 +101,13 @@ export default function SearchCompanies() {
                         placeholder="銘柄検索 (コード/社名)"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        onFocus={() => { if (results.length > 0) setIsOpen(true); }}
+                        onFocus={() => {
+                            setIsFocused(true);
+                            if (results.length > 0) setIsOpen(true);
+                        }}
                         autoComplete="off"
                         style={{
+                            flex: 1,
                             width: '100%',
                             padding: '0.5rem 0.5rem 0.5rem 2.2rem',
                             borderRadius: '20px',
@@ -98,6 +118,26 @@ export default function SearchCompanies() {
                             fontSize: '16px' // Must be 16px or larger to prevent iOS Safari zoom
                         }}
                     />
+                    {isFocused && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsFocused(false);
+                                setIsOpen(false);
+                            }}
+                            style={{
+                                background: 'transparent',
+                                border: 'none',
+                                color: '#94a3b8',
+                                fontSize: '0.9rem',
+                                padding: '0.5rem',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap'
+                            }}
+                        >
+                            キャンセル
+                        </button>
+                    )}
                 </div>
             </form>
 
