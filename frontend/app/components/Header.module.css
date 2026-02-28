@@ -310,6 +310,15 @@
     position: relative;
     margin-right: 1rem;
     z-index: 201;
+    display: none;
+    /* Hidden on mobile to save space */
+}
+
+@media (min-width: 850px) {
+    .notifWrapper {
+        display: block;
+        /* Shown on desktop */
+    }
 }
 
 .notifBtn {
