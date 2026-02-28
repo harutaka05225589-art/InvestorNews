@@ -112,6 +112,7 @@ export default function SearchCompanies() {
                             style={{
                                 flex: 1,
                                 width: '100%',
+                                minWidth: 0,
                                 padding: '0.5rem 0.5rem 0.5rem 2.2rem',
                                 borderRadius: '20px',
                                 border: '1px solid #334155',
@@ -119,7 +120,10 @@ export default function SearchCompanies() {
                                 color: '#94a3b8',
                                 textAlign: 'left',
                                 fontSize: '16px',
-                                cursor: 'text'
+                                cursor: 'text',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
                             }}
                         >
                             銘柄検索 (コード/社名)
