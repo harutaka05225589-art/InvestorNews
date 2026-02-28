@@ -71,9 +71,11 @@ h2 {
   background: var(--card-bg);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  transition: transform 0.2s, background-color 0.2s;
+  padding: 1.5rem;
+  /* Increased from 1rem for better breathing room */
+  margin-bottom: 1.5rem;
+  /* Increased from 1rem */
+  transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
 }
 
 .card:active {
@@ -82,6 +84,7 @@ h2 {
 
 .card:hover {
   background: var(--card-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .investor-card {
@@ -237,6 +240,7 @@ header {
     padding: 1rem;
   }
 }
+
 /* Custom Scrollbar for Webkit Browsers */
 ::-webkit-scrollbar {
   width: 8px;
@@ -244,17 +248,20 @@ header {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a; /* Slate 900 */
+  background: #0f172a;
+  /* Slate 900 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155; /* Slate 700 */
+  background: #334155;
+  /* Slate 700 */
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569; /* Slate 600 */
+  background: #475569;
+  /* Slate 600 */
 }
 
 /* Firefox support */

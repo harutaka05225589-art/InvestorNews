@@ -90,11 +90,24 @@ export default function Home() {
 
         {/* Center: Main Feed */}
         <div className={styles.mainColumn}>
+          {/* NEW HERO SECTION */}
           <div className={styles.hero}>
             <h2 className={styles.heroTitle}>
-              億り人たちの最新動向
+              著名投資家のポートフォリオと<br />
+              最新の決算・配当を一元管理。
             </h2>
+            <p className={styles.heroSubtitle}>
+              億り人たちの大量保有報告から、次に動く日本株のヒントを見つけ出そう。<br />
+              個人投資家のための強力な分析ツール（RIN）。
+            </p>
+            <Link href="/revisions" className={styles.heroCta}>
+              <span>👉 本日の業績修正を見る</span>
+            </Link>
           </div>
+
+          <h2 className={styles.sectionTitle}>
+            億り人たちの最新動向
+          </h2>
 
           <div className={styles.investorGrid}>
             {investors.map((investor) => (

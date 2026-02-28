@@ -9,6 +9,35 @@ type Props = {
     params: Promise<{ name: string }>;
 }
 
+export async function generateMetadata({ params }: Props) {
+    const { name } = await params;
+    const decodedName = decodeURIComponent(name);
+
+    if (!decodedName) {
+        return {
+            title: '投資家が見つかりません | RIN (Rich Investor News)'
+        };
+    }
+
+    return {
+        title: `【最新】${decodedName}（億り人）のポートフォリオ・保有銘柄一覧 | RIN`,
+        description: `${decodedName}さんが現在保有している日本株ポートフォリオの一覧です。最新の大量保有報告書や四季報ベースで、保有銘柄や投資動向を分析できます。個人投資家のための企業分析ツール RIN (Rich Investor News)。`,
+        keywords: `${decodedName}, 保有銘柄, ポートフォリオ, 最新, 資産, 億り人, 日本株, 投資家, 大量保有報告書, 決算速報, RIN, Rich Investor News`,
+        openGraph: {
+            title: `【最新】${decodedName}（億り人）のポートフォリオ・保有銘柄一覧 | RIN`,
+            description: `${decodedName}さんが現在保有している日本株ポートフォリオの一覧です。最新情報の確認はこちら。`,
+            url: `https://rich-investor-news.com/holders/${name}`,
+            siteName: 'RIN (Rich Investor News)',
+            type: 'website',
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title: `【最新】${decodedName}のポートフォリオ・保有銘柄一覧 | RIN`,
+            description: `${decodedName}さんが現在保有している日本株ポートフォリオの一覧です。`,
+        },
+    };
+}
+
 export default async function ShareholderPage({ params }: Props) {
     const { name } = await params;
     const decodedName = decodeURIComponent(name);
