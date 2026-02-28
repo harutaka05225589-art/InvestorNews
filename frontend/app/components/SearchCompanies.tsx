@@ -100,33 +100,56 @@ export default function SearchCompanies() {
         }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                 <div style={{ position: 'relative', width: '100%', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                    <span style={{ position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8', zIndex: 2 }}>
                         🔍
                     </span>
-                    <input
-                        type="text"
-                        placeholder="銘柄検索 (コード/社名)"
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onClick={() => {
-                            if (isMobile) setIsExpanded(true);
-                        }}
-                        onFocus={() => {
-                            if (results.length > 0) setIsOpen(true);
-                        }}
-                        autoComplete="off"
-                        style={{
-                            flex: 1,
-                            width: '100%',
-                            padding: '0.5rem 0.5rem 0.5rem 2.2rem',
-                            borderRadius: '20px',
-                            border: '1px solid #334155',
-                            background: '#1e293b',
-                            color: '#fff',
-                            outline: 'none',
-                            fontSize: '16px' // Must be 16px or larger to prevent iOS Safari zoom
-                        }}
-                    />
+
+                    {/* Mobile: Show a fake input (button) when NOT expanded to prevent iOS auto-keyboard */}
+                    {isMobile && !isExpanded ? (
+                        <button
+                            type="button"
+                            onClick={() => setIsExpanded(true)}
+                            style={{
+                                flex: 1,
+                                width: '100%',
+                                padding: '0.5rem 0.5rem 0.5rem 2.2rem',
+                                borderRadius: '20px',
+                                border: '1px solid #334155',
+                                background: '#1e293b',
+                                color: '#94a3b8',
+                                textAlign: 'left',
+                                fontSize: '16px',
+                                cursor: 'text'
+                            }}
+                        >
+                            銘柄検索 (コード/社名)
+                        </button>
+                    ) : (
+                        // Desktop OR Mobile Expanded: Show real input
+                        <input
+                            type="text"
+                            placeholder="銘柄検索 (コード/社名)"
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onFocus={() => {
+                                if (!isMobile && results.length > 0) setIsOpen(true);
+                            }}
+                            autoFocus={isMobile && isExpanded} // Auto-focus only when explicitly expanded by user
+                            autoComplete="off"
+                            style={{
+                                flex: 1,
+                                width: '100%',
+                                padding: '0.5rem 0.5rem 0.5rem 2.2rem',
+                                borderRadius: '20px',
+                                border: '1px solid #334155',
+                                background: '#1e293b',
+                                color: '#fff',
+                                outline: 'none',
+                                fontSize: '16px'
+                            }}
+                        />
+                    )}
+
                     {isExpanded && (
                         <button
                             type="button"
@@ -134,6 +157,7 @@ export default function SearchCompanies() {
                                 e.preventDefault();
                                 setIsExpanded(false);
                                 setIsOpen(false);
+                                setQuery(''); // Clear query on cancel to be safe
                             }}
                             style={{
                                 background: 'transparent',
@@ -173,7 +197,11 @@ export default function SearchCompanies() {
                         <Link
                             key={item.ticker}
                             href={`/stocks/${item.ticker}`}
-                            onClick={() => { setIsOpen(false); setQuery(''); }}
+                            onClick={() => {
+                                setIsOpen(false);
+                                setIsExpanded(false);
+                                setQuery('');
+                            }}
                             style={{
                                 display: 'block',
                                 padding: '0.75rem 1rem',
