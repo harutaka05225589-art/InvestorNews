@@ -499,46 +499,53 @@ function normalizeSearchQuery(query: string): string {
 }
 
 export function searchCompanies(query: string, limit: number = 10): CompanySearchResult[] {
-    let results: CompanySearchResult[] = [];
     const normalizedQuery = normalizeSearchQuery(query);
-    const searchPattern = `%${normalizedQuery}%`;
+    if (!normalizedQuery) return [];
 
-    // 1. Try "companies" master table
+    let allCompanies: CompanySearchResult[] = [];
+
+    // 1. Fetch all companies into memory (only ~4000 rows, very fast)
     try {
-        const stmt = db.prepare(`
-            SELECT code as ticker, name, market_segment as market, '' as sector 
-            FROM companies 
-            WHERE code LIKE ? OR name LIKE ?
-            ORDER BY 
-              CASE WHEN code = ? THEN 1 ELSE 2 END, -- Exact match first
-              code ASC
-            LIMIT ?
-        `);
-        results = stmt.all(searchPattern, searchPattern, normalizedQuery, limit) as CompanySearchResult[];
+        const stmt = db.prepare(`SELECT code as ticker, name, market_segment as market, '' as sector FROM companies`);
+        allCompanies = stmt.all() as CompanySearchResult[];
     } catch (e) {
-        // Table might not exist yet, ignore
+        // Table might not exist yet, fallback to ir_events below
     }
 
-    // 2. Fallback to "ir_events" if no results found (or table missing)
-    if (results.length === 0) {
+    // 2. Fetch fallbacks if master table empty or missing
+    if (allCompanies.length === 0) {
         try {
             const stmt = db.prepare(`
                 SELECT ticker, name, 'Unknown' as market, '' as sector FROM (
                     SELECT DISTINCT ticker, company_name as name FROM ir_events
-                    WHERE ticker LIKE ? OR company_name LIKE ?
                     UNION
                     SELECT DISTINCT ticker, company_name as name FROM revisions
-                    WHERE ticker LIKE ? OR company_name LIKE ?
                 )
-                ORDER BY ticker
-                LIMIT ?
              `);
-            results = stmt.all(searchPattern, searchPattern, searchPattern, searchPattern, limit) as CompanySearchResult[];
+            allCompanies = stmt.all() as CompanySearchResult[];
         } catch (e2) {
             console.error("Search fallback error:", e2);
         }
     }
 
+    // 3. Filter in memory (supports any Unicode, NFKC, and JS lowercasing properly)
+    const exactMatches: CompanySearchResult[] = [];
+    const partialMatches: CompanySearchResult[] = [];
+
+    for (const company of allCompanies) {
+        // Protect against null names in fallback sources
+        const tickerNorm = normalizeSearchQuery(company.ticker || "");
+        const nameNorm = normalizeSearchQuery(company.name || "");
+
+        if (tickerNorm === normalizedQuery) {
+            exactMatches.push(company);
+        } else if (tickerNorm.includes(normalizedQuery) || nameNorm.includes(normalizedQuery)) {
+            partialMatches.push(company);
+        }
+    }
+
+    // 4. Sort exact matches first, then partials, and limit
+    const results = [...exactMatches, ...partialMatches].slice(0, limit);
 
     return results;
 }
