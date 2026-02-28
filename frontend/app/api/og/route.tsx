@@ -64,72 +64,52 @@ export async function GET(request: NextRequest) {
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        backgroundColor: '#0f172a', // Slate-900
-                        backgroundImage: `
-                            linear-gradient(to bottom right, #0f172a, #1e293b),
-                            radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 20%),
-                            radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 20%)
-                        `,
+                        backgroundColor: '#0f172a',
                         color: '#f8fafc',
                         fontFamily: fontData ? '"Noto Sans JP", sans-serif' : 'sans-serif',
                         position: 'relative',
-                        overflow: 'hidden',
+                        padding: '60px',
                     }}
                 >
-                    {/* Background Grid Pattern */}
-                    <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundImage: 'linear-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.1) 1px, transparent 1px)',
-                        backgroundSize: '40px 40px',
-                        maskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)',
-                        WebkitMaskImage: 'radial-gradient(circle at center, black 40%, transparent 100%)',
-                        zIndex: 0,
-                    }} />
-
                     {/* Content Container */}
                     <div style={{
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
-                        zIndex: 10,
-                        padding: '0 60px',
+                        justifyContent: 'center',
                         textAlign: 'center',
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: 'rgba(30, 41, 59, 0.8)',
+                        borderRadius: '24px',
+                        border: '2px solid rgba(59, 130, 246, 0.4)',
+                        padding: '40px'
                     }}>
                         {/* Brand Badge */}
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            marginBottom: '30px',
-                            padding: '8px 24px',
-                            background: 'linear-gradient(90deg, #1e293b, #334155)',
+                            marginBottom: '40px',
+                            padding: '12px 32px',
+                            backgroundColor: '#1e293b',
                             borderRadius: '100px',
-                            border: '1px solid rgba(59, 130, 246, 0.3)',
+                            border: '1px solid #3b82f6',
                             color: '#60a5fa',
                             fontWeight: 'bold',
-                            fontSize: '24px',
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                            fontSize: '28px',
                         }}>
-                            <span style={{ marginRight: '8px' }}>📊</span> Invester News
+                            <span style={{ marginRight: '12px' }}>📊</span> Invester News
                         </div>
 
                         {/* Main Title */}
                         <div
                             style={{
-                                fontSize: title.length > 20 ? 56 : 72, // Auto-size
+                                display: 'flex',
+                                fontSize: title.length > 20 ? 56 : 72,
                                 fontWeight: 900,
-                                lineHeight: 1.1,
                                 marginBottom: '24px',
-                                textShadow: '0 4px 12px rgba(0,0,0,0.5)',
-                                background: 'linear-gradient(to bottom, #ffffff, #cbd5e1)',
-                                backgroundClip: 'text',
-                                color: 'transparent',
-                                letterSpacing: '-0.02em',
-                                maxWidth: '1100px',
-                                wordBreak: 'keep-all', // Japanese line breaking
+                                color: '#ffffff',
+                                textAlign: 'center',
                             }}
                         >
                             {title}
@@ -138,12 +118,13 @@ export async function GET(request: NextRequest) {
                         {/* Subtitle */}
                         <div
                             style={{
+                                display: 'flex',
                                 fontSize: 32,
                                 color: '#94a3b8',
-                                maxWidth: '900px',
-                                lineHeight: 1.4,
-                                borderTop: '1px solid rgba(148, 163, 184, 0.2)',
-                                paddingTop: '24px',
+                                marginTop: '20px',
+                                borderTop: '2px solid rgba(148, 163, 184, 0.2)',
+                                paddingTop: '32px',
+                                textAlign: 'center',
                             }}
                         >
                             {subtitle}
@@ -154,10 +135,10 @@ export async function GET(request: NextRequest) {
                     <div style={{
                         position: 'absolute',
                         bottom: 0,
+                        left: 0,
                         width: '100%',
-                        height: '8px',
-                        background: 'linear-gradient(90deg, #3b82f6, #06b6d4, #10b981)',
-                        zIndex: 20,
+                        height: '12px',
+                        backgroundColor: '#3b82f6',
                     }} />
                 </div>
             ),
