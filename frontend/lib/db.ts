@@ -506,12 +506,12 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
     // 1. Try "companies" master table
     try {
         const stmt = db.prepare(`
-            SELECT ticker, name, market, sector 
+            SELECT code as ticker, name, market_segment as market, '' as sector 
             FROM companies 
-            WHERE ticker LIKE ? OR name LIKE ?
+            WHERE code LIKE ? OR name LIKE ?
             ORDER BY 
-              CASE WHEN ticker = ? THEN 1 ELSE 2 END, -- Exact match first
-              ticker ASC
+              CASE WHEN code = ? THEN 1 ELSE 2 END, -- Exact match first
+              code ASC
             LIMIT ?
         `);
         results = stmt.all(searchPattern, searchPattern, normalizedQuery, limit) as CompanySearchResult[];
@@ -533,7 +533,6 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
                 ORDER BY ticker
                 LIMIT ?
              `);
-            const searchPattern = `%${query}%`;
             results = stmt.all(searchPattern, searchPattern, searchPattern, searchPattern, limit) as CompanySearchResult[];
         } catch (e2) {
             console.error("Search fallback error:", e2);
