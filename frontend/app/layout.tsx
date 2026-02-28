@@ -4,23 +4,23 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | 億り人・決算速報',
-    default: '億り人・決算速報 - 投資家ニュースとIRカレンダー',
+    template: '%s | 億り人・決算速報 (RIN)',
+    default: '億り人・決算速報 (RIN) - 投資家ニュースとIRカレンダー',
   },
-  description: '著名投資家の動向と企業の決算スケジュールを網羅。億り人のニュースと最新のIR情報をまとめてチェックできる投資家必須のサイトです。',
-  keywords: ['投資家', '株', '決算', 'カレンダー', 'テスタ', '億り人', 'IR'],
+  description: '著名投資家の動向と企業の決算スケジュールを網羅。億り人のニュースと最新のIR情報をまとめてチェックできる投資家必須のサイト(RIN: Rich Investor News)です。',
+  keywords: ['投資家', '株', '決算', 'カレンダー', 'テスタ', '億り人', 'IR', 'RIN', 'Rich Investor News'],
   openGraph: {
     type: 'website',
     locale: 'ja_JP',
-    siteName: '億り人・決算速報',
-    title: '億り人・決算速報',
-    description: '著名投資家の動向と企業の決算スケジュールを網羅。',
+    siteName: '億り人・決算速報 (RIN)',
+    title: '億り人・決算速報 (RIN)',
+    description: '著名投資家の動向と企業の決算スケジュールを網羅(RIN)。',
     images: [
       {
         url: 'https://rich-investor-news.com/api/og',
         width: 1200,
         height: 630,
-        alt: '億り人・決算速報',
+        alt: '億り人・決算速報 (RIN)',
       }
     ],
   },
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: '億り人・決算速報',
+    title: '億り人・決算速報 (RIN)',
     description: '著名投資家の動向と企業の決算スケジュールを網羅。',
     images: ['https://rich-investor-news.com/api/og'],
   },

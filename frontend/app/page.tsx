@@ -205,7 +205,7 @@ export default function Home() {
       {/* SEO & About Site Content */}
       <section style={{ marginTop: '4rem', padding: '2rem', background: '#0f172a', borderRadius: '12px', border: '1px solid #334155', color: '#e2e8f0' }}>
         <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>
-          億り人・決算速報について
+          億り人・決算速報 (RIN: Rich Investor News) について
         </h2>
         <div style={{ lineHeight: '1.8', fontSize: '0.95rem' }}>
           <h3 style={{ fontSize: '1.1rem', color: '#4ade80', marginTop: '1.5rem', marginBottom: '0.5rem' }}>
@@ -240,7 +240,7 @@ export default function Home() {
           </ul>
 
           <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-            当サイトは、初心者から中級者の個人投資家が、機関投資家や専業トレーダーと同じ情報レベルで戦えるようサポートするツールです。
+            当サイト(RIN)は、初心者から中級者の個人投資家が、機関投資家や専業トレーダーと同じ情報レベルで戦えるようサポートするツールです。
             日々の投資判断の一助として、ぜひブックマークしてご活用ください。
           </p>
         </div>
