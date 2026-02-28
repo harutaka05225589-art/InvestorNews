@@ -88,7 +88,7 @@ export default function SearchCompanies() {
                             background: '#1e293b',
                             color: '#fff',
                             outline: 'none',
-                            fontSize: '0.9rem'
+                            fontSize: '16px' // Must be 16px or larger to prevent iOS Safari zoom
                         }}
                     />
                 </div>

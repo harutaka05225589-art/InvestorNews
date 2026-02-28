@@ -40,6 +40,11 @@ export const metadata: Metadata = {
   other: {
     'google-adsense-account': 'ca-pub-1018275382396518',
   },
+}; export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1, // Prevents iOS Safari zoom on input focus
+  userScalable: false,
 };
 
 import Script from 'next/script';
