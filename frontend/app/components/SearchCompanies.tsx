@@ -16,15 +16,20 @@ export default function SearchCompanies() {
     const [results, setResults] = useState<SearchResult[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [isFocused, setIsFocused] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const router = useRouter();
 
     useEffect(() => {
+        setIsMobile(window.innerWidth < 850);
+        const handleResize = () => setIsMobile(window.innerWidth < 850);
+        window.addEventListener('resize', handleResize);
+
         function handleClickOutside(event: MouseEvent) {
             if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
-                setIsFocused(false);
+                setIsExpanded(false);
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
@@ -36,9 +41,10 @@ export default function SearchCompanies() {
         }
 
         return () => {
+            window.removeEventListener('resize', handleResize);
             document.removeEventListener("mousedown", handleClickOutside);
         };
-    }, [wrapperRef]);
+    }, []);
 
     useEffect(() => {
         const delayDebounceFn = setTimeout(async () => {
@@ -71,25 +77,25 @@ export default function SearchCompanies() {
         if (/^\d{4}$/.test(query)) {
             router.push(`/stocks/${query}`);
             setIsOpen(false);
-            setIsFocused(false);
+            setIsExpanded(false);
             setQuery('');
         }
     };
 
     return (
         <div ref={wrapperRef} style={{
-            position: isFocused ? 'absolute' : 'relative',
-            top: isFocused ? 0 : 'auto',
-            left: isFocused ? 0 : 'auto',
-            width: isFocused ? '100%' : '100%',
-            maxWidth: isFocused ? '100%' : '400px',
-            height: isFocused ? '60px' : 'auto', // Match header height
-            marginRight: isFocused ? 0 : '1rem',
-            zIndex: isFocused ? 1000 : 1,
-            background: isFocused ? 'var(--background)' : 'transparent',
+            position: isExpanded ? 'absolute' : 'relative',
+            top: isExpanded ? 0 : 'auto',
+            left: isExpanded ? 0 : 'auto',
+            width: isExpanded ? '100%' : '100%',
+            maxWidth: isExpanded ? '100%' : '400px',
+            height: isExpanded ? '60px' : 'auto', // Match header height
+            marginRight: isExpanded ? 0 : '1rem',
+            zIndex: isExpanded ? 1000 : 1,
+            background: isExpanded ? 'var(--background)' : 'transparent',
             display: 'flex',
             alignItems: 'center',
-            padding: isFocused ? '0 1rem' : 0
+            padding: isExpanded ? '0 1rem' : 0
         }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                 <div style={{ position: 'relative', width: '100%', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
@@ -101,8 +107,10 @@ export default function SearchCompanies() {
                         placeholder="銘柄検索 (コード/社名)"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        onClick={() => {
+                            if (isMobile) setIsExpanded(true);
+                        }}
                         onFocus={() => {
-                            setIsFocused(true);
                             if (results.length > 0) setIsOpen(true);
                         }}
                         autoComplete="off"
@@ -118,11 +126,12 @@ export default function SearchCompanies() {
                             fontSize: '16px' // Must be 16px or larger to prevent iOS Safari zoom
                         }}
                     />
-                    {isFocused && (
+                    {isExpanded && (
                         <button
                             type="button"
-                            onClick={() => {
-                                setIsFocused(false);
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setIsExpanded(false);
                                 setIsOpen(false);
                             }}
                             style={{
