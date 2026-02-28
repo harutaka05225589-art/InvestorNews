@@ -84,18 +84,19 @@ export default function SearchCompanies() {
 
     return (
         <div ref={wrapperRef} style={{
-            position: isExpanded ? 'absolute' : 'relative',
+            position: isExpanded ? 'fixed' : 'relative',
             top: isExpanded ? 0 : 'auto',
             left: isExpanded ? 0 : 'auto',
-            width: isExpanded ? '100%' : '100%',
-            maxWidth: isExpanded ? '100%' : '400px',
+            width: isExpanded ? '100vw' : '100%',
+            maxWidth: isExpanded ? '100vw' : '400px',
             height: isExpanded ? '60px' : 'auto', // Match header height
             marginRight: isExpanded ? 0 : '1rem',
-            zIndex: isExpanded ? 1000 : 1,
+            zIndex: isExpanded ? 100000 : 1, // Must be higher than header's z-index (9999)
             background: isExpanded ? 'var(--background)' : 'transparent',
             display: 'flex',
             alignItems: 'center',
-            padding: isExpanded ? '0 1rem' : 0
+            padding: isExpanded ? '0 1rem' : 0,
+            boxSizing: 'border-box'
         }}>
             <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                 <div style={{ position: 'relative', width: '100%', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
