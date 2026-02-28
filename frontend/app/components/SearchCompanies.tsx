@@ -26,6 +26,13 @@ export default function SearchCompanies() {
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
+
+        // Fix for iOS Safari aggressively restoring focus on cross-page navigation
+        const activeElem = document.activeElement as HTMLElement;
+        if (activeElem && activeElem.tagName === 'INPUT') {
+            activeElem.blur();
+        }
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
