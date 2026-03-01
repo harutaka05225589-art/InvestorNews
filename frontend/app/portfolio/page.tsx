@@ -487,7 +487,7 @@ export default function PortfolioPage() {
     const totalPendingDividend = validPendingDividends.reduce((sum, p) => sum + p.amount, 0);
 
     return (
-        <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '1rem', overflowX: 'hidden' }}>
+        <main style={{ maxWidth: '1600px', margin: '0 auto', padding: '1rem 2rem', overflowX: 'hidden' }}>
             <header style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
                 <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 ウォッチリスト</h1>
                 <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
@@ -536,8 +536,8 @@ export default function PortfolioPage() {
             {/* Responsive Grid: Changed minmax to 260px and reduced gap on small screens */}
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-                gap: '1.5rem',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                gap: '2rem',
                 width: '100%'
             }}>
 
