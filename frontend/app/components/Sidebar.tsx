@@ -19,7 +19,7 @@ export default function Sidebar() {
                     </Link>
                     <Link href="/portfolio" className={`${styles.item} ${isActive('/portfolio')}`}>
                         <span className={styles.icon}>💰</span>
-                        <span className={styles.label}>ポートフォリオ</span>
+                        <span className={styles.label}>ウォッチリスト</span>
                     </Link>
                     <Link href="/reports" className={`${styles.item} ${isActive('/reports')}`}>
                         <span className={styles.icon}>⚡</span>

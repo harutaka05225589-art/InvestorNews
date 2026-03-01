@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
         // Dynamic params
         const title = (searchParams.get('title') || 'Investor News').slice(0, 100); // Limit length
-        const subtitle = (searchParams.get('subtitle') || '億り人のポートフォリオ・決算速報').slice(0, 100);
+        const subtitle = (searchParams.get('subtitle') || '億り人の動向・決算速報').slice(0, 100);
         const type = searchParams.get('type') || 'default'; // default, alert, profile
 
         // Load Font (Subsetted)

@@ -39,9 +39,9 @@ export default function GuidePage() {
                 </div>
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>2. ポートフォリオ管理</h3>
-                    <p>
-                        あなたの保有銘柄を登録すると、資産推移や配当金の受け取り予定をグラフで可視化できます。<br />
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>2. ウォッチリスト管理</h3>
+                    <p style={{ color: '#cbd5e1', lineHeight: '1.6', marginBottom: '1rem', fontSize: '0.95rem' }}>
+                        気になる銘柄をウォッチリストに登録できます。「配当管理」機能とも連携しており、登録した銘柄の年間配当予定額や利回りを自動計算してグラフ化します。で可視化できます。<br />
                         さらに、登録した銘柄に「上方修正」や「増配」が出た際、LINEやメールで通知を受け取ることができます。
                     </p>
                 </div>

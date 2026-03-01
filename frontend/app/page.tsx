@@ -93,7 +93,7 @@ export default function Home() {
           {/* NEW HERO SECTION */}
           <div className={styles.hero}>
             <h2 className={styles.heroTitle}>
-              著名投資家のポートフォリオと<br />
+              著名投資家の動向と<br />
               最新の決算・配当を一元管理。
             </h2>
             <p className={styles.heroSubtitle}>
@@ -105,8 +105,23 @@ export default function Home() {
             </Link>
           </div>
 
+          {/* Elevated: Latest Revisions Feed (Core Value 1) */}
+          <section style={{ marginTop: '3rem', marginBottom: '4rem' }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid var(--accent)', paddingLeft: '1rem' }}>
+              📊 最新の決算速報（AI要約）
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+              <RevisionsFeed />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+              <Link href="/revisions" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: 'var(--accent)', color: '#000', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
+                速報一覧を見る &rarr;
+              </Link>
+            </div>
+          </section>
+
           <h2 className={styles.sectionTitle}>
-            億り人たちの最新動向
+            👀 億り人たちの最新動向
           </h2>
 
           <div className={styles.investorGrid}>
@@ -174,24 +189,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* New: Latest Revisions Widget (Mini) */}
-        <section className={styles.breakingWidget}>
-          <h2 className={styles.breakingTitle}>
-            📊 最新の業績修正
-          </h2>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-            {/* This will be hydrated by a Client Component or passed as prop. 
-                   For now, let's just link to the revisions page as main content area is for Investors. 
-                   OR, better, add the Feed to the Main Column below Investors.
-               */}
-            <p style={{ fontSize: '0.9rem', color: '#cbd5e1' }}>
-              市場の最新動向をチェック
-            </p>
-            <Link href="/revisions" style={{ display: 'block', padding: '0.8rem', background: '#334155', borderRadius: '8px', color: '#fff', textDecoration: 'none', textAlign: 'center' }}>
-              業績修正一覧を見る &rarr;
-            </Link>
-          </div>
-        </section>
+
 
         {/* AdSense In-Feed Widget */}
         <section className={styles.widget} style={{ marginTop: '1.5rem', padding: 0, background: 'transparent', border: 'none' }}>
@@ -199,21 +197,7 @@ export default function Home() {
         </section>
       </div>
 
-      {/* Main Content Area 2: Latest Revisions Feed */}
-      <section style={{ marginTop: '3rem' }}>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid var(--accent)', paddingLeft: '1rem' }}>
-          最新の決算速報
-        </h2>
-        {/* We need to fetch revisions here. I'll add the data fetching at top of file. */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
-          <RevisionsFeed />
-        </div>
-        <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-          <Link href="/revisions" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: 'var(--accent)', color: '#000', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
-            もっと見る
-          </Link>
-        </div>
-      </section>
+
 
       {/* SEO & About Site Content */}
       <section style={{ marginTop: '4rem', padding: '2rem', background: '#0f172a', borderRadius: '12px', border: '1px solid #334155', color: '#e2e8f0' }}>

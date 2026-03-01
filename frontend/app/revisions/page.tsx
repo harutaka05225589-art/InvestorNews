@@ -315,9 +315,20 @@ export default function RevisionsPage() {
                                                 </Link>
                                             </div>
                                             {rev.ai_summary && !rev.ai_summary.includes('Failed') && (
-                                                <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.3rem', lineHeight: '1.4' }}>
-                                                    🤖 {rev.ai_summary}
-                                                </p>
+                                                <div style={{
+                                                    marginTop: '0.8rem',
+                                                    padding: '0.8rem 1rem',
+                                                    background: 'rgba(56, 189, 248, 0.05)',
+                                                    borderLeft: '3px solid var(--primary)',
+                                                    borderRadius: '0 6px 6px 0',
+                                                    fontSize: '0.95rem',
+                                                    color: '#f8fafc',
+                                                    lineHeight: '1.6',
+                                                    boxShadow: 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.05)'
+                                                }}>
+                                                    <span style={{ fontWeight: 'bold', color: 'var(--primary)', marginRight: '0.4rem', fontSize: '1rem' }}>💡ポイント:</span>
+                                                    {rev.ai_summary}
+                                                </div>
                                             )}
                                         </td>
                                         <td style={{ minWidth: '120px' }}>

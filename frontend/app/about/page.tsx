@@ -35,7 +35,7 @@ export default function AboutPage() {
                 <div style={{ marginBottom: '1.5rem', background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
                     <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>2. 資産管理＆配当グラフ</h3>
                     <p style={{ fontSize: '0.95rem' }}>
-                        保有株を登録するだけで、資産推移やポートフォリオの構成比、月々の配当金受け取り予定が一目でわかります。<br />
+                        お気に入り銘柄を登録するだけで、注目銘柄の配当金受け取り予定などが一目でわかります。<br />
                         NISA口座や特定口座の税金計算にも簡易対応しています。
                     </p>
                 </div>

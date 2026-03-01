@@ -80,7 +80,7 @@ export default async function StockPage({ params }: Props) {
                     transition: 'background 0.2s'
                 }}>
                     <span>&larr;</span>
-                    <span>ポートフォリオに戻る</span>
+                    <span>ウォッチリストに戻る</span>
                 </Link>
             </div>
 
