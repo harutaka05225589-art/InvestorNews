@@ -46,7 +46,7 @@ export default async function ShareholderPage({ params }: Props) {
         notFound();
     }
 
-    const holdings = getHoldingsByShareholder(decodedName);
+    const holdings = getHoldingsByShareholder([decodedName]);
 
     // Calculate strict total value if we had price data, but we don't here easily.
     // Just count companies.

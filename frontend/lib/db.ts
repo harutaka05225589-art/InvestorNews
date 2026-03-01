@@ -453,8 +453,12 @@ export function getShareholders(ticker: string): Shareholder[] {
     }
 }
 
-export function getHoldingsByShareholder(shareholderName: string): (Shareholder & { company_name: string })[] {
+export function getHoldingsByShareholder(shareholderNames: string[]): (Shareholder & { company_name: string })[] {
     try {
+        if (!shareholderNames || shareholderNames.length === 0) return [];
+
+        const placeholders = shareholderNames.map(() => '?').join(',');
+
         // Get the latest entry for each ticker this shareholder owns
         const stmt = db.prepare(`
             SELECT 
@@ -467,7 +471,7 @@ export function getHoldingsByShareholder(shareholderName: string): (Shareholder 
                 COALESCE(p.company_name, s.ticker) as company_name
             FROM stock_shareholders s
             LEFT JOIN stock_profiles p ON s.ticker = p.ticker
-            WHERE s.shareholder_name = ?
+            WHERE s.shareholder_name IN (${placeholders})
             AND s.entry_date = (
                 SELECT MAX(entry_date) 
                 FROM stock_shareholders s2 
@@ -476,7 +480,7 @@ export function getHoldingsByShareholder(shareholderName: string): (Shareholder 
             )
             ORDER BY s.share_ratio DESC
         `);
-        return stmt.all(shareholderName) as (Shareholder & { company_name: string })[];
+        return stmt.all(...shareholderNames) as (Shareholder & { company_name: string })[];
     } catch (e) {
         console.error("Get holdings by shareholder error:", e);
         return [];

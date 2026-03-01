@@ -63,7 +63,15 @@ export default async function InvestorPage({
     const { news, total } = getNewsByInvestor(id, page, limit);
     const totalPages = Math.ceil(total / limit);
 
-    const holdings = getHoldingsByShareholder(investor.name);
+    // Safely parse aliases
+    let aliases: string[] = [];
+    try {
+        aliases = investor.aliases ? JSON.parse(investor.aliases) : [];
+    } catch (e) { /* ignore parse error */ }
+
+    // Check main name and all aliases
+    const searchNames = [investor.name, ...aliases].filter(Boolean);
+    const holdings = getHoldingsByShareholder(searchNames);
 
     const freeNews = news.filter(n => n.is_paid === 0);
     const paidNews = news.filter(n => n.is_paid === 1);
@@ -97,11 +105,12 @@ export default async function InvestorPage({
             </div>
 
             {/* Holdings Section (Must-have "Eye-catcher" feature) */}
-            {holdings.length > 0 && (
-                <section style={{ marginBottom: '4rem' }}>
-                    <h2 className="section-title" style={{ borderBottom: '2px solid var(--primary)', display: 'inline-block', paddingBottom: '0.2rem', marginBottom: '1.5rem', color: '#fff', fontSize: '1.5rem', textTransform: 'none' }}>
-                        ポートフォリオ・保有銘柄
-                    </h2>
+            <section style={{ marginBottom: '4rem' }}>
+                <h2 className="section-title" style={{ borderBottom: '2px solid var(--primary)', display: 'inline-block', paddingBottom: '0.2rem', marginBottom: '1.5rem', color: '#fff', fontSize: '1.5rem', textTransform: 'none' }}>
+                    ポートフォリオ・保有銘柄
+                </h2>
+
+                {holdings.length > 0 ? (
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
@@ -150,9 +159,23 @@ export default async function InvestorPage({
                             </Link>
                         ))}
                     </div>
-                </section>
-            )
-            }
+                ) : (
+                    <div style={{
+                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px dashed #334155',
+                        borderRadius: '12px',
+                        padding: '2rem',
+                        textAlign: 'center',
+                        color: '#94a3b8'
+                    }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '1rem', opacity: 0.5 }}>📊</div>
+                        <p style={{ lineHeight: '1.6' }}>
+                            現在、大量保有報告書や四季報の大株主欄から確認できる{investor.name}さんの保有銘柄データはありません。<br />
+                            <span style={{ fontSize: '0.85rem', color: '#64748b' }}>(※5%ルールに該当しない個人投資家や、別名義で保有している場合などは表示されません)</span>
+                        </p>
+                    </div>
+                )}
+            </section>
 
             {/* Pagination Controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
