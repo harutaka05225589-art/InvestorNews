@@ -1,4 +1,4 @@
-import { getInvestorById, getNewsByInvestor } from '@/lib/db';
+import { getInvestorById, getNewsByInvestor, getHoldingsByShareholder } from '@/lib/db';
 import { Investor, NewsItem } from '@/lib/types';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -63,6 +63,8 @@ export default async function InvestorPage({
     const { news, total } = getNewsByInvestor(id, page, limit);
     const totalPages = Math.ceil(total / limit);
 
+    const holdings = getHoldingsByShareholder(investor.name);
+
     const freeNews = news.filter(n => n.is_paid === 0);
     const paidNews = news.filter(n => n.is_paid === 1);
 
@@ -93,6 +95,64 @@ export default async function InvestorPage({
                     </a>
                 )}
             </div>
+
+            {/* Holdings Section (Must-have "Eye-catcher" feature) */}
+            {holdings.length > 0 && (
+                <section style={{ marginBottom: '4rem' }}>
+                    <h2 className="section-title" style={{ borderBottom: '2px solid var(--primary)', display: 'inline-block', paddingBottom: '0.2rem', marginBottom: '1.5rem', color: '#fff', fontSize: '1.5rem', textTransform: 'none' }}>
+                        ポートフォリオ・保有銘柄
+                    </h2>
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '1.5rem'
+                    }}>
+                        {holdings.map((h, i) => (
+                            <Link href={`/stocks/${h.ticker}`} key={`${h.ticker}-${i}`} style={{ textDecoration: 'none' }}>
+                                <div style={{
+                                    background: '#1e293b',
+                                    border: '1px solid #334155',
+                                    borderRadius: '12px',
+                                    padding: '1.5rem',
+                                    transition: 'transform 0.2s, box-shadow 0.2s',
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    cursor: 'pointer'
+                                }}
+                                    onMouseOver={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-2px)';
+                                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.3)';
+                                    }}
+                                    onMouseOut={(e) => {
+                                        e.currentTarget.style.transform = 'none';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}>
+
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                                        <div>
+                                            <div style={{ color: '#94a3b8', fontSize: '0.8rem', fontWeight: 'bold' }}>{h.ticker}</div>
+                                            <div style={{ color: '#fff', fontSize: '1.2rem', fontWeight: 'bold', marginTop: '0.2rem' }}>
+                                                {h.company_name}
+                                            </div>
+                                        </div>
+                                        {/* Simple placeholder for logic like dividend_yield */}
+                                        <div style={{ background: 'rgba(56, 189, 248, 0.1)', color: '#38bdf8', padding: '0.3rem 0.6rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                            保有
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid #334155', display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
+                                        <span style={{ color: '#94a3b8' }}>報告義務発生日:</span>
+                                        <span style={{ color: '#cbd5e1' }}>{h.entry_date}</span>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            )
+            }
 
             {/* Pagination Controls */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -286,6 +346,6 @@ export default async function InvestorPage({
             <div style={{ marginTop: '3rem' }}>
                 <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
             </div>
-        </div>
+        </div >
     );
 }
