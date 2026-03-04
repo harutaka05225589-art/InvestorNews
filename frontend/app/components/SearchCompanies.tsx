@@ -143,6 +143,7 @@ export default function SearchCompanies() {
                             style={{
                                 flex: 1,
                                 width: '100%',
+                                minWidth: isMobile ? '50px' : 'auto', /* Crucial for shrinking */
                                 maxWidth: isMobile ? (isExpanded ? '140px' : '100px') : 'none',
                                 padding: isMobile ? '0.4rem 0.5rem 0.4rem 2rem' : '0.5rem 0.5rem 0.5rem 2.2rem',
                                 borderRadius: '20px',

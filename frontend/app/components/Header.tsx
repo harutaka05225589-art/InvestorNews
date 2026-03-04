@@ -76,7 +76,14 @@ export default function Header() {
                 </Link>
 
                 {/* Search Bar (Centered or Left of Nav) */}
-                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', margin: '0 0.5rem', minWidth: 0 }}>
+                <div style={{
+                    flex: '1 1 auto',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    margin: '0 0.5rem',
+                    minWidth: 0, /* Crucial for allowing flex children to shrink below content size */
+                    maxWidth: '400px', /* Stop it from growing too large */
+                }}>
                     <SearchCompanies />
                 </div>
 

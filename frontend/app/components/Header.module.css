@@ -20,7 +20,6 @@
 
 .brand {
     font-size: 1.1rem;
-    /* Smaller base for mobile */
     font-weight: 800;
     background: linear-gradient(to right, #fff, #aaa);
     -webkit-background-clip: text;
@@ -28,9 +27,9 @@
     text-decoration: none;
     margin-left: 0.5rem;
     white-space: nowrap;
-    /* Prevent squishing/wrapping */
     flex-shrink: 0;
-    /* Prevent the logo from shrinking */
+    /* Keep it from shrinking */
+    z-index: 10;
 }
 
 @media (min-width: 768px) {
@@ -157,12 +156,17 @@
 .authContainer {
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    /* Important: do not let search bar crush buttons */
+    z-index: 10;
 }
 
 .guestMenu {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
+    /* Reduced from 1rem */
     align-items: center;
+    flex-wrap: nowrap;
 }
 
 .loginLink {
