@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { getRevisionsByTicker, getRevisionById, getDividendHistory } from '@/lib/db'; // Import shared helpers
 import DividendChart from '@/components/DividendChart';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to format currency
 const formatNum = (num: any) => {
     if (num === null || num === undefined) return '-';

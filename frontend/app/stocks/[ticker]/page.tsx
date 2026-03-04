@@ -5,6 +5,8 @@ import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
 import ShareholderList from '@/components/ShareholderList';
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
     params: Promise<{ ticker: string }>;
 }
