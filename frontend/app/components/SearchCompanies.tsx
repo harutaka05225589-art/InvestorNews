@@ -143,13 +143,14 @@ export default function SearchCompanies() {
                             style={{
                                 flex: 1,
                                 width: '100%',
-                                padding: '0.5rem 0.5rem 0.5rem 2.2rem',
+                                maxWidth: isMobile ? (isExpanded ? '140px' : '100px') : 'none',
+                                padding: isMobile ? '0.4rem 0.5rem 0.4rem 2rem' : '0.5rem 0.5rem 0.5rem 2.2rem',
                                 borderRadius: '20px',
                                 border: '1px solid #334155',
                                 background: '#1e293b',
                                 color: '#fff',
                                 outline: 'none',
-                                fontSize: '16px'
+                                fontSize: isMobile ? '14px' : '16px'
                             }}
                         />
                     )}
