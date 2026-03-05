@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/og.png',
+        source: '/og-image.png',
         destination: '/api/og',
       },
     ]
