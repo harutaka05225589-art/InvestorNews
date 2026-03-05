@@ -8,7 +8,7 @@ async function loadGoogleFont(text: string) {
     try {
         const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+        const timeoutId = setTimeout(() => controller.abort(), 1500); // Strict 1.5s timeout for Twitter Bot
 
         const cssRes = await fetch(url, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -31,9 +31,14 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
 
         // Dynamic params
-        const title = (searchParams.get('title') || 'Investor News').slice(0, 100); // Limit length
-        const subtitle = (searchParams.get('subtitle') || '億り人の動向・決算速報').slice(0, 100);
-        const type = searchParams.get('type') || 'default'; // default, alert, profile
+        let title = (searchParams.get('title') || 'Investor News').slice(0, 100); // Limit length
+        let subtitle = (searchParams.get('subtitle') || '億り人の動向・決算速報').slice(0, 100);
+        const type = searchParams.get('type') || 'default'; // default, alert, profile, investors
+
+        if (type === 'investors') {
+            title = '著名投資家一覧';
+            subtitle = '大口投資家の最新ポートフォリオや動向をチェック';
+        }
 
         // Load Font (Subsetted)
         const fontData = await loadGoogleFont(title + subtitle + "Invester News");
