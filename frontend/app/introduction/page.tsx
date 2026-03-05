@@ -14,11 +14,11 @@ export const metadata: Metadata = {
     openGraph: {
         title: '著名投資家の動向 | 億り人・決算速報',
         description: '「あの人は今何を買っている？」大口投資家の最新動向をチェック。',
-        images: [{ url: 'https://rich-investor-news.com/api/og?type=investors', width: 1200, height: 630 }],
+        images: [{ url: 'https://rich-investor-news.com/api/og.png?type=investors', width: 1200, height: 630 }],
     },
     twitter: {
         card: 'summary_large_image',
-        images: [{ url: 'https://rich-investor-news.com/api/og?type=investors', width: 1200, height: 630 }],
+        images: [{ url: 'https://rich-investor-news.com/api/og.png?type=investors', width: 1200, height: 630 }],
     },
 };
 

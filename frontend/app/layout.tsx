@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     description: '著名投資家の動向と企業の決算スケジュールを網羅(RIN)。',
     images: [
       {
-        url: 'https://rich-investor-news.com/api/og',
+        url: 'https://rich-investor-news.com/api/og.png',
         width: 1200,
         height: 630,
         alt: '億り人・決算速報 (RIN)',
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: '億り人・決算速報 (RIN)',
     description: '著名投資家の動向と企業の決算スケジュールを網羅。',
-    images: [{ url: 'https://rich-investor-news.com/api/og', width: 1200, height: 630 }],
+    images: [{ url: 'https://rich-investor-news.com/api/og.png', width: 1200, height: 630 }],
   },
   verification: {
     google: 'OKOMP12oUHAz49fzUJpuKZsk20XLEsF2nDPgpZRgAZk',
