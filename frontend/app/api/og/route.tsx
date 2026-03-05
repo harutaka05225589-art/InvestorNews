@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        return new ImageResponse(
+        const imageRes = new ImageResponse(
             (
                 <div
                     style={{
@@ -149,6 +149,17 @@ export async function GET(request: NextRequest) {
             ),
             imageOptions
         );
+
+        // Ensure we fully compute the image and pass explicit Content-Length instead of chunked streaming
+        // Twitterbot silently rejects Transfer-Encoding: chunked for images.
+        const arrayBuffer = await imageRes.arrayBuffer();
+        return new Response(arrayBuffer, {
+            headers: {
+                'Content-Type': 'image/png',
+                'Content-Length': arrayBuffer.byteLength.toString(),
+                'Cache-Control': 'public, max-age=31536000, immutable',
+            }
+        });
     } catch (e: any) {
         console.log(`${e.message}`);
         // Fallback or Error Image could be returned here if needed
