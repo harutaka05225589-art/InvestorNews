@@ -72,7 +72,8 @@ export default function Header() {
 
                 {/* Brand Logo */}
                 <Link href="/" className={styles.brand}>
-                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', marginRight: '4px' }}>(RIN)</span>億り人・決算速報
+                    <span className={styles.rinText}>(RIN)</span>
+                    <span className={styles.fullTitle}>億り人・決算速報</span>
                 </Link>
 
                 {/* Search Bar (Centered or Left of Nav) */}

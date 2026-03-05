@@ -32,14 +32,33 @@
     z-index: 10;
 }
 
+.rinText {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-right: 4px;
+}
+
+.fullTitle {
+    display: none;
+    /* Hidden on mobile */
+}
+
 @media (min-width: 768px) {
     .container {
         padding: 0 1.5rem;
     }
 
     .brand {
-        font-size: 1.5rem;
         margin-left: 1rem;
+    }
+
+    .rinText {
+        font-size: 1.5rem;
+    }
+
+    .fullTitle {
+        display: inline;
+        font-size: 1.5rem;
     }
 }
 
