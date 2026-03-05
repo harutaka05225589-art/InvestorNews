@@ -8,7 +8,7 @@ async function loadGoogleFont(text: string) {
     try {
         const url = `https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700&text=${encodeURIComponent(text)}`;
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1500); // Strict 1.5s timeout for Twitter Bot
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
 
         const cssRes = await fetch(url, { signal: controller.signal });
         clearTimeout(timeoutId);
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
             ];
         }
 
-        const imageRes = new ImageResponse(
+        return new ImageResponse(
             (
                 <div
                     style={{
@@ -149,17 +149,6 @@ export async function GET(request: NextRequest) {
             ),
             imageOptions
         );
-
-        // Ensure we fully compute the image and pass explicit Content-Length instead of chunked streaming
-        // Twitterbot silently rejects Transfer-Encoding: chunked for images.
-        const arrayBuffer = await imageRes.arrayBuffer();
-        return new Response(arrayBuffer, {
-            headers: {
-                'Content-Type': 'image/png',
-                'Content-Length': arrayBuffer.byteLength.toString(),
-                'Cache-Control': 'public, max-age=31536000, immutable',
-            }
-        });
     } catch (e: any) {
         console.log(`${e.message}`);
         // Fallback or Error Image could be returned here if needed
