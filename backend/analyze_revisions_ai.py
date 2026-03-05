@@ -363,7 +363,7 @@ def process_revisions():
                             # Detail URL
                             detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
                             
-                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDF\n{detail_url}\n\n{hashtags}"
+                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDFはこちら\n{detail_url}\n\n{hashtags}"
                             
                             # Date Check: Only Tweet if Revision Date is TODAY
                             # (Prevents spamming X when backfilling old data)
