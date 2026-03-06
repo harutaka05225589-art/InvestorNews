@@ -1,6 +1,7 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
 import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions } from '@/lib/db';
+import { getSession } from '@/lib/auth';
 import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
 import ShareholderList from '@/components/ShareholderList';
@@ -11,6 +12,37 @@ type Props = {
     params: Promise<{ ticker: string }>;
 }
 
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { ticker } = await params;
+    const decodedTicker = decodeURIComponent(ticker).toUpperCase();
+    const divInfo = getLatestDividend(decodedTicker);
+    const companyName = divInfo?.companyName || decodedTicker;
+
+    const title = `${companyName} (${decodedTicker}) の業績・配当・株主動向`;
+    const description = `「${companyName}」のAI業績評価、配当推移、著名投資家の保有状況をひとまとめにチェック。`;
+    const ogTitle = encodeURIComponent(title);
+    const ogSubtitle = encodeURIComponent(description.substring(0, 40));
+    const ogImageUrl = `https://rich-investor-news.com/og-image.png?title=${ogTitle}&subtitle=${ogSubtitle}&type=default`;
+
+    return {
+        title: `${title} | 億り人・決算速報`,
+        description,
+        openGraph: {
+            title,
+            description,
+            images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+        },
+        twitter: {
+            card: 'summary_large_image',
+            title,
+            description,
+            images: [ogImageUrl],
+        },
+    };
+}
+
 import AdSenseDisplay from '../../../components/ads/AdSenseDisplay';
 
 export default async function StockPage({ params }: Props) {
@@ -19,9 +51,8 @@ export default async function StockPage({ params }: Props) {
 
 
     // 0. Fetch User ID
-    const cookieStore = await cookies();
-    const userIdCookie = cookieStore.get('userId');
-    const userId = userIdCookie && userIdCookie.value ? parseInt(userIdCookie.value, 10) : null;
+    const session = await getSession();
+    const userId = session?.id ? Number(session.id) : null;
 
     // 1. Fetch Basic Data
     const divInfo = getLatestDividend(decodedTicker);
