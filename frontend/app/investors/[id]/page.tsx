@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             description: `${investor.name}の最新情報をチェック。`,
             images: [
                 {
-                    url: `/api/og?title=${encodeURIComponent(investor.name)}&subtitle=${encodeURIComponent(investor.style_description.substring(0, 30))}&type=profile`,
+                    url: `https://rich-investor-news.com/og-image.png?title=${encodeURIComponent(investor.name)}&subtitle=${encodeURIComponent(investor.style_description.substring(0, 30))}&type=profile`,
                     width: 1200,
                     height: 630,
                 },
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
             card: 'summary_large_image',
             title: `${investor.name}のニュース・評判`,
             description: `${investor.name}の最新情報をチェック。`,
-            images: [`/api/og?title=${encodeURIComponent(investor.name)}&subtitle=${encodeURIComponent(investor.style_description.substring(0, 30))}&type=profile`],
+            images: [`https://rich-investor-news.com/og-image.png?title=${encodeURIComponent(investor.name)}&subtitle=${encodeURIComponent(investor.style_description.substring(0, 30))}&type=profile`],
         },
     };
 }

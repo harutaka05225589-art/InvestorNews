@@ -18,11 +18,10 @@ export default async function StockPage({ params }: Props) {
     const decodedTicker = decodeURIComponent(ticker).toUpperCase();
 
 
-    // 0. Fetch User ID (Mock/Cookie)
-    // TODO: Use actual auth
+    // 0. Fetch User ID
     const cookieStore = await cookies();
     const userIdCookie = cookieStore.get('userId');
-    const userId = userIdCookie ? parseInt(userIdCookie.value, 10) : 1;
+    const userId = userIdCookie && userIdCookie.value ? parseInt(userIdCookie.value, 10) : null;
 
     // 1. Fetch Basic Data
     const divInfo = getLatestDividend(decodedTicker);
@@ -45,7 +44,7 @@ export default async function StockPage({ params }: Props) {
     const shareholders = getShareholders(decodedTicker);
 
     // 7. Fetch Portfolio Holdings (NEW)
-    const transactions = getPortfolioTransactions(userId);
+    const transactions = userId ? getPortfolioTransactions(userId) : [];
     const myTransactions = transactions.filter(t => t.ticker === decodedTicker);
 
     // Calculate Holdings
