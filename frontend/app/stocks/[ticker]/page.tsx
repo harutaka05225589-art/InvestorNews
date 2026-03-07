@@ -25,8 +25,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const divInfo = getLatestDividend(decodedTicker);
     const companyName = divInfo?.companyName || decodedTicker;
 
-    const title = `${companyName} (${decodedTicker}) の業績・配当・株主動向`;
-    const description = `「${companyName}」のAI業績評価、配当推移、著名投資家の保有状況をひとまとめにチェック。`;
+    const title = `${companyName}（${decodedTicker}）の将来性・配当推移｜最新決算と株価への影響`;
+    const description = `「${companyName}（${decodedTicker}）」の最新AI業績評価、配当推移（増配・減配）、主要株主の動向を一覧化。決算発表が株価に与える影響や、著名投資家の保有状況から将来性を分析します。`;
     const ogTitle = encodeURIComponent(title);
     const ogSubtitle = encodeURIComponent(description.substring(0, 40));
     const ogImageUrl = `https://rich-investor-news.com/og-image.png?title=${ogTitle}&subtitle=${ogSubtitle}&type=default`;
@@ -179,7 +179,7 @@ export default async function StockPage({ params }: Props) {
                         )}
                     </div>
                     <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '0.5rem', lineHeight: 1.4 }}>
-                        {companyName}
+                        {companyName} の業績評価・将来性まとめ
                         <a href={`https://finance.yahoo.co.jp/quote/${decodedTicker}.T`} target="_blank" rel="noopener noreferrer"
                             style={{ fontSize: '0.9rem', color: '#94a3b8', marginLeft: '1rem', textDecoration: 'none', border: '1px solid #334155', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
                             Yahoo! <span style={{ fontSize: '0.8rem' }}>↗</span>
@@ -191,9 +191,9 @@ export default async function StockPage({ params }: Props) {
                     {/* 1. Company Profile */}
                     {profile?.description ? (
                         <div style={{ marginBottom: '3rem' }}>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                🏢 企業概要
-                            </h3>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🏢 {companyName}の基礎情報・企業概要
+                            </h2>
                             <p style={{ lineHeight: '1.8', color: '#cbd5e1' }}>
                                 {profile.description}
                             </p>
@@ -210,12 +210,12 @@ export default async function StockPage({ params }: Props) {
                     {/* 2. Latest AI Analysis */}
                     {latestRevision ? (
                         <div style={{ marginBottom: '3rem' }}>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                🤖 最新のAI業績評価
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🤖 {companyName}の最新AI業績評価（上方修正・下方修正履歴）
                                 <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#94a3b8', marginLeft: 'auto' }}>
                                     {new Date(latestRevision.revision_date).toLocaleDateString()} 更新
                                 </span>
-                            </h3>
+                            </h2>
 
                             <div style={{ background: '#0f172a', padding: '1.5rem', borderRadius: '8px', border: '1px solid #334155' }}>
                                 {/* Rating Badge */}
@@ -248,18 +248,18 @@ export default async function StockPage({ params }: Props) {
                         </div>
                     ) : (
                         <div style={{ marginBottom: '3rem' }}>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
-                                🤖 最新のAI業績評価
-                            </h3>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem' }}>
+                                🤖 {companyName}の最新AI業績評価
+                            </h2>
                             <p style={{ color: '#94a3b8' }}>直近の業績修正情報はありません。</p>
                         </div>
                     )}
 
                     {/* 3. Financial Charts (NEW) */}
                     <div style={{ marginBottom: '3rem' }}>
-                        <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                             📊 業績・財務推移
-                        </h3>
+                        </h2>
                         {financialStats && financialStats.length > 0 ? (
                             <FinancialChart data={financialStats} ticker={decodedTicker} />
                         ) : (
@@ -275,9 +275,9 @@ export default async function StockPage({ params }: Props) {
                     {/* 4. Dividend History */}
                     {history && history.length > 0 ? (
                         <div>
-                            <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                💰 配当の推移 (5年)
-                            </h3>
+                            <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                💰 {companyName}の配当推移と利回り予測
+                            </h2>
                             <DividendChart history={history} />
                             <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem', textAlign: 'right' }}>
                                 ※ 棒グラフの縞模様は「予想」を示します
@@ -294,12 +294,17 @@ export default async function StockPage({ params }: Props) {
             {/* 5. Shareholder History (New) */}
             <article style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', overflow: 'hidden', marginTop: '2rem' }}>
                 <div style={{ padding: '2rem' }}>
-                    <h3 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        👥 大株主の推移
-                    </h3>
+                    <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        👥 {companyName}の主要株主・著名投資家の保有状況
+                    </h2>
                     <ShareholderList data={shareholders} />
                 </div>
             </article>
+
+            {/* E-E-A-T Disclaimer */}
+            <div style={{ marginTop: '2rem', padding: '1rem 1.5rem', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
+                <p><strong>【⚠️ 投資免責事項】</strong><br />当ページ（{companyName}の業績・将来性分析ページ）に掲載されているAI業績要約および配当、株主情報等の各種データは、証券取引所の適時開示情報（TDnet）や金融庁（EDINET）等に基づく情報提供のみを目的としており、特定の銘柄への投資勧誘、推奨、助言を行うものではありません。株式投資に関する最終的な決定は、ご自身の判断と責任において行ってください。</p>
+            </div>
 
             {/* AdSense (Bottom of Page) */}
             <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} style={{ marginTop: '2rem' }} />

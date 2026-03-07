@@ -30,13 +30,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         };
     }
 
-    const title = `${revision.company_name} (${revision.ticker}) 上方修正`;
-    const subtitle = revision.ai_summary || '業績予想の修正を発表';
+    const rawTitle = `${revision.company_name} (${revision.ticker})`;
+    const isUpward = revision.revision_rate_op && revision.revision_rate_op > 0;
+    const isDownward = revision.revision_rate_op && revision.revision_rate_op < 0;
+
+    let actionText = '業績修正';
+    if (isUpward) actionText = '上方修正';
+    if (isDownward) actionText = '下方修正';
+
+    const publishDate = new Date(revision.revision_date).toLocaleDateString('ja-JP');
+
+    const title = `${rawTitle}が${actionText}（理由）｜${publishDate} 決算速報・AI要約`;
+
+    // YMYL Optimized Description
+    const subtitle = `${publishDate}に発表された${rawTitle}の${actionText}の速報です。AIがTDnetの開示資料を瞬時に読み解き、株価変動の理由を要約。売上見通しの背景を解説します。`;
 
     // Construct OGP Image URL
     // Use proper encoding for Japanese characters
-    const ogTitle = encodeURIComponent(title);
-    const ogSubtitle = encodeURIComponent(subtitle);
+    const ogTitle = encodeURIComponent(`${rawTitle} ${actionText}`);
+    const ogSubtitle = encodeURIComponent(revision.ai_summary || subtitle).substring(0, 100);
 
     // Using absolute URL for production to bypass Twitter's /api block
     const ogImageUrl = `https://rich-investor-news.com/og-image.png?title=${ogTitle}&subtitle=${ogSubtitle}&type=alert`;
@@ -120,7 +132,10 @@ export default async function RevisionPage({ params }: Props) {
                         </span>
                     </div>
                     <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', marginBottom: '1rem', lineHeight: 1.4 }}>
-                        {revision.company_name}
+                        {revision.company_name}（{revision.ticker}）の{(() => {
+                            if (!revision.revision_rate_op || revision.revision_rate_op === 0) return '業績修正';
+                            return isUpward ? '上方修正' : '下方修正';
+                        })()}理由とAI要約速報
                     </h1>
 
                     <div style={{ display: 'inline-block', padding: '0.5rem 1rem', borderRadius: '30px', background: bgColor, border: `1px solid ${borderColor}`, color: textColor, fontWeight: 'bold' }}>
@@ -135,12 +150,14 @@ export default async function RevisionPage({ params }: Props) {
 
                 {/* Content */}
                 <div style={{ padding: '2rem' }}>
-                    <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#e2e8f0' }}>AI要約</h2>
+                    <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        🤖 なぜ{revision.company_name}は業績修正したのか？（AI推測要因）
+                    </h2>
                     <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '2rem' }}>
                         {revision.ai_summary}
                     </p>
 
-                    <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#94a3b8' }}>詳細情報</h2>
+                    <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#94a3b8' }}>コンセンサス予想と財務基礎データ</h2>
                     <div style={{ display: 'grid', gap: '1rem', color: '#cbd5e1' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid #334155', paddingBottom: '0.5rem' }}>
                             <span>種別</span>
@@ -360,8 +377,9 @@ export default async function RevisionPage({ params }: Props) {
             />
 
 
-            <div style={{ marginTop: '3rem', textAlign: 'center', color: '#64748b', fontSize: '0.9rem' }}>
-                <p>※ AIによる自動解析結果であり、内容の正確性を保証するものではありません。必ず一次情報をご確認ください。</p>
+            {/* E-E-A-T Disclaimer */}
+            <div style={{ marginTop: '3rem', padding: '1rem 1.5rem', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6', marginBottom: '2rem' }}>
+                <p><strong>【⚠️ 投資免責事項】</strong><br />当ページ（{revision.company_name}の業績修正速報）に掲載されているAI業績要約および関連データは、証券取引所の適時開示情報（TDnet）等に基づく客観的な情報提供のみを目的としており、特定の銘柄への投資勧誘、推奨、助言を行うものではありません。AIによる自動解析結果であり、内容の正確性を完全に保証するものではないため、株式投資に関する最終的な決定は、ご自身の判断と責任において行ってください。</p>
             </div>
         </div>
     );
