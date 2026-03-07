@@ -16,6 +16,11 @@ import type { Metadata } from 'next';
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const { ticker } = await params;
+
+    // Crucial: Await cookies() to force Next.js to dynamically render this page 
+    // instead of statically caching it during the build process.
+    await cookies();
+
     const decodedTicker = decodeURIComponent(ticker).toUpperCase();
     const divInfo = getLatestDividend(decodedTicker);
     const companyName = divInfo?.companyName || decodedTicker;
@@ -52,7 +57,7 @@ export default async function StockPage({ params }: Props) {
 
     // 0. Fetch User ID
     const session = await getSession();
-    const userId = session?.id ? Number(session.id) : null;
+    const userId = session?.userId ? Number(session.userId) : (session?.id ? Number(session.id) : null);
 
     // 1. Fetch Basic Data
     const divInfo = getLatestDividend(decodedTicker);
