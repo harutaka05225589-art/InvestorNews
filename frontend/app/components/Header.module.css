@@ -176,8 +176,8 @@
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    /* Important: do not let search bar crush buttons */
-    z-index: 10;
+    /* Elevated above transparentBackdrop (150) so auth menus are clickable */
+    z-index: 300;
 }
 
 .guestMenu {
