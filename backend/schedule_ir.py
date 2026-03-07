@@ -57,6 +57,13 @@ if __name__ == "__main__":
     
     schedule.every().day.at("09:30").do(daily_edinet_check) # Morning check for previous day/early reports
     schedule.every().day.at("18:30").do(daily_edinet_check) # Evening check for today's reports
+
+    # Weekly Shareholder Update (Saturday at 03:00)
+    from update_all_shareholders import run_weekly_shareholder_update
+    def safe_shareholder_update():
+        try: run_weekly_shareholder_update()
+        except Exception as e: print(f"Weekly Shareholder Error: {e}")
+    schedule.every().saturday.at("03:00").do(safe_shareholder_update)
     
     while True:
         schedule.run_pending()
