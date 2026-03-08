@@ -1,7 +1,8 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "investor_news.db")
+# The actual DB is located at frontend/investor_news.db relative to the project root
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend", "investor_news.db")
 
 def reset_shareholders():
     conn = sqlite3.connect(DB_PATH)
