@@ -94,20 +94,20 @@ def fetch_shareholders(ticker):
             # 2: Ratio
             # 3: Count
             
-            if len(texts) >= 4:
-                # Name often has link, need clean text
-                name = texts[0]
+            if len(texts) >= 5:
+                # 0: Rank (1( 1)), 1: Name, 2: Change, 3: Ratio, 4: Count
+                name = texts[1]
                 
                 # Ratio
                 try:
-                    ratio_str = texts[2].replace('%', '')
+                    ratio_str = texts[3].replace('%', '')
                     if not ratio_str: ratio = 0.0
                     else: ratio = float(ratio_str)
                 except:
                     ratio = 0.0
                 
                 # Count
-                count_str = texts[3]
+                count_str = texts[4]
                 
                 results.append({
                     "ticker": ticker,

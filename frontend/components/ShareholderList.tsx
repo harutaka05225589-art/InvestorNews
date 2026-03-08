@@ -84,7 +84,7 @@ export default function ShareholderList({ data }: ShareholderListProps) {
                 <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
                     <thead>
                         <tr style={{ background: '#334155', color: '#cbd5e1', fontSize: '0.85rem' }}>
-                            <th style={{ padding: '1rem', textAlign: 'left', width: '50px' }}>順位</th>
+                            <th style={{ padding: '1rem', textAlign: 'center', width: '50px' }}>順位</th>
                             <th style={{ padding: '1rem', textAlign: 'left' }}>株主名</th>
                             <th style={{ padding: '1rem', textAlign: 'right' }}>比率 (%)</th>
                             <th style={{ padding: '1rem', textAlign: 'right' }}>株式数</th>

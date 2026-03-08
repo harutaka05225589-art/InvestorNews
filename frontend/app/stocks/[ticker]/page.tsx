@@ -304,28 +304,31 @@ export default async function StockPage({ params }: Props) {
             {/* 6. SEO Internal Linking (Cross-linking for YMYL Cluster) */}
             {profile?.sector && (() => {
                 const relatedStocks = getRelatedStocksBySector(profile.sector, decodedTicker, 6);
-                if (!relatedStocks || relatedStocks.length === 0) return null;
 
                 return (
                     <article style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', padding: '2rem', marginTop: '2rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#f8fafc' }}>
                             🔗 同業種（{profile.sector}）の関連銘柄・ライバル企業
                         </h2>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
-                            {relatedStocks.map(s => (
-                                <Link key={s.ticker} href={`/stocks/${s.ticker}`} style={{
-                                    background: '#0f172a', border: '1px solid #475569',
-                                    color: '#60a5fa', textDecoration: 'none',
-                                    padding: '0.6rem 1rem', borderRadius: '6px',
-                                    fontSize: '0.9rem', fontWeight: 'bold',
-                                    transition: 'background 0.2s, border-color 0.2s',
-                                    display: 'flex', alignItems: 'center', gap: '0.4rem'
-                                }}>
-                                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontFamily: 'monospace' }}>{s.ticker}</span>
-                                    <span>{s.company_name}</span>
-                                </Link>
-                            ))}
-                        </div>
+                        {(!relatedStocks || relatedStocks.length === 0) ? (
+                            <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>同業種データのAI解析を待機中です。（バックグラウンドでシステムが順次追加しています）</p>
+                        ) : (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.8rem' }}>
+                                {relatedStocks.map(s => (
+                                    <Link key={s.ticker} href={`/stocks/${s.ticker}`} style={{
+                                        background: '#0f172a', border: '1px solid #475569',
+                                        color: '#60a5fa', textDecoration: 'none',
+                                        padding: '0.6rem 1rem', borderRadius: '6px',
+                                        fontSize: '0.9rem', fontWeight: 'bold',
+                                        transition: 'background 0.2s, border-color 0.2s',
+                                        display: 'flex', alignItems: 'center', gap: '0.4rem'
+                                    }}>
+                                        <span style={{ color: '#94a3b8', fontSize: '0.8rem', fontFamily: 'monospace' }}>{s.ticker}</span>
+                                        <span>{s.company_name}</span>
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
                     </article>
                 );
             })()}
