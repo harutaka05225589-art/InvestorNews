@@ -9,6 +9,47 @@ export const metadata = {
 export default function AboutPage() {
     return (
         <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem', color: '#e2e8f0', lineHeight: '1.8' }}>
+            {/* JSON-LD Structured Data for YMYL SEO */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify([
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "BreadcrumbList",
+                            "itemListElement": [
+                                {
+                                    "@type": "ListItem",
+                                    "position": 1,
+                                    "name": "トップページ",
+                                    "item": "https://rich-investor-news.com/"
+                                },
+                                {
+                                    "@type": "ListItem",
+                                    "position": 2,
+                                    "name": "当サイトについて",
+                                    "item": "https://rich-investor-news.com/about"
+                                }
+                            ]
+                        },
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "AboutPage",
+                            "name": "当サイトについて | 億り人・決算速報",
+                            "description": "億り人・決算速報のミッション、データソース、および運営方針について。",
+                            "url": "https://rich-investor-news.com/about",
+                            "mainEntity": {
+                                "@type": "Organization",
+                                "name": "億り人・決算速報 (RIN)",
+                                "description": "AIによる決算・業績修正の即時分析を提供する個人投資家向けメディア",
+                                "url": "https://rich-investor-news.com/",
+                                "logo": "https://rich-investor-news.com/icon.jpg"
+                            }
+                        }
+                    ])
+                }}
+            />
+
             <h1 style={{ fontSize: '2rem', marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
                 当サイトについて
             </h1>

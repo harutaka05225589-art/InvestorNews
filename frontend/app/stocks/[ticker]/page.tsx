@@ -108,6 +108,49 @@ export default async function StockPage({ params }: Props) {
 
     return (
         <div style={{ maxWidth: '900px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
+
+            {/* JSON-LD Structured Data for YMYL SEO */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify([
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "BreadcrumbList",
+                            "itemListElement": [
+                                {
+                                    "@type": "ListItem",
+                                    "position": 1,
+                                    "name": "トップページ",
+                                    "item": "https://rich-investor-news.com/"
+                                },
+                                {
+                                    "@type": "ListItem",
+                                    "position": 2,
+                                    "name": "ウォッチリスト",
+                                    "item": "https://rich-investor-news.com/portfolio"
+                                },
+                                {
+                                    "@type": "ListItem",
+                                    "position": 3,
+                                    "name": `${companyName}`
+                                }
+                            ]
+                        },
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "WebPage",
+                            "name": `${companyName}（${decodedTicker}）の将来性・配当推移｜最新決算と株価への影響`,
+                            "description": `「${companyName}（${decodedTicker}）」の最新AI業績評価、配当推移（増配・減配）、主要株主の動向を一覧化。`,
+                            "publisher": {
+                                "@type": "Organization",
+                                "name": "億り人・決算速報 (RIN)"
+                            }
+                        }
+                    ])
+                }}
+            />
+
             <div style={{ marginBottom: '2rem' }}>
                 <Link href="/portfolio" style={{
                     display: 'inline-flex', alignItems: 'center', gap: '0.5rem',

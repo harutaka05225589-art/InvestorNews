@@ -106,6 +106,60 @@ export default async function RevisionPage({ params }: Props) {
 
     return (
         <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem', color: '#fff' }}>
+
+            {/* JSON-LD Structured Data for YMYL SEO */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify([
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "BreadcrumbList",
+                            "itemListElement": [
+                                {
+                                    "@type": "ListItem",
+                                    "position": 1,
+                                    "name": "トップページ",
+                                    "item": "https://rich-investor-news.com/"
+                                },
+                                {
+                                    "@type": "ListItem",
+                                    "position": 2,
+                                    "name": "今日の業績修正",
+                                    "item": "https://rich-investor-news.com/revisions/today"
+                                },
+                                {
+                                    "@type": "ListItem",
+                                    "position": 3,
+                                    "name": `${revision.company_name}の業績修正理由`
+                                }
+                            ]
+                        },
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "NewsArticle",
+                            "headline": `${revision.company_name}が${isUpward ? '上方修正' : '下方修正'}。AIが要約する変動理由`,
+                            "datePublished": revision.revision_date,
+                            "dateModified": revision.revision_date,
+                            "author": {
+                                "@type": "Organization",
+                                "name": "億り人・決算速報 (RIN)",
+                                "url": "https://rich-investor-news.com/"
+                            },
+                            "publisher": {
+                                "@type": "Organization",
+                                "name": "億り人・決算速報 (RIN)",
+                                "logo": {
+                                    "@type": "ImageObject",
+                                    "url": "https://rich-investor-news.com/icon.jpg"
+                                }
+                            },
+                            "description": revision.ai_summary || `${revision.company_name}の業績修正速報です。`
+                        }
+                    ])
+                }}
+            />
+
             <Link href="/revisions" style={{ color: '#94a3b8', textDecoration: 'none', marginBottom: '1rem', display: 'inline-block' }}>
                 &larr; 一覧に戻る
             </Link>
