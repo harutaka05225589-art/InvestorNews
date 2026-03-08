@@ -3,11 +3,11 @@ import random
 from send_x import post_to_x
 
 MESSAGES = [
-    "📅 今週の決算発表予定を確認！\n注目企業のスケジュールをチェックして投資チャンスを逃さない。\n\n👉 https://rich-investor-news.com/calendar\n\n#株式投資 #決算スケジュール #日本株 #日経平均 #TOPIX",
-    "🔔 大量保有報告書から見る「大口投資家」の動向\n機関投資家や著名投資家のポートフォリオ変化を分析。\n\n👉 https://rich-investor-news.com/introduction\n\n#日本株 #大量保有報告書 #機関投資家 #株式市場",
-    "📈 【業績修正速報】\n上方修正や増配を発表した銘柄をAIが即座に判定・要約。\n\n👉 https://rich-investor-news.com/revisions\n\n#決算速報 #上方修正 #増配 #高配当株 #好決算",
-    "📱 欲しい情報だけをLINEで通知\n監視銘柄の「決算」「修正」「株価」をリアルタイムで受け取れます。\n\nアクセスはこちら👇\nhttps://rich-investor-news.com\n\n#株式投資 #投資ツール #日本株 #資産運用",
-    "💰 配当管理をアップグレード\n「受取ベース」と「権利ベース」の切り替え、資産推移チャートで高度な管理を。\n\n👉 https://rich-investor-news.com/portfolio\n\n#配当金 #配当生活 #高配当株 #資産形成 #NISA"
+    "📈 【今日の業績修正速報】\n上方修正や下方修正を発表した銘柄をAIが瞬時に判定・要約。\n株価変動の「なぜ？」がすぐわかる投資家必携ツール。\n\n👉 最新の速報はこちら\nhttps://rich-investor-news.com/\n\n#日本株 #決算速報 #上方修正 #増配 #株式投資",
+    "📅 決算スケジュールを見逃さない！\n注目の決算発表やIRイベントをカレンダー形式で一覧表示。\n来週の相場に向けた準備はここから。\n\n👉 IRカレンダーを見る\nhttps://rich-investor-news.com/calendar\n\n#決算発表 #日本株 #資産運用 #株式投資 #高配当株",
+    "🔍 気になる銘柄の「最新評価」をチェック\n業績進捗、ライバル企業との比較、最新決算のAI要約まで一画面に集約。\n\n👉 銘柄を検索して分析する\nhttps://rich-investor-news.com/\n\n#業績修正 #銘柄分析 #株式投資 #投資初心者",
+    "💡 投資のヒントは「毎日の業績修正」にあり！\n今日の株式市場が引けた後に発表された最新の業績修正一覧。\nAIによるポジティブ/ネガティブ判定で明日の注目銘柄を発掘。\n\n👉 今日の修正まとめ\nhttps://rich-investor-news.com/revisions/today\n\n#日本株 #決算速報 #投資家 #スイングトレード",
+    "🏢 億り人・決算速報 (RIN)\n決算や業績修正などのIR情報を、最速で分かりやすくAI要約する情報サイト。\n個人投資家の「銘柄分析」を強力にサポートします！\n\n👉 サイトを見に行く\nhttps://rich-investor-news.com/\n\n#株式市場 #初心者投資家 #株式投資"
 ]
 
 import datetime
