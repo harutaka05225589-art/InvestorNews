@@ -581,15 +581,47 @@ export function getRelatedStocksBySector(sector: string, currentTicker: string, 
     try {
         if (!sector) return [];
 
-        const stmt = db.prepare(`
-            SELECT p.ticker, COALESCE(c.name, p.company_name) as company_name 
-            FROM stock_profiles p
-            LEFT JOIN companies c ON p.ticker = c.code
-            WHERE p.sector = ? AND p.ticker != ?
-            ORDER BY RANDOM()
-            LIMIT ?
+        // Fetch current company's latest revenue (sales) to find similar sized rivals
+        const stmtCurrent = db.prepare(`
+            SELECT sales FROM financial_stats 
+            WHERE ticker = ? AND period_type = 'annual' AND sales IS NOT NULL
+            ORDER BY period_end DESC LIMIT 1
         `);
-        return stmt.all(sector, currentTicker, limit) as RelatedStock[];
+        const currentSalesRow = stmtCurrent.get(currentTicker) as { sales: number } | undefined;
+        let query = "";
+        let params: any[] = [];
+
+        if (currentSalesRow && currentSalesRow.sales > 0) {
+            // Find rivals closest in revenue
+            query = `
+                SELECT p.ticker, COALESCE(c.name, p.company_name) as company_name 
+                FROM stock_profiles p
+                LEFT JOIN companies c ON p.ticker = c.code
+                LEFT JOIN (
+                    SELECT ticker, sales FROM financial_stats 
+                    WHERE period_type = 'annual' AND sales IS NOT NULL
+                    GROUP BY ticker HAVING MAX(period_end)
+                ) f ON p.ticker = f.ticker
+                WHERE p.sector = ? AND p.ticker != ?
+                ORDER BY ABS(f.sales - ?) ASC
+                LIMIT ?
+            `;
+            params = [sector, currentTicker, currentSalesRow.sales, limit];
+        } else {
+            // Fallback to random if no financial data
+            query = `
+                SELECT p.ticker, COALESCE(c.name, p.company_name) as company_name 
+                FROM stock_profiles p
+                LEFT JOIN companies c ON p.ticker = c.code
+                WHERE p.sector = ? AND p.ticker != ?
+                ORDER BY RANDOM()
+                LIMIT ?
+            `;
+            params = [sector, currentTicker, limit];
+        }
+
+        const stmt = db.prepare(query);
+        return stmt.all(...params) as RelatedStock[];
     } catch (e) {
         console.error("Get related stocks by sector error:", e);
         return [];
