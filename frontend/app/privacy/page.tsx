@@ -9,8 +9,8 @@ export default function PrivacyPolicy() {
             <section style={{ marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>1. 個人情報の取り扱い</h2>
                 <p>
-                    当サイト「Investor News」（以下、本サービス）では、ユーザーの利便性向上のために、ポートフォリオ情報（保有銘柄、株数、取得単価等）を入力・保存する機能を提供しています。
-                    これらの情報は、ユーザー自身の資産管理および配当予測の計算のみに使用され、第三者に提供・販売されることはありません。
+                    当サイト「Investor News」（以下、本サービス）では、ユーザーの利便性向上のために、ウォッチリスト情報（保有・关注銘柄など）を入力・保存する機能を提供しています。
+                    これらの情報は、ユーザー自身の情報管理のみに使用され、第三者に提供・販売されることはありません。
                 </p>
             </section>
 
@@ -18,7 +18,7 @@ export default function PrivacyPolicy() {
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>2. AIによる分析</h2>
                 <p>
                     本サービスでは、適時開示情報（TDnet）の分析にGoogle Gemini等のAI技術を使用しています。
-                    公開されている企業情報のみを分析対象としており、ユーザーの非公開データ（ポートフォリオ詳細など）をAIの学習データとして送信することはありません。
+                    公開されている企業情報のみを分析対象としており、ユーザーの非公開データ（ウォッチリスト詳細など）をAIの学習データとして送信することはありません。
                 </p>
             </section>
 

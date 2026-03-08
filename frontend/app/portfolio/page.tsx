@@ -170,7 +170,7 @@ export default function PortfolioPage() {
                 calculate(sorted);
             }
         } catch (error) {
-            console.error("Failed to fetch portfolio", error);
+            console.error("Failed to fetch watchlist", error);
         }
     };
 

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
         if (type === 'investors') {
             title = '著名投資家一覧';
-            subtitle = '大口投資家の最新ポートフォリオや動向をチェック';
+            subtitle = '大口投資家の最新動向やウォッチリストをチェック';
         }
 
         // Load Font (Subsetted)

@@ -19,26 +19,26 @@ const RevisionsFeed = () => {
       {revisions.map((rev: any) => {
         let badgeClass = 'neutral';
         let badgeLabel = '修正';
-        // Simple logic for card (detailed logic is in RevisionsPage)
+
         if (rev.is_upward === 1) { badgeClass = '#4ade80'; badgeLabel = '上方修正'; }
         else if (rev.is_upward === 0) { badgeClass = '#f87171'; badgeLabel = '下方修正'; }
-        if (rev.category === 'buyback') { badgeClass = '#fbbf24'; badgeLabel = '自社株買い'; } // Wait, user said buyback tweets off, but here we can show? Maybe user meant "notification". 
-        // User: "Information about share buybacks does not need to be tweeted on X."
-        // So showing it on site is fine.
+        if (rev.category === 'buyback') { badgeClass = '#fbbf24'; badgeLabel = '自社株買い'; }
 
         return (
           <Link href={`/revisions/${rev.id}`} key={rev.id} style={{ textDecoration: 'none' }}>
-            <div style={{ background: '#1e293b', padding: '1rem', borderRadius: '8px', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column', gap: '0.5rem', transition: 'transform 0.2s', cursor: 'pointer' }}>
+            <div style={{ background: '#1e293b', padding: '1.2rem', borderRadius: '12px', border: '1px solid #334155', height: '100%', display: 'flex', flexDirection: 'column', gap: '0.8rem', transition: 'transform 0.2s', cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{rev.revision_date}</span>
-                <span style={{ fontSize: '0.75rem', background: badgeClass, color: '#000', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 'bold' }}>
+                <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>{rev.revision_date}</span>
+                <span style={{ fontSize: '0.8rem', background: badgeClass, color: '#000', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 'bold' }}>
                   {badgeLabel}
                 </span>
               </div>
-              <div style={{ fontWeight: 'bold', color: '#fff' }}>{rev.company_name}</div>
-              <div style={{ fontSize: '0.85rem', color: '#cbd5e1' }}>{rev.ticker}</div>
-              <div style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: 'auto', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                {rev.ai_summary || rev.title}
+              <div>
+                <div style={{ fontWeight: 'bold', color: '#fff', fontSize: '1.1rem' }}>{rev.company_name}</div>
+                <div style={{ fontSize: '0.85rem', color: '#cbd5e1', marginTop: '0.2rem' }}>{rev.ticker}</div>
+              </div>
+              <div style={{ fontSize: '0.95rem', color: '#e2e8f0', marginTop: 'auto', lineHeight: '1.5', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                {rev.ai_summary ? `💡 ${rev.ai_summary}` : rev.title}
               </div>
             </div>
           </Link>
@@ -93,12 +93,11 @@ export default function Home() {
           {/* NEW HERO SECTION */}
           <div className={styles.hero}>
             <h2 className={styles.heroTitle}>
-              著名投資家の動向と<br />
-              最新の決算・配当を一元管理。
+              決算速報を一瞬で理解する。
             </h2>
             <p className={styles.heroSubtitle}>
-              億り人たちの大量保有報告から、次に動く日本株のヒントを見つけ出そう。<br />
-              個人投資家のための強力な分析ツール（RIN）。
+              毎日発表される膨大な適時開示情報（TDnet）の中から、<br />
+              株価が動く「上方修正」や「増配」をAIが瞬時に判定し、分かりやすく要約します。
             </p>
             <Link href="/revisions" className={styles.heroCta}>
               <span>👉 本日の業績修正を見る</span>
@@ -107,10 +106,10 @@ export default function Home() {
 
           {/* Elevated: Latest Revisions Feed (Core Value 1) */}
           <section style={{ marginTop: '3rem', marginBottom: '4rem' }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', borderLeft: '4px solid var(--accent)', paddingLeft: '1rem' }}>
-              📊 最新の決算速報（AI要約）
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', borderLeft: '5px solid var(--accent)', paddingLeft: '1rem' }}>
+              📊 最新の業績修正（AI要約）
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
               <RevisionsFeed />
             </div>
             <div style={{ textAlign: 'center', marginTop: '2rem' }}>
@@ -231,13 +230,12 @@ export default function Home() {
               彼らが注目するセクターや銘柄を知ることで、次のトレンドを先読みするヒントが得られます。
             </li>
             <li>
-              <strong>視認性の高いUI:</strong> 重要な情報が一目でわかるよう、配当利回りや修正率をカラフルなカード形式で表示。
-              スマートフォンでも見やすく、通勤時間や昼休みなどのスキマ時間でも市場の動きを把握できます。
+              <strong>ウォッチリスト＆カレンダー対応:</strong> 気になる銘柄をリストに登録しておけば、決算発表日が一目でわかるIRカレンダー機能と連携・統合して管理できます。
             </li>
           </ul>
 
           <p style={{ marginTop: '1.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-            当サイト(RIN)は、初心者から中級者の個人投資家が、機関投資家や専業トレーダーと同じ情報レベルで戦えるようサポートするツールです。
+            当サイト(RIN)は、初心者から中級者の個人投資家が、機関投資家や専業トレーダーと同じ情報レベルで戦えるよう機動的な分析をサポートするツールです。
             日々の投資判断の一助として、ぜひブックマークしてご活用ください。
           </p>
         </div>
