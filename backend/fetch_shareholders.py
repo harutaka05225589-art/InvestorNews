@@ -22,18 +22,27 @@ def fetch_shareholders(ticker):
             
         soup = BeautifulSoup(res.content, "html.parser")
         
-        # Strategy: Find table with "株主名" header
+        # Strategy: Find table with class 'stock_holder_1' or matching header text
         tables = soup.find_all("table")
         target_table = None
         
+        # 1. First Pass: check class name
         for table in tables:
-            rows = table.find_all("tr")
-            if not rows: continue
-            header_text = rows[0].get_text().strip()
-            # Match "株主" AND ("持株" OR "持ち株" OR "株式数" OR "比率")
-            if "株主" in header_text and ("持株" in header_text or "持ち株" in header_text or "株式数" in header_text or "比率" in header_text):
+            classes = table.get("class", [])
+            if "stock_holder_1" in classes:
                 target_table = table
                 break
+
+        # 2. Second Pass: check header text
+        if not target_table:
+            for table in tables:
+                rows = table.find_all("tr")
+                if not rows: continue
+                header_text = rows[0].get_text().strip()
+                # Match "株主" AND ("持株" OR "持ち株" OR "株式数" OR "比率")
+                if "株主" in header_text and ("持株" in header_text or "持ち株" in header_text or "株式数" in header_text or "比率" in header_text):
+                    target_table = table
+                    break
         
         if not target_table:
             # Fallback: Sometimes structure varies
@@ -94,29 +103,44 @@ def fetch_shareholders(ticker):
             # 2: Ratio
             # 3: Count
             
+            name = ""
+            ratio_str = ""
+            count_str = ""
+            
             if len(texts) >= 5:
                 # 0: Rank (1( 1)), 1: Name, 2: Change, 3: Ratio, 4: Count
                 name = texts[1]
-                
-                # Ratio
-                try:
-                    ratio_str = texts[3].replace('%', '')
-                    if not ratio_str: ratio = 0.0
-                    else: ratio = float(ratio_str)
-                except:
-                    ratio = 0.0
-                
-                # Count
+                ratio_str = texts[3]
                 count_str = texts[4]
+            elif len(texts) == 4:
+                # 0: Name, 1: Change, 2: Ratio, 3: Count
+                name = texts[0]
+                ratio_str = texts[2]
+                count_str = texts[3]
+            else:
+                continue
                 
-                results.append({
-                    "ticker": ticker,
-                    "date": entry_date,
-                    "shareholder_name": name,
-                    "share_count": count_str,
-                    "share_ratio": ratio,
-                    "rank": i + 1
-                })
+            # Filter headers or empty rows
+            if not name or name == "対象データがありません" or "比率" in name or "株主名" in name or "変動" in name: 
+                continue
+
+            name = name.strip()
+            
+            try:
+                ratio_val = ratio_str.replace('%', '')
+                if not ratio_val: ratio = 0.0
+                else: ratio = float(ratio_val)
+            except:
+                ratio = 0.0
+                
+            results.append({
+                "ticker": ticker,
+                "date": entry_date,
+                "shareholder_name": name,
+                "share_count": count_str,
+                "share_ratio": ratio,
+                "rank": i + 1  # Note: 4-column tables don't have rank, so we infer it from row order
+            })
         
         return results
 
