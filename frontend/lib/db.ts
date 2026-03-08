@@ -571,3 +571,28 @@ export function getAllCompanies(): { ticker: string }[] {
     }
 }
 
+// --- SEO Internal Linking Helpers (Added for YMYL Phase 13) ---
+export interface RelatedStock {
+    ticker: string;
+    company_name: string;
+}
+
+export function getRelatedStocksBySector(sector: string, currentTicker: string, limit: number = 5): RelatedStock[] {
+    try {
+        if (!sector) return [];
+
+        const stmt = db.prepare(`
+            SELECT p.ticker, COALESCE(c.name, p.company_name) as company_name 
+            FROM stock_profiles p
+            LEFT JOIN companies c ON p.ticker = c.code
+            WHERE p.sector = ? AND p.ticker != ?
+            ORDER BY RANDOM()
+            LIMIT ?
+        `);
+        return stmt.all(sector, currentTicker, limit) as RelatedStock[];
+    } catch (e) {
+        console.error("Get related stocks by sector error:", e);
+        return [];
+    }
+}
+

@@ -70,17 +70,16 @@ export default function TodayRevisionsPage() {
     return (
         <main className={styles.container}>
             <header className={styles.header}>
-                <h1 className={styles.title}>
-                    📅 本日の業績修正
+                <h1 className={styles.title} style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>
+                    📈 今日の業績修正速報｜上方修正・下方修正銘柄一覧（AI要約付き）
                 </h1>
                 <p className={styles.subtitle}>
                     今日発表された業績予想の修正一覧です。
                 </p>
-                <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1rem', borderRadius: '8px' }}>
+                <div style={{ maxWidth: '800px', margin: '1rem auto', fontSize: '0.9rem', color: '#cbd5e1', lineHeight: '1.6', background: 'rgba(30, 41, 59, 0.5)', padding: '1.5rem', borderRadius: '8px' }}>
                     <p>
-                        本ページでは「本日」発表された最新の上方修正・下方修正をまとめています。
-                        市場が閉まった後（大引け後）に発表された情報は、翌営業日の株価に大きく影響する可能性があります。
-                        特にサプライズ決算や予想外の増配は、寄付きからの急騰要因となるため要チェックです。
+                        本ページでは、本日発表された全上場企業の業績修正（上方修正・下方修正・配当修正）をリアルタイムで一覧化しています。「明日の急騰期待銘柄探し」や「今日の業績推移」の確認にご活用ください。AIが各企業の開示資料（TDnet）を瞬時に読み解き、修正理由を一目でわかるように解説します。<br />
+                        ※市場が閉まった後（大引け後15:00〜）に追加された情報は、翌営業日の株価に大きく影響する可能性があります。
                     </p>
                 </div>
                 <a href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
@@ -285,6 +284,11 @@ export default function TodayRevisionsPage() {
                     </table>
                 </div>
             </section>
+
+            {/* E-E-A-T Disclaimer */}
+            <div style={{ maxWidth: '800px', margin: '3rem auto 0', padding: '1rem 1.5rem', background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '0.85rem', color: '#94a3b8', lineHeight: '1.6' }}>
+                <p><strong>【⚠️ 投資免責事項】</strong><br />当ページに掲載されている本日の業績修正一覧およびAI要約データは、証券取引所の適時開示情報（TDnet）に基づく情報提供のみを目的としており、特定の銘柄への投資勧誘、推奨、助言を行うものではありません。株式投資に関する最終的な決定は、ご自身の判断と責任において行ってください。</p>
+            </div>
         </main>
     );
 }
