@@ -14,13 +14,10 @@ def run_weekly_shareholder_update():
     conn = get_db_connection()
     c = conn.cursor()
     
-    # Get all unique tickers from both companies and stock_profiles just to be safe
+    # Get all active priority tickers from stock_profiles
     c.execute('''
-        SELECT DISTINCT ticker FROM (
-            SELECT code as ticker FROM companies
-            UNION
-            SELECT ticker FROM stock_profiles
-        ) WHERE ticker IS NOT NULL
+        SELECT DISTINCT ticker FROM stock_profiles
+        WHERE ticker IS NOT NULL
         ORDER BY ticker
     ''')
     rows = c.fetchall()
@@ -42,7 +39,7 @@ def run_weekly_shareholder_update():
             
             if shareholders:
                 # save_shareholders will insert/replace in the stock_shareholders table
-                save_shareholders(ticker, shareholders)
+                save_shareholders(shareholders)
                 updated_count += 1
             else:
                 print(f"  No shareholder data found for {ticker}.")
