@@ -508,9 +508,8 @@ export function searchCompanies(query: string, limit: number = 10): CompanySearc
 
     let allCompanies: CompanySearchResult[] = [];
 
-    // 1. Fetch all companies into memory (only ~4000 rows, very fast)
     try {
-        const stmt = db.prepare(`SELECT code as ticker, name, market_segment as market, '' as sector FROM companies`);
+        const stmt = db.prepare(`SELECT ticker, name, market, sector FROM companies`);
         allCompanies = stmt.all() as CompanySearchResult[];
     } catch (e) {
         // Table might not exist yet, fallback to ir_events below
@@ -594,15 +593,14 @@ export function getRelatedStocksBySector(sector: string, currentTicker: string, 
         if (currentSalesRow && currentSalesRow.sales > 0) {
             // Find rivals closest in revenue
             query = `
-                SELECT p.ticker, COALESCE(c.name, p.company_name) as company_name 
-                FROM stock_profiles p
-                LEFT JOIN companies c ON p.ticker = c.code
+                SELECT c.ticker, c.name as company_name 
+                FROM companies c
                 LEFT JOIN (
                     SELECT ticker, sales FROM financial_stats 
                     WHERE period_type = 'annual' AND sales IS NOT NULL
                     GROUP BY ticker HAVING MAX(period_end)
-                ) f ON p.ticker = f.ticker
-                WHERE p.sector = ? AND p.ticker != ?
+                ) f ON c.ticker = f.ticker
+                WHERE c.sector = ? AND c.ticker != ?
                 ORDER BY ABS(f.sales - ?) ASC
                 LIMIT ?
             `;
@@ -610,10 +608,9 @@ export function getRelatedStocksBySector(sector: string, currentTicker: string, 
         } else {
             // Fallback to random if no financial data
             query = `
-                SELECT p.ticker, COALESCE(c.name, p.company_name) as company_name 
-                FROM stock_profiles p
-                LEFT JOIN companies c ON p.ticker = c.code
-                WHERE p.sector = ? AND p.ticker != ?
+                SELECT c.ticker, c.name as company_name 
+                FROM companies c
+                WHERE c.sector = ? AND c.ticker != ?
                 ORDER BY RANDOM()
                 LIMIT ?
             `;

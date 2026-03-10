@@ -152,7 +152,7 @@ def run_daily_edinet_shareholder_update(target_date=None):
         filer_name = doc['filerName']
         
         # Check if we already track this company
-        valid_comp = c.execute("SELECT 1 FROM companies WHERE code = ?", (ticker,)).fetchone()
+        valid_comp = c.execute("SELECT 1 FROM companies WHERE ticker = ?", (ticker,)).fetchone()
         if not valid_comp:
             continue # We only care about tracking shareholders for companies in our DB
             
