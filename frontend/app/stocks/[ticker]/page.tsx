@@ -1,6 +1,6 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions, getRelatedStocksBySector } from '@/lib/db';
+import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions, getRelatedStocksBySector, getCompanyByTicker } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
@@ -61,10 +61,12 @@ export default async function StockPage({ params }: Props) {
 
     // 1. Fetch Basic Data
     const divInfo = getLatestDividend(decodedTicker);
-    const companyName = divInfo.companyName || decodedTicker;
+    const companyMaster = getCompanyByTicker(decodedTicker);
+    const companyName = companyMaster?.name || divInfo.companyName || decodedTicker;
 
     // 2. Fetch Profile (Company Description)
     const profile = getStockProfile(decodedTicker);
+    const displaySector = profile?.sector || companyMaster?.sector;
 
     // 3. Fetch Latest AI Analysis (from Revisions)
     const latestRevisions = getRevisionsByTicker(decodedTicker, 1);
@@ -127,7 +129,7 @@ export default async function StockPage({ params }: Props) {
                                 {
                                     "@type": "ListItem",
                                     "position": 2,
-                                    "name": "ウォッチリスト",
+                                    "name": "所持銘柄",
                                     "item": "https://rich-investor-news.com/portfolio"
                                 },
                                 {
@@ -160,7 +162,7 @@ export default async function StockPage({ params }: Props) {
                     transition: 'background 0.2s'
                 }}>
                     <span>&larr;</span>
-                    <span>ウォッチリストに戻る</span>
+                    <span>所持銘柄に戻る</span>
                 </Link>
             </div>
 
@@ -212,12 +214,12 @@ export default async function StockPage({ params }: Props) {
                         }}>
                             {decodedTicker}
                         </span>
-                        {profile?.sector && (
+                        {displaySector && (
                             <span style={{
                                 background: '#3b82f6', color: '#fff', padding: '0.2rem 0.6rem',
                                 borderRadius: '4px', fontSize: '0.8rem'
                             }}>
-                                {profile.sector}
+                                {displaySector}
                             </span>
                         )}
                     </div>
@@ -345,13 +347,13 @@ export default async function StockPage({ params }: Props) {
             </article>
 
             {/* 6. SEO Internal Linking (Cross-linking for YMYL Cluster) */}
-            {profile?.sector && (() => {
-                const relatedStocks = getRelatedStocksBySector(profile.sector, decodedTicker, 6);
+            {displaySector && (() => {
+                const relatedStocks = getRelatedStocksBySector(displaySector, decodedTicker, 6);
 
                 return (
                     <article style={{ background: '#1e293b', borderRadius: '12px', border: '1px solid #334155', padding: '2rem', marginTop: '2rem' }}>
                         <h2 style={{ fontSize: '1.2rem', fontWeight: 'bold', marginBottom: '1rem', color: '#f8fafc' }}>
-                            🔗 同業種（{profile.sector}）の関連銘柄・ライバル企業
+                            🔗 同業種（{displaySector}）の関連銘柄・ライバル企業
                         </h2>
                         {(!relatedStocks || relatedStocks.length === 0) ? (
                             <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>同業種データのAI解析を待機中です。（バックグラウンドでシステムが順次追加しています）</p>

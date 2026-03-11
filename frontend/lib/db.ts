@@ -625,3 +625,13 @@ export function getRelatedStocksBySector(sector: string, currentTicker: string, 
     }
 }
 
+export function getCompanyByTicker(ticker: string): { ticker: string, name: string, market: string, sector: string } | undefined {
+    try {
+        const stmt = db.prepare('SELECT ticker, name, market, sector FROM companies WHERE ticker = ?');
+        return stmt.get(ticker) as { ticker: string, name: string, market: string, sector: string } | undefined;
+    } catch (e) {
+        console.error("Get company by ticker error:", e);
+        return undefined;
+    }
+}
+

@@ -489,7 +489,7 @@ export default function PortfolioPage() {
     return (
         <main style={{ maxWidth: '1600px', margin: '0 auto', padding: '1rem 2rem', overflowX: 'hidden' }}>
             <header style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 ウォッチリスト</h1>
+                <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 所持銘柄</h1>
                 <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
                 <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                     <div>
