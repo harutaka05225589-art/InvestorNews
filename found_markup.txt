@@ -1,0 +1,17 @@
+--- CELL 1 HTML ---
+<td style="border-bottom-color:#000000; border-bottom-style:solid; border-bottom-width:0.5pt; border-left-color:#000000; border-left-style:solid; border-left-width:0.5pt; border-right-color:#000000; border-right-style:solid; border-right-width:0.5pt; border-top-color:#000000; border-top-style:solid; border-top-width:0.5pt; vertical-align:middle; width:176.15pt">
+ <p style="margin:0pt; text-align:center; line-height:18pt; widows:0; orphans:0;font-size:10pt">
+  <span style="font-family:'ＭＳ 明朝'; font-size:10pt">
+   野村ホールディングス株式会社
+  </span>
+ </p>
+</td>
+
+--- CELL 3 HTML ---
+<td style="border-bottom-color:#000000; border-bottom-style:solid; border-bottom-width:0.5pt; border-left-color:#000000; border-left-style:solid; border-left-width:0.5pt; border-right-color:#000000; border-right-style:solid; border-right-width:0.5pt; border-top-color:#000000; border-top-style:solid; border-top-width:0.5pt; vertical-align:middle; width:78.7pt">
+ <p style="margin:0pt; text-align:center; line-height:18pt; widows:0; orphans:0;font-size:10pt">
+  <span style="font-family:'ＭＳ 明朝'; font-size:10pt">
+   5,150,693株
+  </span>
+ </p>
+</td>

@@ -14,43 +14,11 @@ from database import get_db_connection
 
 def get_stock_history(ticker, start_date, end_date):
     """
-    Fetch daily OHLCV from Yahoo Finance Japan (or alternative).
-    Returns list of dicts: [{'date': '2025-01-01', 'close': 1000, 'volume': 50000}, ...]
+    Placeholder for fetching daily OHLCV from an official source (e.g. Yahoo Finance API or Stooq).
+    Kabutan scraping has been disabled per user request.
     """
-    # Yahoo Finance JP Helper
-    # URL: https://finance.yahoo.co.jp/quote/7203.T/history?from=...&to=...
-    # Scraping history from HTML is hard due to JS.
-    # Faster approach: Use `yfinance` library if allowed, or Stooq, or scrape "summary" page if we only need "Reaction".
-    
-    # Since we need *post-event* reaction, we need specific dates.
-    # Let's try the simple "get current" approach first, but for reaction we need historical.
-    # IF `yfinance` is available, it's best. The user installed `google-generativeai`.
-    # Let's assume we can use `yfinance` or a simple scraper.
-    
-    # Fallback: Simple scraping of "Time Series" page (kabutan or yahoo)
-    # Kabutan: https://kabutan.jp/stock/kabuka?code=7203
-    url = f"https://kabutan.jp/stock/kabuka?code={ticker}"
-    
-    try:
-        headers = {'User-Agent': 'Mozilla/5.0'}
-        res = requests.get(url, headers=headers)
-        if res.status_code != 200:
-            return []
-            
-        soup = BeautifulSoup(res.content, 'html.parser')
-        # Kabutan tables
-        # Need to find the table with daily prices
-        # Usually internal structure.
-        
-        # Simplified for MVP:
-        # We just want to check if price moved UP or DOWN since revision_date.
-        # This function is a placeholder for the actual data source.
-        # For now, let's return EMPTY to prevent crushing.
-        return []
-        
-    except Exception as e:
-        print(f"Error fetching history for {ticker}: {e}")
-        return []
+    # TODO: Implement robust price fetching using yfinance or similar.
+    return []
 
 def track_reactions():
     conn = get_db_connection()
