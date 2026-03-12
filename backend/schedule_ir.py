@@ -1,72 +1,117 @@
 import schedule
 import time
 import datetime
-from fetch_ir_calendar import run_fetch
+import traceback
+import sys
+import os
 
-def weekly_job():
-    print(f"Starting Weekly IR Update at {datetime.datetime.now()}")
-    # Update future 6 months, and check past 7 days for any missed corrections
-    run_fetch(days_back=7, days_forward=180)
+# Import job functions
+from fetch_ir_calendar import run_fetch
+from send_calendar_alerts import send_calendar_alerts
+from send_promo import send_promo
+from fetch_edinet_financials import fetch_edinet_financial_list, download_and_process_report
+from fetch_edinet_shareholders import run_daily_edinet_shareholder_update
+from analyze_revisions_ai import process_revisions
+
+def log(message):
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(f"[{timestamp}] {message}")
+    sys.stdout.flush()
+
+# --- Job Wrappers with Robust Error Handling ---
+
+def job_daily_ir_fetch():
+    log("TASK START: Daily IR Calendar Sync (JPX)")
+    try:
+        # days_back=3 to catch minor late updates, days_forward=180 for future view
+        run_fetch(days_back=3, days_forward=180)
+        log("TASK SUCCESS: Daily IR Calendar Sync")
+    except Exception as e:
+        log(f"TASK ERROR: Daily IR Calendar Sync: {e}\n{traceback.format_exc()}")
+
+def job_daily_ai_analysis():
+    log("TASK START: AI Analysis Retry/Sync")
+    try:
+        process_revisions()
+        log("TASK SUCCESS: AI Analysis")
+    except Exception as e:
+        log(f"TASK ERROR: AI Analysis: {e}\n{traceback.format_exc()}")
+
+def job_daily_calendar_alerts():
+    log("TASK START: LINE Calendar Alerts")
+    try:
+        send_calendar_alerts()
+        log("TASK SUCCESS: LINE Calendar Alerts")
+    except Exception as e:
+        log(f"TASK ERROR: LINE Calendar Alerts: {e}\n{traceback.format_exc()}")
+
+def job_daily_promo_tweet():
+    log("TASK START: X (Twitter) Promo Tweet")
+    try:
+        send_promo()
+        log("TASK SUCCESS: X Promo Tweet")
+    except Exception as e:
+        log(f"TASK ERROR: X Promo Tweet: {e}\n{traceback.format_exc()}")
+
+def job_daily_edinet_financials():
+    log("TASK START: EDINET Financials Daily Check")
+    try:
+        today = datetime.date.today()
+        # Check Today and Yesterday for completeness
+        for i in range(2):
+            d_str = (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
+            docs = fetch_edinet_financial_list(d_str)
+            for doc in docs:
+                code = doc.get('docTypeCode', '')
+                # 120: Yuho, 130: Quarterly, 140: Semiannual
+                if code in ['120', '130', '140']:
+                    download_and_process_report(doc)
+        log("TASK SUCCESS: EDINET Financials Check")
+    except Exception as e:
+        log(f"TASK ERROR: EDINET Financials Check: {e}\n{traceback.format_exc()}")
+
+def job_daily_edinet_shareholders():
+    log("TASK START: EDINET Shareholder Update")
+    try:
+        run_daily_edinet_shareholder_update()
+        log("TASK SUCCESS: EDINET Shareholder Update")
+    except Exception as e:
+        log(f"TASK ERROR: EDINET Shareholder Update: {e}\n{traceback.format_exc()}")
+
+def job_heartbeat():
+    log("HEARTBEAT: Scheduler is running...")
+
+# --- Main Scheduling Logic ---
 
 if __name__ == "__main__":
-    print("IR Scheduler started. Running every Sunday at 01:00 AM.")
+    log("=== Investor News Scheduler Starting (Unified Daily Mode) ===")
+
+    # 1. CORE DATA SYNC (Nightly)
+    schedule.every().day.at("01:00").do(job_daily_ir_fetch)
+    schedule.every().day.at("01:30").do(job_daily_ai_analysis)
+
+    # 2. NOTIFICATIONS & PROMOS (Daytime)
+    schedule.every().day.at("08:30").do(job_daily_promo_tweet)
+    schedule.every().day.at("09:00").do(job_daily_calendar_alerts)
+    schedule.every().day.at("12:00").do(job_daily_promo_tweet)
+    schedule.every().day.at("17:30").do(job_daily_promo_tweet)
+
+    # 3. OFFICIAL DISCLOSURES (Evening)
+    schedule.every().day.at("09:30").do(job_daily_edinet_financials)
+    schedule.every().day.at("18:30").do(job_daily_edinet_financials)
+    schedule.every().day.at("19:00").do(job_daily_edinet_shareholders)
+
+    # 4. MONITORING
+    schedule.every().hour.do(job_heartbeat)
+
+    log(f"Successfully registered {len(schedule.jobs)} jobs.")
     
-    # Schedule for Daily check at 01:00 AM
-    # Job Wrappers for Safety (prevent crash on holidays/errors)
-    def safe_weekly_job():
-        try: weekly_job()
-        except Exception as e: print(f"Weekly Job Error: {e}")
+    # Run once on start for heartbeat confirmation
+    job_heartbeat()
 
-    def safe_calendar_alerts():
-        try: send_calendar_alerts()
-        except Exception as e: print(f"Calendar Alerts Error: {e}")
-
-    def safe_promo():
-        try: send_promo()
-        except Exception as e: print(f"Promo Tweet Error: {e}")
-
-    # Schedule for Daily check at 01:00 AM
-    schedule.every().day.at("01:00").do(safe_weekly_job)
-
-    # Calendar Alerts (Daily at 09:00)
-    from send_calendar_alerts import send_calendar_alerts
-    schedule.every().day.at("09:00").do(safe_calendar_alerts)
-
-    # Promo Tweet (Daily at 08:30, 12:00, 17:30)
-    from send_promo import send_promo
-    schedule.every().day.at("08:30").do(safe_promo)
-    schedule.every().day.at("12:00").do(safe_promo)
-    schedule.every().day.at("17:30").do(safe_promo)
-    
-    # EDINET Financials (Daily Check twice)
-    from fetch_edinet_financials import fetch_edinet_financial_list, download_and_process_report
-    def daily_edinet_check():
-        print(f"Starting EDINET Daily Check at {datetime.datetime.now()}")
-        try:
-            today = datetime.date.today()
-            # Check Today and Yesterday (just in case)
-            for i in range(2):
-                d_str = (today - datetime.timedelta(days=i)).strftime('%Y-%m-%d')
-                docs = fetch_edinet_financial_list(d_str)
-                for doc in docs:
-                    code = doc.get('docTypeCode', '')
-                    if code in ['120', '130', '140']:
-                        download_and_process_report(doc)
-        except Exception as e:
-            print(f"EDINET Check Error: {e}")
-    
-    schedule.every().day.at("09:30").do(daily_edinet_check) # Morning check for previous day/early reports
-    schedule.every().day.at("18:30").do(daily_edinet_check) # Evening check for today's reports
-
-    # Daily Shareholder Update via EDINET API (Daily at 19:00 JST)
-    # This replaces the old scraping method for commercial compliance.
-    from fetch_edinet_shareholders import run_daily_edinet_shareholder_update
-    def safe_edinet_shareholder_update():
-        print(f"Starting EDINET Shareholder Update at {datetime.datetime.now()}")
-        try: run_daily_edinet_shareholder_update()
-        except Exception as e: print(f"Daily Shareholder Error: {e}")
-    schedule.every().day.at("19:00").do(safe_edinet_shareholder_update)
-    
     while True:
-        schedule.run_pending()
+        try:
+            schedule.run_pending()
+        except Exception as e:
+            log(f"CRITICAL: Scheduler loop encountered an error: {e}")
         time.sleep(60)
