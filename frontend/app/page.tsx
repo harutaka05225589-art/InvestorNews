@@ -1,5 +1,5 @@
 import Link from 'next/link'; // Added Link import
-import { getInvestors, getDailyIREvents, getLatestEdinetDocs, getRevisions } from '@/lib/db';
+import { getInvestors, getDailyIREvents, getLatestEdinetDocs, getRevisions, getMarketSummary } from '@/lib/db';
 import { Investor } from '@/lib/types';
 import styles from './home.module.css';
 import AdSenseDisplay from '../components/ads/AdSenseDisplay';
@@ -103,6 +103,64 @@ export default function Home() {
               <span>👉 本日の業績修正を見る</span>
             </Link>
           </div>
+
+          {/* AI MARKET SUMMARY (NEW Phase 20) */}
+          {(() => {
+            const summary = getMarketSummary();
+            if (!summary) return null;
+            return (
+              <section style={{ 
+                marginTop: '1.5rem', 
+                padding: '2rem', 
+                background: 'linear-gradient(145deg, #1e293b 0%, #0f172a 100%)', 
+                borderRadius: '16px', 
+                border: '1px solid #3b82f6',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.3)',
+                position: 'relative',
+                overflow: 'hidden',
+                marginBottom: '1.5rem'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '-20px',
+                  right: '-20px',
+                  fontSize: '5rem',
+                  opacity: 0.05,
+                  userSelect: 'none'
+                }}>💡</div>
+                <h3 style={{ 
+                  color: '#60a5fa', 
+                  fontSize: '0.9rem', 
+                  fontWeight: 'bold', 
+                  letterSpacing: '0.1em', 
+                  textTransform: 'uppercase',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span style={{ display: 'inline-block', width: '8px', height: '8px', background: '#3b82f6', borderRadius: '50%' }}></span>
+                  AIによる本日の市場概況
+                </h3>
+                <p style={{ 
+                  fontSize: '1.1rem', 
+                  lineHeight: '1.8', 
+                  color: '#f1f5f9',
+                  fontWeight: '500'
+                }}>
+                  {summary.summary_text}
+                </p>
+                <div style={{ 
+                  marginTop: '1.2rem', 
+                  fontSize: '0.8rem', 
+                  color: '#94a3b8',
+                  textAlign: 'right'
+                }}>
+                  分析対象日: {summary.date}
+                </div>
+              </section>
+            );
+          })()}
 
           {/* Elevated: Latest Revisions Feed (Core Value 1) */}
           <section style={{ marginTop: '3rem', marginBottom: '4rem' }}>

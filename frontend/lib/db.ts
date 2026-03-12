@@ -634,4 +634,27 @@ export function getCompanyByTicker(ticker: string): { ticker: string, name: stri
         return undefined;
     }
 }
+// --- Market Summary Helpers ---
 
+export interface MarketSummary {
+    date: string;
+    summary_text: string;
+    generated_at: string;
+}
+
+export function getMarketSummary(dateStr?: string): MarketSummary | null {
+    try {
+        let stmt;
+        if (dateStr) {
+            stmt = db.prepare('SELECT * FROM market_summaries WHERE date = ?');
+            return stmt.get(dateStr) as MarketSummary || null;
+        } else {
+            // Get the latest one if no date specified
+            stmt = db.prepare('SELECT * FROM market_summaries ORDER BY date DESC LIMIT 1');
+            return stmt.get() as MarketSummary || null;
+        }
+    } catch (e) {
+        console.error("Get market summary error:", e);
+        return null;
+    }
+}

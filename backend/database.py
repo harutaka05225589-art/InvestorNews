@@ -98,7 +98,6 @@ def init_db():
     )
     ''')
     
-    # Notifications Table
     c.execute('''
     CREATE TABLE IF NOT EXISTS notifications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -109,6 +108,16 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
         FOREIGN KEY (alert_id) REFERENCES alerts (id) ON DELETE CASCADE
+    )
+    ''')
+
+    # Market Summaries Table (Added Phase 20)
+    c.execute('''
+    CREATE TABLE IF NOT EXISTS market_summaries (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        date DATE UNIQUE NOT NULL,
+        summary_text TEXT NOT NULL,
+        generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
 

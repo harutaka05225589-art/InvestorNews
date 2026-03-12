@@ -12,6 +12,7 @@ from send_promo import send_promo
 from fetch_edinet_financials import fetch_edinet_financial_list, download_and_process_report
 from fetch_edinet_shareholders import run_daily_edinet_shareholder_update
 from analyze_revisions_ai import process_revisions
+from summarize_market import generate_market_summary
 
 def log(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -78,6 +79,14 @@ def job_daily_edinet_shareholders():
     except Exception as e:
         log(f"TASK ERROR: EDINET Shareholder Update: {e}\n{traceback.format_exc()}")
 
+def job_daily_market_summary():
+    log("TASK START: AI Market Summary Generation")
+    try:
+        generate_market_summary()
+        log("TASK SUCCESS: AI Market Summary")
+    except Exception as e:
+        log(f"TASK ERROR: AI Market Summary: {e}\n{traceback.format_exc()}")
+
 def job_heartbeat():
     log("HEARTBEAT: Scheduler is running...")
 
@@ -89,6 +98,7 @@ if __name__ == "__main__":
     # 1. CORE DATA SYNC (Nightly)
     schedule.every().day.at("01:00").do(job_daily_ir_fetch)
     schedule.every().day.at("01:30").do(job_daily_ai_analysis)
+    schedule.every().day.at("02:00").do(job_daily_market_summary) # Run after AI analysis
 
     # 2. NOTIFICATIONS & PROMOS (Daytime)
     schedule.every().day.at("08:30").do(job_daily_promo_tweet)
