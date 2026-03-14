@@ -6,9 +6,9 @@ const BASE_URL = 'https://rich-investor-news.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
     const investors = getInvestors() as Investor[];
-    // Get last 1000 revisions to ensure recent content is indexed
-    // SEO Strategy: We want these specific pages to be found
-    const revisions = getRevisionsForSitemap(1000);
+    // Get last 5000 revisions to ensure deep indexing
+    // SEO Strategy: Target long-tail keywords for specific past events
+    const revisions = getRevisionsForSitemap(5000);
 
     // Dynamic Routes: Investor News Page
     const investorNewsUrls = investors.map((investor) => ({
@@ -88,10 +88,34 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.9,
         },
         {
-            url: `${BASE_URL}/revisions/ranking`,
+            url: `${BASE_URL}/revisions/ranking/upside`,
             lastModified: new Date(),
             changeFrequency: 'daily' as const,
-            priority: 0.8,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/revisions/ranking/dividend`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/revisions/ranking/buyback`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/revisions/ranking/surprise`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/revisions/ranking/hot`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
         },
         {
             url: `${BASE_URL}/revisions/today`,
@@ -135,10 +159,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'yearly' as const,
             priority: 0.3,
         },
+        {
+            url: `${BASE_URL}/about-ai`,
+            lastModified: new Date(),
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+        },
     ];
+
+    // Sector Routes (High Value SEO siloing)
+    const sectors = [
+        'info-telecom', 'services', 'retail', 'wholesale', 'machinery',
+        'electric', 'construction', 'pharma', 'chemicals', 'foods',
+        'real-estate', 'banking'
+    ];
+    const sectorUrls = sectors.map(s => ({
+        url: `${BASE_URL}/revisions/sector/${s}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily' as const,
+        priority: 0.7
+    }));
 
     return [
         ...staticRoutes,
+        ...sectorUrls,
         ...investorIntroUrls,
         ...investorNewsUrls,
         ...revisionUrls,

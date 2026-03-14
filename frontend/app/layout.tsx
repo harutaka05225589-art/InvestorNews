@@ -99,17 +99,36 @@ export default function RootLayout({
             {children}
           </main>
         </div>
-        <footer style={{ marginTop: '4rem', padding: '2rem 1rem', borderTop: '1px solid rgba(255,255,255,0.1)', textAlign: 'center', color: 'var(--secondary)', fontSize: '0.85rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
-            <Link href="/introduction" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>投資家一覧</Link>
-            <Link href="/request" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>追加リクエスト</Link>
-            <Link href="/inquiry" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>お問い合わせ</Link>
-            <Link href="/about" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>サイトについて</Link>
-            <Link href="/guide" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>使い方ガイド</Link>
-            <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>運営者情報・公式LINE</Link>
-            <Link href="/privacy" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>プライバシーポリシー</Link>
+        <footer style={{ marginTop: '4rem', padding: '3rem 1rem', borderTop: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15, 23, 42, 0.4)' }}>
+          <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+            {/* YMYL Trust Factors */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem', marginBottom: '3rem', textAlign: 'left', fontSize: '0.8rem', color: '#94a3b8', lineHeight: '1.6' }}>
+              <div>
+                <h4 style={{ color: '#f8fafc', marginBottom: '0.5rem', fontSize: '0.9rem' }}>🔍 データソースと透明性</h4>
+                <p>掲載データは、証券取引所（TDnet）および金融庁（EDINET）の開示資料、ならびに日本取引所グループ（JPX）の統計情報に基づいています。1時間ごとに自動同期を行い、最新情報を提供しています。</p>
+              </div>
+              <div>
+                <h4 style={{ color: '#f8fafc', marginBottom: '0.5rem', fontSize: '0.9rem' }}>🤖 AI解析のプロセス</h4>
+                <p>AI（Gemini 1.5 Pro等）がPDF資料を読み込み、要約を生成しています。数値の正確性には細心の注意を払っておりますが、投資の最終判断には必ず提供元のPDF資料をご確認ください。</p>
+              </div>
+              <div>
+                <h4 style={{ color: '#f8fafc', marginBottom: '0.5rem', fontSize: '0.9rem' }}>⚠️ 免責事項</h4>
+                <p>本サイトは情報提供を目的としており、投資勧誘を行うものではありません。掲載情報に基づいて被ったいかなる損害についても、当サイトは一切の責任を負いません。</p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap', fontSize: '0.85rem' }}>
+              <Link href="/introduction" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>投資家一覧</Link>
+              <Link href="/request" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>追加リクエスト</Link>
+              <Link href="/inquiry" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>お問い合わせ</Link>
+              <Link href="/about" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>サイトについて</Link>
+              <Link href="/about-ai" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>AI解析の仕組み</Link>
+              <Link href="/guide" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>使い方ガイド</Link>
+              <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>運営者情報・公式LINE</Link>
+              <Link href="/privacy" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>プライバシーポリシー</Link>
+            </div>
+            <p style={{ textAlign: 'center', color: 'var(--secondary)', fontSize: '0.8rem' }}>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
           </div>
-          <p>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>
         </footer>
       </body>
     </html>

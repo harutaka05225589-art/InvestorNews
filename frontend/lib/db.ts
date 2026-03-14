@@ -269,29 +269,36 @@ export function getRevisions(limit: number = 100) {
     }
 }
 
-export function getRevisionsByDateRange(startDate: string, endDate: string, category: string = 'earnings') {
+export function getRevisionsByDateRange(startDate: string, endDate: string, category: string = 'earnings', sector: string | null = null) {
     try {
         let query = `
-            SELECT * FROM revisions 
-            WHERE revision_date BETWEEN ? AND ?
-            AND is_upward IS NOT NULL
+            SELECT r.*, c.sector 
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.revision_date BETWEEN ? AND ?
+            AND r.is_upward IS NOT NULL
         `;
         const params: any[] = [startDate, endDate];
 
         if (category === 'earnings') {
-            query += ` AND category IN ('earnings', 'both')`;
+            query += ` AND r.category IN ('earnings', 'both')`;
         } else if (category === 'dividend') {
-            query += ` AND category IN ('dividend', 'both')`;
+            query += ` AND r.category IN ('dividend', 'both')`;
         } else if (category === 'buyback') {
-            query += ` AND category = 'buyback'`;
+            query += ` AND r.category = 'buyback'`;
         } else if (category === 'all') {
             // No filter
         } else {
-            // Default fallback if unknown (safe)
-            query += ` AND category IN ('earnings', 'both')`;
+            // Default fallback
+            query += ` AND r.category IN ('earnings', 'both')`;
         }
 
-        query += ` ORDER BY revision_date DESC, id DESC`;
+        if (sector) {
+            query += ` AND c.sector = ?`;
+            params.push(sector);
+        }
+
+        query += ` ORDER BY r.revision_date DESC, r.id DESC`;
 
         const stmt = db.prepare(query);
         return stmt.all(...params) as any[];
@@ -310,6 +317,40 @@ export function getRevisionRanking(limit: number = 20) {
             WHERE is_upward IS NOT NULL
             GROUP BY ticker, company_name 
             ORDER BY count DESC 
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getSurpriseRevisions(limit: number = 20) {
+    try {
+        const stmt = db.prepare(`
+            SELECT r.*, c.sector 
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.revision_rate_op >= 10
+            ORDER BY r.revision_date DESC, r.revision_rate_op DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getHotTickers(limit: number = 20) {
+    try {
+        const stmt = db.prepare(`
+            SELECT r.ticker, r.company_name, COUNT(*) as activity_count, MAX(r.revision_date) as last_date, c.sector
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.revision_date > date('now', '-90 days')
+              AND r.is_upward IS NOT NULL
+            GROUP BY r.ticker
+            ORDER BY activity_count DESC, last_date DESC
             LIMIT ?
         `);
         return stmt.all(limit) as any[];

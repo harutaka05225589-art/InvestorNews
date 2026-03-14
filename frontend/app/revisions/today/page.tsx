@@ -1,8 +1,7 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
+import React, { Fragment } from 'react';
 import Link from 'next/link';
 import styles from '../revisions.module.css';
+import db, { getRevisionsByDateRange } from '@/lib/db';
 
 // Type definition (Shared ideally, but duplicating for speed)
 // Helper to determine revision type
@@ -24,38 +23,28 @@ interface Revision {
     category?: string;
 }
 
-function getRevisionType(rev: Revision) {
-    // 1. AI Analysis result (Priority)
-    if (rev.ai_analyzed && rev.is_upward !== null && rev.is_upward !== undefined) {
-        // If the rate is 0 or null, consider it neutral (not downward)
-        if ((!rev.revision_rate_op || rev.revision_rate_op === 0) && !rev.is_dividend_hike) {
-            return 'neutral';
-        }
-        return rev.is_upward === 1 ? 'up' : 'down';
-    }
-
-    // 2. Title fallback
-    const title = rev.title || '';
-    if (title.includes('上方修正')) return 'up';
-    if (title.includes('下方修正')) return 'down';
-    return 'neutral';
+// Metadata generation for SEO
+export async function generateMetadata() {
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+    const dateStr = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日`;
+    
+    return {
+        title: `${dateStr}の業績修正速報 - Investor News`,
+        description: `${dateStr}に発表された上場企業の業績予想修正（上方修正・下方修正）、増配、自社株買い情報をAI解析。最新の市場動向をいち早くキャッチ。`,
+        alternates: {
+            canonical: '/revisions/today',
+        },
+    };
 }
 
-export default function TodayRevisionsPage() {
-    const [revisions, setRevisions] = useState<Revision[]>([]);
-    const [loading, setLoading] = useState(true);
+export default async function TodayRevisionsPage() {
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const d = String(now.getDate()).padStart(2, '0');
+    const dateStr = `${y}-${m}-${d}`;
 
-    useEffect(() => {
-        fetch('/api/revisions?filter=today&category=all')
-            .then(res => res.json())
-            .then(data => {
-                if (data.revisions) {
-                    setRevisions(data.revisions);
-                }
-            })
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false));
-    }, []);
+    const revisions = getRevisionsByDateRange(dateStr, dateStr, 'all') as Revision[];
 
     // Strict Filter Logic
     const validRevisions = revisions.filter(rev => {
@@ -69,6 +58,22 @@ export default function TodayRevisionsPage() {
 
     return (
         <main className={styles.container}>
+            {/* JSON-LD for SEO */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "ItemList",
+                        "itemListElement": validRevisions.map((rev, i) => ({
+                            "@type": "ListItem",
+                            "position": i + 1,
+                            "url": `https://rich-investor-news.com/revisions/${rev.id}`,
+                            "name": `${rev.ticker} ${rev.company_name} - ${rev.title || '業績修正'}`
+                        }))
+                    })
+                }}
+            />
             <header className={styles.header}>
                 <h1 className={styles.title} style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>
                     📈 今日の業績修正速報｜上方修正・下方修正銘柄一覧（AI要約付き）
@@ -82,9 +87,9 @@ export default function TodayRevisionsPage() {
                         ※市場が閉まった後（大引け後15:00〜）に追加された情報は、翌営業日の株価に大きく影響する可能性があります。
                     </p>
                 </div>
-                <a href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
+                <Link href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
                     &larr; 全ての一覧に戻る
-                </a>
+                </Link>
             </header>
 
             <section>
@@ -100,25 +105,18 @@ export default function TodayRevisionsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
-                                </tr>
-                            )}
-                            {!loading && validRevisions.length === 0 && (
+                            {validRevisions.length === 0 && (
                                 <tr>
                                     <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-                                        条件に一致する業績修正は見つかりませんでした。
+                                        本日の発表はまだありません
                                     </td>
                                 </tr>
                             )}
-                            {!loading && validRevisions.map((rev) => {
+                            {validRevisions.map((rev) => {
                                 // Smart Display Logic (Category Aware)
                                 let displayMode = rev.category || 'earnings';
-                                if (!rev.category) {
-                                    if (rev.dividend_forecast_annual) displayMode = 'dividend';
-                                    else displayMode = 'earnings';
-                                }
+                                if (rev.category === 'both') displayMode = 'both';
+                                else if (!rev.category && rev.dividend_forecast_annual) displayMode = 'dividend';
 
                                 let badgeLabel = '―';
                                 let badgeClass = 'neutral';
@@ -136,7 +134,6 @@ export default function TodayRevisionsPage() {
                                         badgeClass = 'down';
                                         badgeLabel = '📉 減配';
                                     } else {
-                                        badgeClass = 'neutral';
                                         badgeLabel = '配当修正';
                                     }
 
@@ -157,7 +154,6 @@ export default function TodayRevisionsPage() {
                                     }
                                 }
                                 else if (displayMode === 'both') {
-                                    const isHike = rev.is_dividend_hike === 1;
                                     const isDecrease = rev.is_dividend_hike === -1;
 
                                     if (isDecrease) {
@@ -201,16 +197,7 @@ export default function TodayRevisionsPage() {
 
                                     if (isZero) {
                                         // Unanalyzed or Zero -> Plain label
-                                        // Using old fallback logic if unanalyzed
-                                        const t = getRevisionType(rev);
-                                        badgeClass = t === 'up' ? 'up' : t === 'down' ? 'down' : 'neutral';
-                                        badgeLabel = t === 'up' ? '↗ 修正' : t === 'down' ? '↘ 修正' : '修正';
-
-                                        // If analyzed but 0% -> '修正'
-                                        if (rev.ai_analyzed) {
-                                            badgeClass = 'neutral';
-                                            badgeLabel = '修正';
-                                        }
+                                        badgeLabel = '修正';
                                         valueDisplay = <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>;
                                     } else {
                                         const type = rev.is_upward === 1 ? 'up' : rev.is_upward === 0 ? 'down' : 'neutral';
@@ -267,13 +254,7 @@ export default function TodayRevisionsPage() {
                                 );
                             })}
 
-                            {loading && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
-                                </tr>
-                            )}
-
-                            {!loading && validRevisions.length === 0 && (
+                            {validRevisions.length === 0 && (
                                 <tr>
                                     <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
                                         本日の発表はまだありません

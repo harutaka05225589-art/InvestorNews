@@ -1,8 +1,7 @@
-"use client";
-
-import React, { useState, useEffect } from 'react';
+import React, { Fragment } from 'react';
 import Link from 'next/link';
 import styles from '../revisions.module.css';
+import db, { getRevisionsByDateRange } from '@/lib/db';
 
 // Helper to determine revision type
 interface Revision {
@@ -40,36 +39,54 @@ function getRevisionType(rev: Revision) {
     return 'neutral';
 }
 
-export default function MonthRevisionsPage() {
-    const [revisions, setRevisions] = useState<Revision[]>([]);
-    const [loading, setLoading] = useState(true);
+// Metadata generation for SEO
+export async function generateMetadata() {
+    return {
+        title: '今月の業績修正・増配発表まとめ - Investor News',
+        description: '今月発表された上場企業の業績修正や配当引上げ情報を網羅。AIが集約した市場のポジティブサプライズをチェック。',
+        alternates: {
+            canonical: '/revisions/this-month',
+        },
+    };
+}
 
-    useEffect(() => {
-        fetch('/api/revisions?filter=month&category=all')
-            .then(res => res.json())
-            .then(data => {
-                if (data.revisions) {
-                    setRevisions(data.revisions);
-                }
-            })
-            .catch(err => console.error(err))
-            .finally(() => setLoading(false));
-    }, []);
+export default async function MonthRevisionsPage() {
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));
+    const y = now.getFullYear();
+    const m = String(now.getMonth() + 1).padStart(2, '0');
+    const startDate = `${y}-${m}-01`;
+    const endDate = `${y}-${m}-31`;
+
+    const revisions = getRevisionsByDateRange(startDate, endDate, 'all') as Revision[];
 
     // Strict Filter Logic
     const validRevisions = revisions.filter(rev => {
         const hasRate = rev.revision_rate_op !== undefined && rev.revision_rate_op !== null && Number(rev.revision_rate_op) !== 0;
         const isDividendHike = rev.is_dividend_hike === 1;
         const isBoth = rev.category === 'both';
-
-        // 'all' category: Exclude Buyback + Strict Dividend Hike
         return hasRate || isDividendHike || isBoth;
     });
 
-    const currentMonth = new Date().getMonth() + 1;
+    const currentMonth = now.getMonth() + 1;
 
     return (
         <main className={styles.container}>
+            {/* JSON-LD for SEO */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "ItemList",
+                        "itemListElement": validRevisions.map((rev, i) => ({
+                            "@type": "ListItem",
+                            "position": i + 1,
+                            "url": `https://rich-investor-news.com/revisions/${rev.id}`,
+                            "name": `${rev.ticker} ${rev.company_name} - ${rev.title || '業績修正'}`
+                        }))
+                    })
+                }}
+            />
             <header className={styles.header}>
                 <h1 className={styles.title}>
                     📅 今月の業績修正 ({currentMonth}月)
@@ -84,9 +101,9 @@ export default function MonthRevisionsPage() {
                         月間の修正率ランキング上位銘柄は、中長期的な上昇トレンドに入ることも多いため要注目です。
                     </p>
                 </div>
-                <a href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
+                <Link href="/revisions" style={{ fontSize: '0.9rem', color: 'var(--accent)', textDecoration: 'underline' }}>
                     &larr; 全ての一覧に戻る
-                </a>
+                </Link>
             </header>
 
             <section>
@@ -102,20 +119,18 @@ export default function MonthRevisionsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {validRevisions.length === 0 && !loading && (
+                            {validRevisions.length === 0 && (
                                 <tr>
                                     <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
-                                        条件に一致する業績修正は見つかりませんでした。
+                                        今月の発表はまだありません
                                     </td>
                                 </tr>
                             )}
                             {validRevisions.map((rev) => {
                                 // Smart Display Logic (Category Aware)
                                 let displayMode = rev.category || 'earnings';
-                                if (!rev.category) {
-                                    if (rev.dividend_forecast_annual) displayMode = 'dividend';
-                                    else displayMode = 'earnings';
-                                }
+                                if (rev.category === 'both') displayMode = 'both';
+                                else if (!rev.category && rev.dividend_forecast_annual) displayMode = 'dividend';
 
                                 let badgeLabel = '―';
                                 let badgeClass = 'neutral';
@@ -124,8 +139,7 @@ export default function MonthRevisionsPage() {
                                 if (displayMode === 'buyback') {
                                     badgeClass = 'up';
                                     badgeLabel = '🚀 自社株買い';
-                                }
-                                else if (displayMode === 'dividend') {
+                                } else if (displayMode === 'dividend') {
                                     if (rev.is_dividend_hike === 1) {
                                         badgeClass = 'up';
                                         badgeLabel = '💰 増配';
@@ -133,80 +147,52 @@ export default function MonthRevisionsPage() {
                                         badgeClass = 'down';
                                         badgeLabel = '📉 減配';
                                     } else {
-                                        badgeClass = 'neutral';
                                         badgeLabel = '配当修正';
                                     }
 
-                                    const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
                                     if (rev.dividend_forecast_annual) {
+                                        const diff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
                                         valueDisplay = (
                                             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-                                                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>
-                                                    {rev.dividend_forecast_annual}円
-                                                </span>
-                                                {rev.dividend_forecast_previous && divDiff !== 0 && (
-                                                    <span style={{ fontSize: '0.75rem', color: divDiff > 0 ? '#4ade80' : '#ef4444' }}>
-                                                        ({divDiff > 0 ? '+' : ''}{divDiff}円)
+                                                <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--profit)' }}>{rev.dividend_forecast_annual}円</span>
+                                                {rev.dividend_forecast_previous && diff !== 0 && (
+                                                    <span style={{ fontSize: '0.75rem', color: diff > 0 ? '#4ade80' : '#ef4444' }}>
+                                                        ({diff > 0 ? '+' : ''}{diff}円)
                                                     </span>
                                                 )}
                                             </div>
                                         );
                                     }
-                                }
-                                else if (displayMode === 'both') {
-                                    const isHike = rev.is_dividend_hike === 1;
+                                } else if (displayMode === 'both') {
                                     const isDecrease = rev.is_dividend_hike === -1;
-
-                                    if (isDecrease) {
-                                        badgeClass = 'down';
-                                        badgeLabel = '上方・減配';
-                                    } else {
-                                        badgeClass = 'up';
-                                        badgeLabel = '🚀 上方・増配';
-                                    }
+                                    badgeClass = isDecrease ? 'down' : 'up';
+                                    badgeLabel = isDecrease ? '上方・減配' : '🚀 上方・増配';
 
                                     const rate = rev.revision_rate_op;
                                     const divDiff = (rev.dividend_forecast_annual || 0) - (rev.dividend_forecast_previous || 0);
 
                                     valueDisplay = (
                                         <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.2' }}>
-                                            {rate && rate !== 0 ? (
+                                            {rate && rate !== 0 && (
                                                 <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: rate > 0 ? '#4ade80' : '#f87171' }}>
                                                     {rate > 0 ? '+' : ''}{Number(rate).toFixed(1)}%
                                                 </span>
-                                            ) : null}
-                                            {/* Display Dividend Amount & Diff */}
+                                            )}
                                             {rev.dividend_forecast_annual && (
                                                 <div style={{ fontSize: '0.75rem', marginTop: '2px' }}>
-                                                    <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>
-                                                        配{rev.dividend_forecast_annual}円
-                                                    </span>
+                                                    <span style={{ color: '#fbbf24', fontWeight: 'bold' }}>配{rev.dividend_forecast_annual}円</span>
                                                     {divDiff !== 0 && (
-                                                        <span style={{ marginLeft: '4px', color: divDiff > 0 ? '#4ade80' : '#ef4444' }}>
-                                                            ({divDiff > 0 ? '+' : ''}{divDiff})
-                                                        </span>
+                                                        <span style={{ marginLeft: '4px', color: divDiff > 0 ? '#4ade80' : '#ef4444' }}>({divDiff > 0 ? '+' : ''}{divDiff})</span>
                                                     )}
                                                 </div>
                                             )}
                                         </div>
                                     );
-                                }
-                                else {
+                                } else {
                                     // Earnings (Default)
                                     const rate = rev.revision_rate_op;
-                                    const isZero = !rate || rate === 0;
-
-                                    if (isZero) {
-                                        // Unanalyzed or Zero -> Plain label
-                                        const t = getRevisionType(rev);
-                                        badgeClass = t === 'up' ? 'up' : t === 'down' ? 'down' : 'neutral';
-                                        badgeLabel = t === 'up' ? '↗ 修正' : t === 'down' ? '↘ 修正' : '修正';
-
-                                        if (rev.ai_analyzed) {
-                                            badgeClass = 'neutral';
-                                            badgeLabel = '修正';
-                                        }
-                                        valueDisplay = <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>-</span>;
+                                    if (!rate || rate === 0) {
+                                        badgeLabel = '修正';
                                     } else {
                                         const type = rev.is_upward === 1 ? 'up' : rev.is_upward === 0 ? 'down' : 'neutral';
                                         badgeClass = type;
@@ -223,9 +209,9 @@ export default function MonthRevisionsPage() {
                                     <tr key={rev.id}>
                                         <td style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', color: '#ccc' }}>{rev.revision_date}</td>
                                         <td>
-                                            <a href={`https://finance.yahoo.co.jp/quote/${rev.ticker}.T`} target="_blank" rel="noopener noreferrer" className={styles.tickerLink}>
+                                            <Link href={`/stocks/${rev.ticker}`} className={styles.tickerLink} style={{ color: '#60a5fa', fontWeight: 'bold', textDecoration: 'none' }}>
                                                 {rev.ticker}
-                                            </a>
+                                            </Link>
                                         </td>
                                         <td style={{ minWidth: '250px' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -261,20 +247,6 @@ export default function MonthRevisionsPage() {
                                     </tr>
                                 );
                             })}
-
-                            {loading && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem' }}>読み込み中...</td>
-                                </tr>
-                            )}
-
-                            {!loading && validRevisions.length === 0 && (
-                                <tr>
-                                    <td colSpan={5} style={{ textAlign: 'center', padding: '2rem', color: 'var(--secondary)' }}>
-                                        今月の発表はまだありません
-                                    </td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
                 </div>

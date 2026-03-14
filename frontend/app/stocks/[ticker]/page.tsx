@@ -45,6 +45,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
             description,
             images: [ogImageUrl],
         },
+        alternates: {
+            canonical: `https://rich-investor-news.com/stocks/${decodedTicker}`,
+        },
     };
 }
 
@@ -129,8 +132,8 @@ export default async function StockPage({ params }: Props) {
                                 {
                                     "@type": "ListItem",
                                     "position": 2,
-                                    "name": "所持銘柄",
-                                    "item": "https://rich-investor-news.com/portfolio"
+                                    "name": "銘柄一覧",
+                                    "item": "https://rich-investor-news.com/revisions"
                                 },
                                 {
                                     "@type": "ListItem",
@@ -147,6 +150,22 @@ export default async function StockPage({ params }: Props) {
                             "publisher": {
                                 "@type": "Organization",
                                 "name": "億り人・決算速報 (RIN)"
+                            }
+                        },
+                        {
+                            "@context": "https://schema.org",
+                            "@type": "FinancialProduct",
+                            "name": `${companyName}`,
+                            "tickerSymbol": `${decodedTicker}`,
+                            "description": `${profile?.description || companyName + 'の業績・配当情報'}`,
+                            "brand": {
+                                "@type": "Brand",
+                                "name": "日本株"
+                            },
+                            "offers": {
+                                "@type": "Offer",
+                                "priceCurrency": "JPY",
+                                "category": "Market Statistics"
                             }
                         }
                     ])

@@ -170,8 +170,14 @@ export default function Home() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1.5rem' }}>
               <RevisionsFeed />
             </div>
-            <div style={{ textAlign: 'center', marginTop: '2rem' }}>
-              <Link href="/revisions" style={{ display: 'inline-block', padding: '0.8rem 2rem', background: 'var(--accent)', color: '#000', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none' }}>
+            <div style={{ textAlign: 'center', marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <Link href="/revisions/ranking/upside" style={{ padding: '0.6rem 1.5rem', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid var(--accent)', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', color: 'var(--accent)', fontSize: '0.9rem' }}>
+                🚀 上方修正率ランキング
+              </Link>
+              <Link href="/revisions/ranking/dividend" style={{ padding: '0.6rem 1.5rem', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid #fbbf24', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', color: '#fbbf24', fontSize: '0.9rem' }}>
+                💰 増配ランキング
+              </Link>
+              <Link href="/revisions" style={{ padding: '0.6rem 2rem', background: 'var(--accent)', color: '#000', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.9rem' }}>
                 速報一覧を見る &rarr;
               </Link>
             </div>
