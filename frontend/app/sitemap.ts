@@ -136,6 +136,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.9,
         },
         {
+            url: `${BASE_URL}/revision-rate-ranking`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/earnings-this-week`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/investor-buying`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
             url: `${BASE_URL}/revisions/today`,
             lastModified: new Date(),
             changeFrequency: 'hourly' as const,

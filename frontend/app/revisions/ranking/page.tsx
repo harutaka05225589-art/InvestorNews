@@ -54,6 +54,18 @@ export default async function RevisionRankingPage() {
                         <div style={{ color: '#3b82f6', fontWeight: 'bold', marginBottom: '0.5rem' }}>⚡ 急騰・注目銘柄</div>
                         <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>開示頻度の高い活発な銘柄</div>
                     </Link>
+                    <Link href="/revision-rate-ranking" style={{ padding: '1.5rem', background: '#1e293b', border: '1px solid #6366f1', borderRadius: '12px', textDecoration: 'none' }}>
+                        <div style={{ color: '#6366f1', fontWeight: 'bold', marginBottom: '0.5rem' }}>📊 修正率ランキング</div>
+                        <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>大幅な上方・下方修正</div>
+                    </Link>
+                    <Link href="/earnings-this-week" style={{ padding: '1.5rem', background: '#1e293b', border: '1px solid #10b981', borderRadius: '12px', textDecoration: 'none' }}>
+                        <div style={{ color: '#10b981', fontWeight: 'bold', marginBottom: '0.5rem' }}>📅 今週の決算予定</div>
+                        <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>最新のIRスケジュール</div>
+                    </Link>
+                    <Link href="/investor-buying" style={{ padding: '1.5rem', background: '#1e293b', border: '1px solid #fb7185', borderRadius: '12px', textDecoration: 'none' }}>
+                        <div style={{ color: '#fb7185', fontWeight: 'bold', marginBottom: '0.5rem' }}>👤 投資家買い増し</div>
+                        <div style={{ color: '#94a3b8', fontSize: '0.85rem' }}>著名投資家の最新動向</div>
+                    </Link>
                 </div>
 
                 <div className={styles.tableContainer}>

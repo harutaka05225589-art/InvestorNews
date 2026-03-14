@@ -150,6 +150,15 @@ export default async function RevisionsPage({
                     <Link href="/revisions/ranking/hot" style={{ padding: '0.5rem 1rem', background: 'rgba(59, 130, 246, 0.1)', border: '1px solid #3b82f6', borderRadius: '20px', fontSize: '0.85rem', textDecoration: 'none', color: '#3b82f6' }}>
                         ⚡ 注目銘柄
                     </Link>
+                    <Link href="/revision-rate-ranking" style={{ padding: '0.5rem 1rem', background: 'rgba(99, 102, 241, 0.1)', border: '1px solid #6366f1', borderRadius: '20px', fontSize: '0.85rem', textDecoration: 'none', color: '#6366f1' }}>
+                        📊 修正率位
+                    </Link>
+                    <Link href="/earnings-this-week" style={{ padding: '0.5rem 1rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid #10b981', borderRadius: '20px', fontSize: '0.85rem', textDecoration: 'none', color: '#10b981' }}>
+                        📅 今週の決算
+                    </Link>
+                    <Link href="/investor-buying" style={{ padding: '0.5rem 1rem', background: 'rgba(236, 72, 153, 0.1)', border: '1px solid #fb7185', borderRadius: '20px', fontSize: '0.85rem', textDecoration: 'none', color: '#fb7185' }}>
+                        👤 投資家買い増し
+                    </Link>
                 </div>
                 
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>

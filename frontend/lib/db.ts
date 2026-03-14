@@ -470,6 +470,66 @@ export function getRevisionById(id: string | number) {
     }
 }
 
+export function getRevisionRateFullRanking(limit: number = 50) {
+    try {
+        const stmt = db.prepare(`
+            SELECT r.*, c.sector, c.market
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.revision_rate_op IS NOT NULL
+            ORDER BY ABS(r.revision_rate_op) DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getEarningsThisWeek() {
+    try {
+        const now = new Date();
+        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay()));
+        const endOfWeek = new Date(now.setDate(now.getDate() - now.getDay() + 6));
+        
+        const startStr = startOfWeek.toISOString().split('T')[0];
+        const endStr = endOfWeek.toISOString().split('T')[0];
+
+        const stmt = db.prepare(`
+            SELECT event_date, ticker, company_name, market
+            FROM ir_events
+            WHERE event_date BETWEEN ? AND ?
+            ORDER BY event_date ASC, ticker ASC
+        `);
+        return stmt.all(startStr, endStr) as any[];
+    } catch (e) {
+        console.error("Get earnings this week error:", e);
+        return [];
+    }
+}
+
+export function getInvestorBuyingRanking(limit: number = 30) {
+    try {
+        // Simple implementation: Latest top holdings by recognizable investors
+        // In a real scenario, we would join with previous snapshots to find deltas.
+        const stmt = db.prepare(`
+            SELECT s.*, p.company_name
+            FROM stock_shareholders s
+            LEFT JOIN stock_profiles p ON s.ticker = p.ticker
+            WHERE s.shareholder_name NOT LIKE '%信託%' 
+              AND s.shareholder_name NOT LIKE '%銀行%'
+              AND s.shareholder_name NOT LIKE '%証券%'
+              AND s.shareholder_name NOT LIKE '%マスタートラスト%'
+              AND s.shareholder_name NOT LIKE '%カストディ%'
+            ORDER BY s.entry_date DESC, s.share_ratio DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
 // --- Stock Profile Helpers ---
 
 export interface StockProfile {
