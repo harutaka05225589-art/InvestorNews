@@ -118,6 +118,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
             priority: 0.9,
         },
         {
+            url: `${BASE_URL}/upward-revision-stocks`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/dividend-increase-stocks`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
+            url: `${BASE_URL}/share-buyback-stocks`,
+            lastModified: new Date(),
+            changeFrequency: 'daily' as const,
+            priority: 0.9,
+        },
+        {
             url: `${BASE_URL}/revisions/today`,
             lastModified: new Date(),
             changeFrequency: 'hourly' as const,

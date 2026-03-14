@@ -358,6 +358,58 @@ export function getHotTickers(limit: number = 20) {
         return [];
     }
 }
+
+export function getUpwardRevisionRanking(limit: number = 30) {
+    try {
+        const stmt = db.prepare(`
+            SELECT r.*, c.sector, c.market
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.revision_rate_op IS NOT NULL AND r.revision_rate_op > 0
+            ORDER BY r.revision_date DESC, r.revision_rate_op DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getDividendIncreaseRanking(limit: number = 30) {
+    try {
+        const stmt = db.prepare(`
+            SELECT r.*, c.sector, c.market,
+                   ((r.dividend_forecast_annual - r.dividend_forecast_previous) / r.dividend_forecast_previous * 100) as increase_rate
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.category IN ('dividend', 'both')
+              AND r.dividend_forecast_annual > r.dividend_forecast_previous
+              AND r.dividend_forecast_previous > 0
+            ORDER BY r.revision_date DESC, increase_rate DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
+export function getBuybackRanking(limit: number = 30) {
+    try {
+        const stmt = db.prepare(`
+            SELECT r.*, c.sector, c.market
+            FROM revisions r
+            LEFT JOIN companies c ON r.ticker = c.ticker
+            WHERE r.category = 'buyback'
+            ORDER BY r.revision_date DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        return [];
+    }
+}
+
 export function getRevisionsByTicker(ticker: string, limit: number = 5, excludeId: number | null = null) {
     try {
         let query = 'SELECT * FROM revisions WHERE ticker = ? AND is_upward IS NOT NULL';
