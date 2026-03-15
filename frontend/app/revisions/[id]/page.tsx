@@ -50,8 +50,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const ogTitle = encodeURIComponent(`${rawTitle} ${actionText}`);
     const ogSubtitle = encodeURIComponent(revision.ai_summary || subtitle).substring(0, 100);
 
-    // Using absolute URL for production to bypass Twitter's /api block
-    const ogImageUrl = `https://rich-investor-news.com/og-image.png?title=${ogTitle}&subtitle=${ogSubtitle}&type=alert`;
+    // Using API for dynamic OG generation
+    const ogImageUrl = `https://rich-investor-news.com/api/og?title=${ogTitle}&subtitle=${ogSubtitle}&type=alert`;
 
     return {
         title: `${title} | 億り人・決算速報`,

@@ -3,11 +3,12 @@ import random
 from send_x import post_to_x
 
 MESSAGES = [
-    "📈 【今日の業績修正速報】\n上方修正や下方修正を発表した銘柄をAIが瞬時に判定・要約。\n株価変動の「なぜ？」がすぐわかる投資家必携ツール。\n\n👉 最新の速報はこちら\nhttps://rich-investor-news.com/\n\n#日本株 #決算速報 #上方修正 #増配 #株式投資",
-    "📅 決算スケジュールを見逃さない！\n注目の決算発表やIRイベントをカレンダー形式で一覧表示。\n来週の相場に向けた準備はここから。\n\n👉 IRカレンダーを見る\nhttps://rich-investor-news.com/calendar\n\n#決算発表 #日本株 #資産運用 #株式投資 #高配当株",
-    "🔍 気になる銘柄の「最新評価」をチェック\n業績進捗、ライバル企業との比較、最新決算のAI要約まで一画面に集約。\n\n👉 銘柄を検索して分析する\nhttps://rich-investor-news.com/\n\n#業績修正 #銘柄分析 #株式投資 #投資初心者",
-    "💡 投資のヒントは「毎日の業績修正」にあり！\n今日の株式市場が引けた後に発表された最新の業績修正一覧。\nAIによるポジティブ/ネガティブ判定で明日の注目銘柄を発掘。\n\n👉 今日の修正まとめ\nhttps://rich-investor-news.com/revisions/today\n\n#日本株 #決算速報 #投資家 #スイングトレード",
-    "🏢 億り人・決算速報 (RIN)\n決算や業績修正などのIR情報を、最速で分かりやすくAI要約する情報サイト。\n個人投資家の「銘柄分析」を強力にサポートします！\n\n👉 サイトを見に行く\nhttps://rich-investor-news.com/\n\n#株式市場 #初心者投資家 #株式投資"
+    "📈 【業績修正率ランキング】\n日本株の「上方修正」を修正率順にリストアップ！\nAIが修正理由を詳しく要約。明日の注目銘柄を今すぐチェック。\n\n👉 ランキングを見る\nhttps://rich-investor-news.com/revision-rate-ranking\n\n#日本株 #決算速報 #上方修正 #投資家 #株式投資",
+    "💰 【高配当・増配銘柄は？】\n最新の「増配ランキング」を最速更新。\n配当利回りや増配率をAIが自動集計。インカムゲイン狙いの投資家必見！\n\n👉 増配銘柄の一覧へ\nhttps://rich-investor-news.com/dividend-increase-stocks\n\n#高配当株 #増配 #新NISA #日本株 #資産運用",
+    "🚀 【自社株買い発表を逃さない】\n今日の市場で自社株買いを発表した銘柄は？\n買い付け規模や期間をAIが瞬時に解析。\n\n👉 自社株買い銘柄を見る\nhttps://rich-investor-news.com/share-buyback-stocks\n\n#自社株買い #日本株 #株主還元 #スイングトレード",
+    "📅 【今週の決算スケジュール】\n今週発表予定の重要決算を一覧表示。\n保有銘柄の発表日を事前に確認して、決算またぎに備えよう！\n\n👉 決算予定をチェック\nhttps://rich-investor-news.com/earnings-this-week\n\n#決算発表 #IRカレンダー #日本株 #投資準備",
+    "👤 【著名投資家の最新動向】\n「あの億り人」が買い増した銘柄は？\n大量保有報告書をもとに、主要株主の変動を一覧化。\n\n👉 投資家の買い増しを見る\nhttps://rich-investor-news.com/investor-buying\n\n#億り人 #テスタ #大量保有報告書 #日本株",
+    "🏢 【億り人・決算速報 (RIN)】\nTDnet開示をAIが瞬時に要約。個人投資家のための「情報の時差」をなくす最強ツール。\n\n👉 サイトを見に行く\nhttps://rich-investor-news.com/\n\n#株式投資 #決算速報 #RIN #投資初心者"
 ]
 
 import datetime
