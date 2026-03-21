@@ -48,7 +48,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // Construct OGP Image URL
     // Use proper encoding for Japanese characters
     const ogTitle = encodeURIComponent(`${rawTitle} ${actionText}`);
-    const ogSubtitle = encodeURIComponent(revision.ai_summary || subtitle).substring(0, 100);
+    const originalSubtitle = revision.ai_summary || subtitle;
+    const ogSubtitle = encodeURIComponent(originalSubtitle.substring(0, 100));
 
     // Using API for dynamic OG generation
     const ogImageUrl = `https://rich-investor-news.com/api/og?title=${ogTitle}&subtitle=${ogSubtitle}&type=alert`;
@@ -210,6 +211,18 @@ export default async function RevisionPage({ params }: Props) {
                     <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '2rem' }}>
                         {revision.ai_summary}
                     </p>
+
+                    {/* AI Prospects (New) */}
+                    {revision.ai_prospects && (
+                        <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
+                            <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#60a5fa', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                🚀 今後の将来性・リスク展望
+                            </h2>
+                            <p style={{ fontSize: '1.1rem', lineHeight: '1.8', color: '#f8fafc' }}>
+                                {revision.ai_prospects}
+                            </p>
+                        </div>
+                    )}
 
                     <h2 style={{ fontSize: '1.1rem', marginBottom: '1rem', color: '#94a3b8' }}>コンセンサス予想と財務基礎データ</h2>
                     <div style={{ display: 'grid', gap: '1rem', color: '#cbd5e1' }}>

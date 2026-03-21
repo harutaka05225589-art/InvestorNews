@@ -185,6 +185,11 @@ export default async function StockPage({ params }: Props) {
                 </Link>
             </div>
 
+            {/* AdSense (Top of Page) */}
+            <div style={{ marginBottom: '2rem' }}>
+                <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
+            </div>
+
             {/* My Holdings Card (Unified View) */}
             {isHolder && (
                 <div style={{
@@ -299,9 +304,24 @@ export default async function StockPage({ params }: Props) {
                                 </div>
 
                                 {/* Summary */}
-                                <p style={{ lineHeight: '1.8', color: '#cbd5e1' }}>
-                                    {latestRevision.ai_summary || "AIによる要約は生成されていません。"}
-                                </p>
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <h3 style={{ fontSize: '1rem', color: '#94a3b8', marginBottom: '0.5rem' }}>📌 業績修正の理由</h3>
+                                    <p style={{ lineHeight: '1.8', color: '#cbd5e1' }}>
+                                        {latestRevision.ai_summary || "AIによる要約は生成されていません。"}
+                                    </p>
+                                </div>
+
+                                {/* Prospects (New) */}
+                                {latestRevision.ai_prospects && (
+                                    <div style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '8px', borderLeft: '4px solid #3b82f6' }}>
+                                        <h3 style={{ fontSize: '1rem', color: '#60a5fa', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                            🚀 今後の将来性・リスク展望
+                                        </h3>
+                                        <p style={{ lineHeight: '1.8', color: '#f8fafc' }}>
+                                            {latestRevision.ai_prospects}
+                                        </p>
+                                    </div>
+                                )}
 
                                 <div style={{ marginTop: '1rem' }}>
                                     <Link href={`/revisions/${latestRevision.id}`} style={{ color: '#60a5fa', fontSize: '0.9rem', textDecoration: 'none' }}>

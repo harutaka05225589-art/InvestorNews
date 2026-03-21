@@ -59,7 +59,12 @@ def analyze_revision_pdf(pdf_path, title):
        - 文字数は80〜100文字程度で、投資家が判断材料にできる内容にしてください。
        - 「～ため。」「～ことが寄与。」のように体言止めや簡潔な文末にしてください。
     
-    6. category: 修正の種類 (以下のいずれかを選択)
+    6. prospects: 
+       - この企業の「将来性や今後の展望・リスク」について、開示資料の定性情報から予測・要約してください。
+       - 今後の成長ドライバー（新製品、海外展開、M&Aなど）や、懸念されるリスク（原材料高、競争激化など）を挙げてください。
+       - 文字数は150〜200文字程度で、投資家が長期的な投資判断の材料にできる内容にしてください。
+
+    7. category: 修正の種類 (以下のいずれかを選択)
        - "earnings": 業績予想の修正のみ
        - "dividend": 配当予想の修正のみ
        - "both": 業績と配当の両方の修正
@@ -72,6 +77,7 @@ def analyze_revision_pdf(pdf_path, title):
         "is_upward": true,
         "revision_rate_op": 0.0,
         "summary": "海外売上高が想定を上回り、円安効果も寄与したため。価格改定の浸透により原材料高を吸収し、営業利益は過去最高を更新する見込み。",
+        "prospects": "北米市場を中心とした堅調な需要拡大に加え、来期にかけては新工場の稼働による生産能力向上とサプライチェーンの最適化が利益率の改善に寄与する見通しです。一方で、中国市場の競争激化や継続的な原材料価格の高止まりが懸念材料として残るものの、高付加価値製品の販売比率を高めることで収益基盤の強化を図っています。",
         "quarter": "通期",
         "dividend": {{ "annual_forecast": 100, "annual_previous": 80, "is_hike": true, "rights_month": 3, "payment_month": 6 }},
         "forecast_data": null
@@ -198,6 +204,7 @@ def process_revisions():
                 is_upward = result.get('is_upward') 
                 rate = result.get('revision_rate_op', 0.0)
                 summary = result.get('summary', '解析不可')
+                prospects = result.get('prospects', None) # New Future Prospects
                 quarter = result.get('quarter', None) 
                 category = result.get('category', 'earnings') # Default to earnings if not found
                 
@@ -253,12 +260,13 @@ def process_revisions():
                 
                 is_up_int = 1 if is_upward else 0 if is_upward is False else None
                 
-                # Update DB including quarter and dividend
+                # Update DB including quarter and dividend and prospects
                 c.execute("""
                     UPDATE revisions 
                     SET is_upward = ?, 
                         revision_rate_op = ?,
                         ai_summary = ?,
+                        ai_prospects = ?,
                         forecast_data = ?,
                         quarter = ?,
                         dividend_forecast_annual = ?,
@@ -269,7 +277,7 @@ def process_revisions():
                         category = ?,
                         ai_analyzed = 1
                     WHERE id = ?
-                """, (is_up_int, rate, summary, forecast_data_json, quarter, div_forecast, final_prev, is_div_hike, rights_month, payment_month, category, rev_id))
+                """, (is_up_int, rate, summary, prospects, forecast_data_json, quarter, div_forecast, final_prev, is_div_hike, rights_month, payment_month, category, rev_id))
                 conn.commit()
                 print("  Saved to DB.")
                 
