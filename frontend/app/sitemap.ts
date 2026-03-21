@@ -43,6 +43,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
         priority: 0.8,
     }));
 
+    // Dynamic Routes: Theme Pages (Months 1-12)
+    const constMonths = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    const themeUrls = constMonths.map((m) => ({
+        url: `${BASE_URL}/themes/dividend/${m}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily' as const, // Revisions matching the month might be added daily
+        priority: 0.8,
+    }));
+
     // Static Routes
     const staticRoutes = [
         {
@@ -220,6 +229,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         ...staticRoutes,
         ...sectorUrls,
         ...investorIntroUrls,
+        ...themeUrls,
         ...investorNewsUrls,
         ...revisionUrls,
         ...stockUrls,

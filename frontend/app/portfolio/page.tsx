@@ -131,6 +131,8 @@ export default function PortfolioPage() {
         return () => clearTimeout(timer);
     }, [query]);
 
+    const [accountId, setAccountId] = useState<string | null>(null);
+
     const fetchSuggestions = async (q: string) => {
         try {
             const res = await fetch(`/api/search/companies?q=${encodeURIComponent(q)}`);
@@ -159,6 +161,8 @@ export default function PortfolioPage() {
                 return;
             }
             const data = await res.json();
+            if (data.accountId) setAccountId(data.accountId);
+            
             if (data.transactions) {
                 // Sort by date ascending for correct AVG price calc
                 const sorted = data.transactions.sort((a: Transaction, b: Transaction) => {
@@ -489,8 +493,26 @@ export default function PortfolioPage() {
     return (
         <main style={{ maxWidth: '1600px', margin: '0 auto', padding: '1rem 2rem', overflowX: 'hidden' }}>
             <header style={{ marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>
-                <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 所持銘柄</h1>
-                <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                    <div>
+                        <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold' }}>💰 所持銘柄</h1>
+                        <p style={{ color: '#94a3b8' }}>保有銘柄と配当管理 (AI自動抽出データ連携済み)</p>
+                    </div>
+                    {accountId && (
+                        <a 
+                            href={`https://twitter.com/intent/tweet?text=${encodeURIComponent('私の配当ポートフォリオを公開しました！\n予想配当利回り: ' + (totalPortfolioValue > 0 ? (totalNetDividend / totalPortfolioValue * 100).toFixed(2) : '0.00') + '%\n年間予想配当: ' + Math.round(totalNetDividend).toLocaleString() + '円\n#日本株 #高配当株 #投資家\n')}&url=${encodeURIComponent(`https://rich-investor-news.com/portfolio/shared/${accountId}`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ 
+                                background: '#000', color: '#fff', padding: '0.6rem 1.2rem', borderRadius: '30px', 
+                                border: '1px solid #333', fontWeight: 'bold', fontSize: '0.9rem', textDecoration: 'none',
+                                display: 'flex', alignItems: 'center', gap: '8px'
+                            }}
+                            className="hover:bg-slate-800"
+                        >
+                            𝕏 ポートフォリオを共有
+                        </a>
+                    )}
+                </div>
                 <div style={{ display: 'flex', gap: '2rem', marginTop: '1rem', flexWrap: 'wrap' }}>
                     <div>
                         <span style={{ color: '#94a3b8', fontSize: '0.9rem' }}>総投入額</span>

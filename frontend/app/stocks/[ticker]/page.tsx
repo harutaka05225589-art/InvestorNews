@@ -1,10 +1,12 @@
 import { cookies } from 'next/headers';
 import Link from 'next/link';
-import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions, getRelatedStocksBySector, getCompanyByTicker } from '@/lib/db';
+import { getRevisionsByTicker, getDividendHistory, getLatestDividend, getStockProfile, getFinancialStats, getShareholders, getPortfolioTransactions, getRelatedStocksBySector, getCompanyByTicker, getUserVote, getVoteStats, getRecentComments, getRevisionHistory } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import DividendChart from '@/components/DividendChart';
 import FinancialChart from '@/components/FinancialChart';
 import ShareholderList from '@/components/ShareholderList';
+import RevisionHistoryChart from '@/components/RevisionHistoryChart';
+import UserVoteClient from '@/components/UserVoteClient';
 
 export const dynamic = 'force-dynamic';
 
@@ -77,6 +79,7 @@ export default async function StockPage({ params }: Props) {
 
     // 4. Fetch Dividend History
     const history = getDividendHistory(decodedTicker);
+    const revisionHistory = getRevisionHistory(decodedTicker);
 
     // 5. Fetch Financial History
     const financialStats = getFinancialStats(decodedTicker);
@@ -87,6 +90,12 @@ export default async function StockPage({ params }: Props) {
     // 7. Fetch Portfolio Holdings (NEW)
     const transactions = userId ? getPortfolioTransactions(userId) : [];
     const myTransactions = transactions.filter(t => t.ticker === decodedTicker);
+
+    // 8. Fetch User Votes (UGC)
+    const voteStats = getVoteStats(decodedTicker);
+    const initialUserVote = userId ? getUserVote(userId.toString(), decodedTicker) : null;
+    const recentComments = getRecentComments(decodedTicker);
+    const isLoggedIn = !!userId;
 
     // Calculate Holdings
     let totalShares = 0;
@@ -338,6 +347,17 @@ export default async function StockPage({ params }: Props) {
                             <p style={{ color: '#94a3b8' }}>直近の業績修正情報はありません。</p>
                         </div>
                     )}
+
+                    {/* UGC: User Voting System */}
+                    <UserVoteClient 
+                        ticker={decodedTicker}
+                        companyName={companyName}
+                        initialStats={voteStats}
+                        initialUserVote={initialUserVote?.vote_type || null}
+                        initialUserComment={initialUserVote?.comment || null}
+                        initialComments={recentComments}
+                        isLoggedIn={isLoggedIn}
+                    />
 
                     {/* 3. Financial Charts (NEW) */}
                     <div style={{ marginBottom: '3rem' }}>

@@ -4,7 +4,7 @@ import { Investor } from '@/lib/types';
 import styles from './home.module.css';
 import AdSenseDisplay from '../components/ads/AdSenseDisplay';
 import { isHoliday } from 'japanese-holidays';
-
+import TrendingVotes from '@/components/TrendingVotes';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
@@ -148,7 +148,13 @@ export default function Home() {
                   color: '#f1f5f9',
                   fontWeight: '500'
                 }}>
-                  {summary.summary_text}
+                  {summary.summary_text.split(/([\(（【][1-9][0-9]{3}[\)）】])/).map((part: string, i: number) => {
+                    if (/[\(（【][1-9][0-9]{3}[\)）】]/.test(part)) {
+                        const ticker = part.replace(/[^0-9]/g, '');
+                        return <Link key={i} href={`/stocks/${ticker}`} style={{ color: '#38bdf8', textDecoration: 'underline' }}>{part}</Link>;
+                    }
+                    return part;
+                  })}
                 </p>
                 <div style={{ 
                   marginTop: '1.2rem', 
@@ -176,6 +182,9 @@ export default function Home() {
               </Link>
               <Link href="/revisions/ranking/dividend" style={{ padding: '0.6rem 1.5rem', background: 'rgba(251, 191, 36, 0.1)', border: '1px solid #fbbf24', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', color: '#fbbf24', fontSize: '0.9rem' }}>
                 💰 増配ランキング
+              </Link>
+              <Link href="/daily-reports" style={{ padding: '0.6rem 1.5rem', background: 'rgba(167, 139, 250, 0.1)', border: '1px solid #a78bfa', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', color: '#a78bfa', fontSize: '0.9rem' }}>
+                📝 今日のAI相場まとめ
               </Link>
               <Link href="/revisions" style={{ padding: '0.6rem 2rem', background: 'var(--accent)', color: '#000', borderRadius: '30px', fontWeight: 'bold', textDecoration: 'none', fontSize: '0.9rem' }}>
                 速報一覧を見る &rarr;
@@ -211,6 +220,10 @@ export default function Home() {
 
       {/* Right Sidebar: Widgets */}
       <div className={styles.sidebar}>
+        
+        {/* 🔥 UGC Trending Votes Widget */}
+        <TrendingVotes />
+
         {/* Dashboard Widget */}
         <section className={styles.widget} style={{ marginBottom: '1.5rem' }}>
           <h2 className={styles.widgetTitle}>
@@ -252,7 +265,31 @@ export default function Home() {
           </div>
         </section>
 
-
+        {/* Dividend Themes Widget (New SEO Section) */}
+        <section className={styles.widget} style={{ marginTop: '1.5rem', marginBottom: '1.5rem' }}>
+          <h2 className={styles.widgetTitle} style={{ fontSize: '1rem', borderBottom: '2px solid #334155', paddingBottom: '0.5rem', marginBottom: '1rem' }}>
+            💰 月別の権利確定・高配当銘柄
+          </h2>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', justifyContent: 'flex-start' }}>
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => (
+              <Link key={m} href={`/themes/dividend/${m}`} style={{
+                background: '#1e293b',
+                color: '#cbd5e1',
+                border: '1px solid #334155',
+                padding: '0.4rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.85rem',
+                textDecoration: 'none',
+                fontWeight: 'bold',
+                flex: '1 0 calc(25% - 0.4rem)',
+                textAlign: 'center',
+                transition: 'background 0.2s'
+              }} className="hover:bg-slate-700">
+                {m}月確定
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* AdSense In-Feed Widget */}
         <section className={styles.widget} style={{ marginTop: '1.5rem', padding: 0, background: 'transparent', border: 'none' }}>

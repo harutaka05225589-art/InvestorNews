@@ -26,7 +26,10 @@ export async function GET(req: Request) {
             };
         });
 
-        return NextResponse.json({ transactions: txWithDiv });
+        return NextResponse.json({ 
+            transactions: txWithDiv,
+            accountId: session.accountId 
+        });
     } catch (error) {
         console.error("Portfolio GET Error:", error);
         return NextResponse.json({ error: 'Failed to fetch portfolio' }, { status: 500 });

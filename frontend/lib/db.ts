@@ -410,6 +410,29 @@ export function getBuybackRanking(limit: number = 30) {
     }
 }
 
+export function getStocksByRightsMonth(month: number, limit: number = 100) {
+    try {
+        // Window function to get the latest revision record per ticker that has the target rights month
+        const stmt = db.prepare(`
+            WITH RankedRevisions AS (
+                SELECT r.*, c.sector, c.market, c.name as company_name_c,
+                       ROW_NUMBER() OVER(PARTITION BY r.ticker ORDER BY r.revision_date DESC, r.id DESC) as rn
+                FROM revisions r
+                LEFT JOIN companies c ON r.ticker = c.ticker
+                WHERE r.dividend_rights_month = ?
+            )
+            SELECT * FROM RankedRevisions 
+            WHERE rn = 1
+            ORDER BY dividend_forecast_annual DESC, revision_date DESC
+            LIMIT ?
+        `);
+        return stmt.all(month, limit) as any[];
+    } catch (e) {
+        console.error("Error getStocksByRightsMonth:", e);
+        return [];
+    }
+}
+
 export function getRevisionsByTicker(ticker: string, limit: number = 5, excludeId: number | null = null) {
     try {
         let query = 'SELECT * FROM revisions WHERE ticker = ? AND is_upward IS NOT NULL';
@@ -809,5 +832,207 @@ export function getMarketSummary(dateStr?: string): MarketSummary | null {
     } catch (e) {
         console.error("Get market summary error:", e);
         return null;
+    }
+}
+
+// --- UGC Voting System (Pillar 4) ---
+
+export function submitUserVote(userId: string, ticker: string, voteType: 'bull' | 'bear', comment?: string) {
+    try {
+        const stmt = db.prepare(`
+            INSERT INTO user_votes (user_id, ticker, vote_type, comment)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id, ticker) DO UPDATE SET 
+                vote_type = excluded.vote_type,
+                comment = CASE WHEN excluded.comment IS NOT NULL AND excluded.comment != '' THEN excluded.comment ELSE user_votes.comment END,
+                created_at = CURRENT_TIMESTAMP
+        `);
+        stmt.run(userId, ticker, voteType, comment || null);
+    } catch (e) {
+        console.error("Submit user vote error:", e);
+    }
+}
+
+export function getUserVote(userId: string, ticker: string) {
+    try {
+        const stmt = db.prepare('SELECT vote_type, comment FROM user_votes WHERE user_id = ? AND ticker = ?');
+        const result = stmt.get(userId, ticker) as { vote_type: 'bull' | 'bear', comment: string | null } | undefined;
+        return result || null;
+    } catch (e) {
+        console.error("Get user vote error:", e);
+        return null;
+    }
+}
+
+export function getVoteStats(ticker: string) {
+    try {
+        const stmt = db.prepare(`
+            SELECT 
+                SUM(CASE WHEN vote_type = 'bull' THEN 1 ELSE 0 END) as bull_count,
+                SUM(CASE WHEN vote_type = 'bear' THEN 1 ELSE 0 END) as bear_count
+            FROM user_votes 
+            WHERE ticker = ?
+        `);
+        const result = stmt.get(ticker) as { bull_count: number; bear_count: number } | undefined;
+        if (!result) return { bull_count: 0, bear_count: 0, total: 0, bull_percent: 0 };
+        
+        const bull = result.bull_count || 0;
+        const bear = result.bear_count || 0;
+        const total = bull + bear;
+        const bull_percent = total > 0 ? Math.round((bull / total) * 100) : 0;
+        
+        return { bull_count: bull, bear_count: bear, total, bull_percent };
+    } catch (e) {
+        console.error("Get vote stats error:", e);
+        return { bull_count: 0, bear_count: 0, total: 0, bull_percent: 0 };
+    }
+}
+
+export function getRecentComments(ticker: string, limit: number = 10) {
+    try {
+        const stmt = db.prepare(`
+            SELECT v.vote_type, v.comment, v.created_at, u.nickname as user_name
+            FROM user_votes v
+            LEFT JOIN users u ON v.user_id = u.id
+            WHERE v.ticker = ? AND v.comment IS NOT NULL AND v.comment != ''
+            ORDER BY v.created_at DESC
+            LIMIT ?
+        `);
+        return stmt.all(ticker, limit) as any[];
+    } catch (e) {
+        console.error("Get recent comments error:", e);
+        return [];
+    }
+}
+
+export function getTrendingVotes(limit: number = 5) {
+    try {
+        const stmt = db.prepare(`
+            SELECT v.ticker, c.name, COUNT(*) as bull_count
+            FROM user_votes v
+            LEFT JOIN companies c ON v.ticker = c.ticker
+            WHERE v.vote_type = 'bull' 
+              AND v.created_at >= datetime('now', '-7 days')
+            GROUP BY v.ticker
+            ORDER BY bull_count DESC
+            LIMIT ?
+        `);
+        return stmt.all(limit) as any[];
+    } catch(e) {
+        console.error("Get trending votes error:", e);
+        return [];
+    }
+}
+
+
+// --- Pillar 2: Daily Reports (Discover) ---
+
+export function getDailyReport(dateStr: string) {
+    try {
+        const stmt = db.prepare('SELECT * FROM daily_reports WHERE date_str = ?');
+        return stmt.get(dateStr) as any;
+    } catch (e) {
+        console.error("Get daily report error:", e);
+        return null;
+    }
+}
+
+export function getRecentReports(limit: number = 30) {
+    try {
+        const stmt = db.prepare('SELECT * FROM daily_reports ORDER BY date_str DESC LIMIT ?');
+        return stmt.all(limit) as any[];
+    } catch (e) {
+        console.error("Get recent reports error:", e);
+        return [];
+    }
+}
+
+// --- Pillar 3: Viral Portfolio Share ---
+
+export function getUserByAccountId(accountId: string) {
+    try {
+        const stmt = db.prepare('SELECT id, nickname FROM users WHERE account_id = ?');
+        return stmt.get(accountId) as { id: number, nickname: string } | undefined;
+    } catch(e) {
+        console.error(e);
+        return undefined;
+    }
+}
+
+export function getSharedPortfolioData(userId: number) {
+    try {
+        const transactions = getPortfolioTransactions(userId);
+        
+        // Very basic server-side aggregate calculation
+        const map = new Map<string, any>();
+        let totalInvested = 0;
+        let totalNetDividend = 0;
+
+        transactions.forEach(tx => {
+            const key = `${tx.ticker}-${tx.account_type}`;
+            if (!map.has(key)) {
+                const divInfo = getLatestDividend(tx.ticker);
+                map.set(key, {
+                    ticker: tx.ticker,
+                    name: divInfo.companyName || tx.ticker,
+                    accountType: tx.account_type,
+                    totalShares: 0,
+                    averagePrice: 0,
+                    invested: 0,
+                    divAmount: divInfo.amount || 0
+                });
+            }
+            const current = map.get(key);
+            if (tx.shares > 0) {
+                current.totalShares += tx.shares;
+                current.invested += (tx.shares * tx.price);
+                current.averagePrice = current.totalShares > 0 ? current.invested / current.totalShares : 0;
+            } else {
+                current.totalShares -= Math.abs(tx.shares);
+                current.invested = current.totalShares * current.averagePrice;
+                if (current.totalShares <= 0) {
+                    current.totalShares = 0;
+                    current.invested = 0;
+                }
+            }
+        });
+
+        const holdings = Array.from(map.values()).filter(h => h.totalShares > 0);
+        
+        holdings.forEach(h => {
+            totalInvested += h.invested;
+            const grossDiv = h.totalShares * h.divAmount;
+            const taxRate = h.accountType === 'nisa' ? 0 : 0.20315;
+            totalNetDividend += (grossDiv * (1 - taxRate));
+            h.netDividend = grossDiv * (1 - taxRate);
+        });
+
+        return { holdings, totalInvested, totalNetDividend };
+
+    } catch(e) {
+        console.error(e);
+        return { holdings: [], totalInvested: 0, totalNetDividend: 0 };
+    }
+}
+
+
+export function getRevisionHistory(ticker: string, limit: number = 10) {
+    try {
+        const stmt = db.prepare(`
+            SELECT 
+                revision_date, 
+                previous_forecast_op, 
+                new_forecast_op, 
+                revision_rate_op, 
+                is_upward
+            FROM revisions
+            WHERE ticker = ? AND new_forecast_op IS NOT NULL
+            ORDER BY revision_date ASC
+            LIMIT ?
+        `);
+        return stmt.all(ticker, limit) as any[];
+    } catch(e) {
+        console.error("Get revision history error:", e);
+        return [];
     }
 }
