@@ -422,8 +422,13 @@ export function getStocksByRightsMonth(month: number, limit: number = 100) {
                 WHERE r.dividend_rights_month = ?
                   AND r.company_name NOT LIKE '%投資法人%'
                   AND r.company_name NOT LIKE '%ＥＴＦ%'
+                  AND r.company_name NOT LIKE '%ETF%'
                   AND r.company_name NOT LIKE '%ファンド%'
                   AND r.company_name NOT LIKE '%投信%'
+                  AND r.company_name NOT LIKE '%リート%'
+                  AND r.company_name NOT LIKE '%ＲＥＩＴ%'
+                  AND r.company_name NOT LIKE '%REIT%'
+                  AND r.company_name NOT LIKE '%REAT%'
                   AND (c.sector IS NULL OR c.sector NOT IN ('ETF', 'REIT'))
             )
             SELECT * FROM RankedRevisions 
