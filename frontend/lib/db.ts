@@ -429,7 +429,7 @@ export function getStocksByRightsMonth(month: number, limit: number = 100) {
                   AND r.company_name NOT LIKE '%ＲＥＩＴ%'
                   AND r.company_name NOT LIKE '%REIT%'
                   AND r.company_name NOT LIKE '%REAT%'
-                  AND (c.sector IS NULL OR c.sector NOT IN ('ETF', 'REIT'))
+                  AND (c.sector IS NULL OR (c.sector NOT IN ('ETF', 'REIT') AND c.sector != '-'))
             )
             SELECT * FROM RankedRevisions 
             WHERE rn = 1
