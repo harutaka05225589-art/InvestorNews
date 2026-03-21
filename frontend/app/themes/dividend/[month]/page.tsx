@@ -5,8 +5,9 @@ import { notFound } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({ params }: { params: { month: string } }): Promise<Metadata> {
-    const month = parseInt(params.month, 10);
+export async function generateMetadata({ params }: { params: Promise<{ month: string }> }): Promise<Metadata> {
+    const { month: monthStr } = await params;
+    const month = parseInt(monthStr, 10);
     if (isNaN(month) || month < 1 || month > 12) {
         return { title: 'Not Found' };
     }
@@ -17,8 +18,9 @@ export async function generateMetadata({ params }: { params: { month: string } }
     };
 }
 
-export default async function MonthDividendStocksPage({ params }: { params: { month: string } }) {
-    const month = parseInt(params.month, 10);
+export default async function MonthDividendStocksPage({ params }: { params: Promise<{ month: string }> }) {
+    const { month: monthStr } = await params;
+    const month = parseInt(monthStr, 10);
     if (isNaN(month) || month < 1 || month > 12) {
         notFound();
     }
