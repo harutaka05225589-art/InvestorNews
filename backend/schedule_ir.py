@@ -14,6 +14,8 @@ from fetch_edinet_shareholders import run_daily_edinet_shareholder_update
 from analyze_revisions_ai import process_revisions
 from summarize_market import generate_market_summary
 
+from generate_daily_wrapup import generate_report as generate_daily_wrapup_report
+
 def log(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(f"[{timestamp}] {message}")
@@ -87,6 +89,14 @@ def job_daily_market_summary():
     except Exception as e:
         log(f"TASK ERROR: AI Market Summary: {e}\n{traceback.format_exc()}")
 
+def job_daily_wrapup():
+    log("TASK START: AI Daily Wrapup Report Generation")
+    try:
+        generate_daily_wrapup_report()
+        log("TASK SUCCESS: AI Daily Wrapup Report")
+    except Exception as e:
+        log(f"TASK ERROR: AI Daily Wrapup Report: {e}\n{traceback.format_exc()}")
+
 def job_heartbeat():
     log("HEARTBEAT: Scheduler is running...")
 
@@ -98,13 +108,16 @@ if __name__ == "__main__":
     # 1. CORE DATA SYNC (Nightly)
     schedule.every().day.at("01:00").do(job_daily_ir_fetch)
     schedule.every().day.at("01:30").do(job_daily_ai_analysis)
-    schedule.every().day.at("02:00").do(job_daily_market_summary) # Run after AI analysis
+
+    # 1.5. SUMMARY REPORTS (Evening)
+    schedule.every().day.at("17:00").do(job_daily_market_summary)
+    schedule.every().day.at("17:15").do(job_daily_wrapup)
 
     # 2. NOTIFICATIONS & PROMOS (Daytime)
     schedule.every().day.at("08:30").do(job_daily_promo_tweet)
     schedule.every().day.at("09:00").do(job_daily_calendar_alerts)
     schedule.every().day.at("12:00").do(job_daily_promo_tweet)
-    schedule.every().day.at("17:30").do(job_daily_promo_tweet)
+    schedule.every().day.at("18:00").do(job_daily_promo_tweet)
 
     # 3. OFFICIAL DISCLOSURES (Evening)
     schedule.every().day.at("09:30").do(job_daily_edinet_financials)
