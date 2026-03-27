@@ -146,6 +146,10 @@ def process_revisions():
                 print(f"  [SKIP] Already analyzed by another process (Status: {current_status['ai_analyzed']})")
                 continue
             
+            # Lock the row immediately to prevent concurrent parallel workers from processing it
+            c.execute("UPDATE revisions SET ai_analyzed = 2 WHERE id = ?", (rev_id,))
+            conn.commit()
+            
             # Skip "Status reports" (Progress updates) to save quota/time
             if "取得状況" in title:
                 print("  Skipping status report (noise)...")
@@ -371,7 +375,10 @@ def process_revisions():
                             # Detail URL
                             detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
                             
-                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDFはこちら\n{detail_url}\n\n{hashtags}"
+                            # Truncate summary to prevent exceeding Twitter 140 character limits, which can break URL parsing
+                            summary_x = summary if len(summary) <= 60 else summary[:59] + "…"
+                            
+                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary_x}\n\n👇 詳細・PDFはこちら\n {detail_url} \n{hashtags}"
                             
                             # Date Check: Only Tweet if Revision Date is TODAY
                             # (Prevents spamming X when backfilling old data)
