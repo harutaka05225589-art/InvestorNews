@@ -375,10 +375,9 @@ def process_revisions():
                             # Detail URL
                             detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
                             
-                            # Truncate summary to prevent exceeding Twitter 140 character limits, which can break URL parsing
-                            summary_x = summary if len(summary) <= 60 else summary[:59] + "…"
-                            
-                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary_x}\n\n👇 詳細・PDFはこちら\n {detail_url} \n{hashtags}"
+                            # X Premium (Twitter Blue) enabled. No need to truncate text.
+                            # We still pad the URL with newlines and spaces to guarantee Twitter correctly parses the Card URL.
+                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDFはこちら\n {detail_url} \n{hashtags}"
                             
                             # Date Check: Only Tweet if Revision Date is TODAY
                             # (Prevents spamming X when backfilling old data)
