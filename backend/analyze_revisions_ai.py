@@ -375,9 +375,9 @@ def process_revisions():
                             # Detail URL
                             detail_url = f"https://rich-investor-news.com/revisions/{rev_id}"
                             
-                            # X Premium (Twitter Blue) enabled. No need to truncate text.
-                            # We still pad the URL with newlines and spaces to guarantee Twitter correctly parses the Card URL.
-                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n💡 理由: {summary}\n\n👇 詳細・PDFはこちら\n {detail_url} \n{hashtags}"
+                            # X Premium allows long tweets, but URLs far down often fail to generate Link Cards.
+                            # We put the URL near the top to guarantee Twitter generates the Card.
+                            x_msg = f"{header_text}\n{ticker} {row['company_name']}\n\n👇 詳細・AI要約ページへ\n{detail_url}\n\n💡 理由:\n{summary}\n\n{hashtags}"
                             
                             # Date Check: Only Tweet if Revision Date is TODAY
                             # (Prevents spamming X when backfilling old data)
