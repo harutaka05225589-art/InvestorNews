@@ -27,7 +27,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const divInfo = getLatestDividend(decodedTicker);
     const companyName = divInfo?.companyName || decodedTicker;
 
-    const title = `${companyName}（${decodedTicker}）の将来性・配当推移｜最新決算と株価への影響`;
+    const revisions = getRevisionsByTicker(decodedTicker, 1);
+    const latest = revisions.length > 0 ? revisions[0] : null;
+
+    let title = `${companyName} (${decodedTicker}) の【最新決算・配当推移・将来性】AI株価分析`;
+    if (latest && latest.is_upward !== null) {
+        const actionText = latest.is_upward === 1 ? '上方修正' : '下方修正';
+        title = `${companyName} (${decodedTicker}) が${actionText}！業績修正の理由と株価・将来性をAIが徹底分析`;
+    }
+
     const description = `「${companyName}（${decodedTicker}）」の最新AI業績評価、配当推移（増配・減配）、主要株主の動向を一覧化。決算発表が株価に与える影響や、著名投資家の保有状況から将来性を分析します。`;
     const ogTitle = encodeURIComponent(title);
     const ogSubtitle = encodeURIComponent(description.substring(0, 40));
@@ -365,7 +373,25 @@ export default async function StockPage({ params }: Props) {
                             📊 業績・財務推移
                         </h2>
                         {financialStats && financialStats.length > 0 ? (
-                            <FinancialChart data={financialStats} ticker={decodedTicker} />
+                            <>
+                                <FinancialChart data={financialStats} ticker={decodedTicker} />
+                                {(() => {
+                                    const latestStat = financialStats[financialStats.length - 1];
+                                    const sales = latestStat.sales;
+                                    const op = latestStat.operating_profit;
+                                    if (sales || op) {
+                                        return (
+                                            <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#0f172a', borderRadius: '8px', border: '1px solid #334155' }}>
+                                                <h3 style={{ fontSize: '1rem', color: '#94a3b8', marginBottom: '0.5rem' }}>📝 AI業績データ要約（テキスト版）</h3>
+                                                <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                                    {companyName}の直近の業績推移（{latestStat.period_end}時点）によると、売上高は{sales ? `${Number(sales).toLocaleString()}百万円` : '非開示'}、営業利益は{op ? `${Number(op).toLocaleString()}百万円` : '非開示'}で推移しています。AIが分析した結果、売上と利益のバランスや成長率のトレンドは決算発表時の株価に大きな影響を与えます。過去数年間の財務データとコンセンサス予想の比較は上部のグラフから確認できます。
+                                                </p>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+                            </>
                         ) : (
                             <div style={{ textAlign: 'center', padding: '2rem', background: '#334155', borderRadius: '8px', color: '#94a3b8' }}>
                                 <p>財務データがまだ取得されていません。<br />次回の更新をお待ちください。</p>
@@ -383,6 +409,14 @@ export default async function StockPage({ params }: Props) {
                                 💰 {companyName}の配当推移と利回り予測
                             </h2>
                             <DividendChart history={history} />
+                            
+                            <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#0f172a', borderRadius: '8px', border: '1px solid #334155' }}>
+                                <h3 style={{ fontSize: '1rem', color: '#94a3b8', marginBottom: '0.5rem' }}>📝 配当推移の解説と株価への影響</h3>
+                                <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                                    {companyName}の過去数年間の配当推移を確認すると、株主還元に対する企業の姿勢が読み取れます。増配が連続している場合は業績の安定成長を示唆し、株価の下値支持線として機能しやすい傾向があります。最新の年間配当予想や利回りの変化は、権利落ち日や本決算発表に向けた機関投資家の買い戻し要因となるため、非常に重要な指標です。
+                                </p>
+                            </div>
+
                             <p style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem', textAlign: 'right' }}>
                                 ※ 棒グラフの縞模様は「予想」を示します
                             </p>

@@ -40,7 +40,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     const publishDate = new Date(revision.revision_date).toLocaleDateString('ja-JP');
 
-    const title = `${rawTitle}が${actionText}（理由）｜${publishDate} 決算速報・AI要約`;
+    const title = `${rawTitle}が${actionText}！AIが読み解く「なぜ業績予想を変更したのか」理由と株価影響【決算速報】`;
 
     // YMYL Optimized Description
     const subtitle = `${publishDate}に発表された${rawTitle}の${actionText}の速報です。AIがTDnetの開示資料を瞬時に読み解き、株価変動の理由を要約。売上見通しの背景を解説します。`;
