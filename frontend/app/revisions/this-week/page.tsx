@@ -22,6 +22,8 @@ interface Revision {
 }
 
 // Metadata generation for SEO
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
     return {
         title: '今週の業績修正速報まとめ - Investor News',

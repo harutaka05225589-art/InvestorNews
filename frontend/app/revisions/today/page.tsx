@@ -23,6 +23,10 @@ interface Revision {
     category?: string;
 }
 
+//import { getRecentComments, getVoteStats } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
+
 // Metadata generation for SEO
 export async function generateMetadata() {
     const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Tokyo" }));

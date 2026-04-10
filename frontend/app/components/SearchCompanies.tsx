@@ -73,8 +73,8 @@ export default function SearchCompanies() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // If query looks like a ticker (4 digits), go directly
-        if (/^\d{4}$/.test(query)) {
+        // If query looks like a ticker (4 alphanumeric chars), go directly
+        if (/^[0-9A-Za-z]{4}$/.test(query)) {
             router.push(`/stocks/${query}`);
             setIsOpen(false);
             setIsExpanded(false);

@@ -425,10 +425,10 @@ export default function PortfolioPage() {
 
         let targetTicker = formTicker;
         if (!targetTicker && query) {
-            const match = query.match(/^([0-9]{4})/);
+            const match = query.match(/^([0-9A-Za-z]{4})/);
             if (match) {
                 targetTicker = match[1];
-            } else if (/^[0-9]{4}$/.test(query)) {
+            } else if (/^[0-9A-Za-z]{4}$/.test(query)) {
                 targetTicker = query;
             }
         }

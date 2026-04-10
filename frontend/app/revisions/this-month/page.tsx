@@ -40,6 +40,8 @@ function getRevisionType(rev: Revision) {
 }
 
 // Metadata generation for SEO
+export const dynamic = 'force-dynamic';
+
 export async function generateMetadata() {
     return {
         title: '今月の業績修正・増配発表まとめ - Investor News',

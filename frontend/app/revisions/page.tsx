@@ -4,6 +4,8 @@ import styles from './revisions.module.css';
 import AdSenseInFeed from '../../components/ads/AdSenseInFeed';
 import db from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // Server-side types
 interface Revision {
     id: number;
