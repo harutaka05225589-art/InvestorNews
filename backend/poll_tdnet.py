@@ -20,9 +20,7 @@ def poll_tdnet():
             print(f"\n[Poller] checking at {now.strftime('%H:%M:%S')}...")
             fetch_tdnet_revisions()
             
-            # Trigger AI Analysis & Tweeting immediately after fetch
-            from analyze_revisions_ai import process_revisions
-            process_revisions()
+            # fetch_tdnet_revisions() already triggers process_revisions() automatically.
             
             print("[Poller] detailed check complete. Sleeping 60s.")
             time.sleep(60)
