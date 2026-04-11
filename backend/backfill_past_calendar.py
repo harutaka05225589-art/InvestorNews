@@ -55,7 +55,8 @@ def fetch_past_events_for_date(date):
                         continue
                         
                     ticker = code_el.get('data-code')
-                    if not ticker or not ticker.isdigit() or len(ticker) != 4:
+                    import re
+                    if not ticker or not re.match(r'^[0-9A-Za-z]{4}$', ticker):
                         continue
                         
                     # Text: The news summary is usually in the last <td> or a <span>

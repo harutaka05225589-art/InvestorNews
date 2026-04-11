@@ -34,7 +34,12 @@ def fetch_and_store_dividends():
 
     # 2. Get All Tickers
     try:
-        c.execute("SELECT DISTINCT ticker FROM ir_events")
+        c.execute("""
+            SELECT DISTINCT ticker FROM ir_events
+            UNION
+            SELECT ticker FROM companies 
+            WHERE ticker GLOB '*[A-Za-z]*' -- Specifically target alphanumeric
+        """)
         all_tickers = [row[0] for row in c.fetchall()]
     except Exception as e:
         print(f"Error fetching tickers: {e}")
@@ -77,7 +82,8 @@ def fetch_and_store_dividends():
                 count += 1
                 continue
             
-        if not ticker.isdigit():
+        import re
+        if not re.match(r'^[0-9A-Za-z]{4}$', ticker):
             count += 1
             continue
 
