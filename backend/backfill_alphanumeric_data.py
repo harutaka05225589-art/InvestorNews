@@ -37,6 +37,21 @@ def backfill():
         except Exception as e:
             print(f"  [Profile Error]: {e}")
             
+        # 2. Fetch Shareholders from Kabutan (Temporary Initial Data)
+        print("  Fetching shareholders from Kabutan...")
+        try:
+            import fetch_shareholders
+            sh_data = fetch_shareholders.fetch_shareholders(ticker)
+            if sh_data:
+                fetch_shareholders.save_shareholders(sh_data)
+                print(f"  -> Saved {len(sh_data)} shareholders.")
+            else:
+                print("  -> No shareholder data found.")
+            time.sleep(1.5) # Kabutan rate limit
+        except Exception as e:
+            print(f"  [Shareholder Fetch Error]: {e}")
+            
+            
     conn.close()
     
     # 2. Fetch Dividends using the updated initial dividends script
