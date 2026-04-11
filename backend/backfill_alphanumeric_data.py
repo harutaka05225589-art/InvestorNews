@@ -65,7 +65,8 @@ def backfill():
         except Exception as e:
             print(f"  [Financial Fetch Error]: {e}")
             
-    conn.close()
+    # Do not close connection here since we use it below
+    
     
     # 2. Fetch Dividends ONLY for these alphanumerics (Fallback to Kabutan due to Yahoo block)
     print("\n--- Triggering Dividend Fetch for Alphanumeric (via Kabutan) ---")
