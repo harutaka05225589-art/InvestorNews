@@ -70,8 +70,9 @@ def fetch_and_populate_jpx_sectors():
             market_name = str(row.iloc[3])
             sector_name = str(row.iloc[5])
             
-            # Look for normal standard equity tickers (4 digits)
-            if len(code_raw) >= 4 and code_raw[:4].isdigit():
+            import re
+            # Look for normal standard equity tickers (4 digits or 4 alphanumeric)
+            if len(code_raw) >= 4 and re.match(r'^[0-9A-Za-z]{4}$', code_raw[:4]):
                 ticker = code_raw[:4]
                 
                 # Normalize market name
