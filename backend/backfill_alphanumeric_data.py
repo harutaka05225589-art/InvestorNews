@@ -67,26 +67,47 @@ def backfill():
             
     conn.close()
     
-    # 2. Fetch Dividends ONLY for these alphanumerics
-    print("\n--- Triggering Dividend Fetch for Alphanumeric ---")
-    import yfinance as yf
+    # 2. Fetch Dividends ONLY for these alphanumerics (Fallback to Kabutan due to Yahoo block)
+    print("\n--- Triggering Dividend Fetch for Alphanumeric (via Kabutan) ---")
+    import requests
+    from bs4 import BeautifulSoup
     from datetime import datetime
     
     for row in alphanumerics:
         ticker = row['ticker']
         name = row['name']
-        yf_ticker = f"{ticker}.T"
-        print(f"  Fetching Dividend: {yf_ticker}")
+        print(f"  Fetching Dividend: {ticker}")
         try:
-            stock = yf.Ticker(yf_ticker)
-            info = stock.info
-            div_rate = info.get('dividendRate', 0)
+            url = f"https://kabutan.jp/stock/finance?code={ticker}"
+            res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}, timeout=10)
+            soup = BeautifulSoup(res.content, 'html.parser')
             
-            ex_div = info.get('exDividendDate')
-            rights_month = datetime.fromtimestamp(ex_div).month if ex_div else None
+            div_rate = 0.0
+            rights_month = None
             
-            div_pay = info.get('dividendDate')
-            payment_month = datetime.fromtimestamp(div_pay).month if div_pay else (rights_month + 3 if rights_month else None)
+            for t in soup.find_all('table'):
+                header_text = t.find('tr').text if t.find('tr') else ""
+                if '決算期' in header_text and '1株配' in header_text:
+                    rows = t.find_all('tr')
+                    for r in rows[-3:]: # Check the last few rows to extract forecast or latest actua
+                        cells = r.find_all(['th', 'td'])
+                        if len(cells) >= 7:
+                            period_str = cells[0].text.strip()
+                            div_str = cells[6].text.strip()
+                            
+                            try:
+                                div_val = float(re.sub(r'[^0-9.]', '', div_str))
+                                if div_val >= 0: 
+                                    div_rate = div_val
+                            except:
+                                pass
+                                
+                            match = re.search(r'\.([0-9]{2})', period_str)
+                            if match:
+                                rights_month = int(match.group(1))
+                    break
+            
+            payment_month = (rights_month + 3) if rights_month else None
             if payment_month and payment_month > 12: payment_month -= 12
                 
             now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -96,7 +117,7 @@ def backfill():
                     dividend_forecast_annual, dividend_rights_month, dividend_payment_month,
                     ai_analyzed, created_at, updated_at
                 ) VALUES (
-                    ?, ?, ?, 'YahooFinance_Initial', ?, ?, ?, 1, ?, ?
+                    ?, ?, ?, 'Kabutan_Initial', ?, ?, ?, 1, ?, ?
                 )
                 ON CONFLICT(id) DO UPDATE SET 
                     dividend_forecast_annual=excluded.dividend_forecast_annual,
@@ -105,12 +126,12 @@ def backfill():
                     updated_at=excluded.updated_at
             """, (ticker, name, datetime.now().strftime('%Y-%m-%d'), div_rate, rights_month, payment_month, now, now))
             conn.commit()
-            print(f"  -> Saved Dividend: {div_rate} JPY")
-            time.sleep(2)
+            print(f"  -> Saved Dividend: {div_rate} JPY (Rights: {rights_month})")
+            time.sleep(1.5)
             
         except Exception as e:
             print(f"  [Dividend Fetch Error]: {ticker} - {e}")
-            time.sleep(5)
+            time.sleep(2)
             
     conn.close()
 
