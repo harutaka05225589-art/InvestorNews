@@ -51,6 +51,19 @@ def backfill():
         except Exception as e:
             print(f"  [Shareholder Fetch Error]: {e}")
             
+        # 3. Fetch Financial Stats from Kabutan (Temporary Initial Data)
+        print("  Fetching financial stats from Kabutan...")
+        try:
+            import fetch_kabutan_financials
+            fin_data = fetch_kabutan_financials.fetch_financials(ticker)
+            if fin_data:
+                fetch_kabutan_financials.save_financials(fin_data)
+                print(f"  -> Saved {len(fin_data)} financial records.")
+            else:
+                print("  -> No financial data found.")
+            time.sleep(1.5) # Kabutan rate limit
+        except Exception as e:
+            print(f"  [Financial Fetch Error]: {e}")
             
     conn.close()
     
