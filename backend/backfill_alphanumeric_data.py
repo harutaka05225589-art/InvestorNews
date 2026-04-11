@@ -113,3 +113,6 @@ def backfill():
             time.sleep(5)
             
     conn.close()
+
+if __name__ == "__main__":
+    backfill()
