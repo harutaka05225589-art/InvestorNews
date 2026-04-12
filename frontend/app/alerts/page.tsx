@@ -67,7 +67,7 @@ export default function AlertsPage() {
             const res = await fetch(`/api/search/companies?q=${encodeURIComponent(q)}`);
             if (res.ok) {
                 const data = await res.json();
-                setSuggestions(data.companies);
+                setSuggestions(data.results || []);
                 setShowSuggestions(true);
             }
         } catch (e) {
@@ -79,7 +79,7 @@ export default function AlertsPage() {
         const res = await fetch('/api/alerts');
         if (res.ok) {
             const data = await res.json();
-            setAlerts(data.alerts);
+            setAlerts(data.alerts || []);
         }
     };
 
