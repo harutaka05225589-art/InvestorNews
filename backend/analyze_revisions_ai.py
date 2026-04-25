@@ -257,6 +257,10 @@ def process_revisions():
                 rights_month = div_data.get('rights_month', None)
                 payment_month = div_data.get('payment_month', None)
 
+                # Ensure these are not lists (LLM sometimes returns [4] instead of 4)
+                if isinstance(rights_month, list): rights_month = rights_month[0] if rights_month else None
+                if isinstance(payment_month, list): payment_month = payment_month[0] if payment_month else None
+
                 forecast_data = result.get('forecast_data', None)
                 forecast_data_json = json.dumps(forecast_data, ensure_ascii=False) if forecast_data else None
 
@@ -411,7 +415,7 @@ def process_revisions():
                 is_upward = 0
                 category = 'other'
                 # Mark as analyzed first
-                c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = ?, ai_rating = ?, is_upward = ?, category = ? WHERE id = ?", (summary, 0, is_upward, category, rev_id))
+                c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = ?, is_upward = ?, category = ? WHERE id = ?", (summary, is_upward, category, rev_id))
                 conn.commit()
                 
                 # --- LINE Notification (Registered Users Only) ---
