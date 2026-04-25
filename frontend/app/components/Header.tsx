@@ -95,6 +95,7 @@ export default function Header() {
                     <Link href="/reports">速報リスト</Link>
                     <Link href="/calendar">IRカレンダー</Link>
                     <Link href="/revisions">業績修正</Link>
+                    <Link href="/revisions/ranking/hot">ランキング</Link>
                     <Link href="/portfolio">所持銘柄</Link>
                     <Link href="/alerts">通知リスト</Link>
                     <Link href="/introduction">投資家紹介</Link>
@@ -175,6 +176,7 @@ export default function Header() {
                     <Link href="/reports" onClick={() => setMenuOpen(false)}>速報リスト</Link>
                     <Link href="/calendar" onClick={() => setMenuOpen(false)}>IRカレンダー</Link>
                     <Link href="/revisions" onClick={() => setMenuOpen(false)}>業績修正</Link>
+                    <Link href="/revisions/ranking/hot" onClick={() => setMenuOpen(false)}>ランキング</Link>
                     <Link href="/portfolio" onClick={() => setMenuOpen(false)}>所持銘柄</Link>
                     <Link href="/alerts" onClick={() => setMenuOpen(false)}>通知リスト</Link>
                     {/* <Link href="/plans" onClick={() => setMenuOpen(false)}>プラン</Link> */}

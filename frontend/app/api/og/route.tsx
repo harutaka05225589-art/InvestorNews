@@ -40,8 +40,13 @@ export async function GET(request: NextRequest) {
             subtitle = '大口投資家の最新動向や所持銘柄をチェック';
         }
 
+        // Remove emojis to avoid Google Fonts API errors and extract unique characters to minimize request size
+        const rawText = title + subtitle + "Invester News";
+        const cleanText = rawText.replace(/[\u{1F300}-\u{1F9FF}]|[\u{1FA70}-\u{1FAFF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '');
+        const uniqueChars = Array.from(new Set(cleanText.split(''))).join('');
+        
         // Load Font (Subsetted)
-        const fontData = await loadGoogleFont(title + subtitle + "Invester News");
+        const fontData = await loadGoogleFont(uniqueChars);
 
         const imageOptions: any = {
             width: 1200,

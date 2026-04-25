@@ -407,6 +407,9 @@ def process_revisions():
                 
             else:
                 print("  Analysis returned No Data.")
+                summary = '解析不可'
+                is_upward = 0
+                category = 'other'
                 # Mark as analyzed first
                 c.execute("UPDATE revisions SET ai_analyzed = 1, ai_summary = ?, ai_rating = ?, is_upward = ?, category = ? WHERE id = ?", (summary, 0, is_upward, category, rev_id))
                 conn.commit()

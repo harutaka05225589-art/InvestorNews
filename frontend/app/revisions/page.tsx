@@ -163,6 +163,34 @@ export default async function RevisionsPage({
                     </Link>
                 </div>
                 
+                {/* Sector Links */}
+                <div style={{ maxWidth: '900px', margin: '0 auto 1.5rem auto', background: 'rgba(30, 41, 59, 0.5)', padding: '1.2rem', borderRadius: '12px', border: '1px solid #334155' }}>
+                    <div style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.8rem', textAlign: 'center', fontWeight: 'bold' }}>🏭 セクター別で探す</div>
+                    <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                        {[
+                            { slug: 'info-telecom', name: '情報・通信' },
+                            { slug: 'services', name: 'サービス' },
+                            { slug: 'retail', name: '小売' },
+                            { slug: 'wholesale', name: '卸売' },
+                            { slug: 'machinery', name: '機械' },
+                            { slug: 'electric', name: '電気機器' },
+                            { slug: 'construction', name: '建設' },
+                            { slug: 'pharma', name: '医薬品' },
+                            { slug: 'chemicals', name: '化学' },
+                            { slug: 'foods', name: '食料品' },
+                            { slug: 'real-estate', name: '不動産' },
+                            { slug: 'banking', name: '銀行' },
+                            { slug: 'transport', name: '輸送用機器' },
+                            { slug: 'precision', name: '精密機器' }
+                        ].map(sector => (
+                            <Link key={sector.slug} href={`/revisions/sector/${sector.slug}`} style={{ padding: '0.4rem 0.8rem', background: '#1e293b', border: '1px solid #475569', borderRadius: '20px', fontSize: '0.8rem', textDecoration: 'none', color: '#cbd5e1', transition: 'all 0.2s' }}>
+                                {sector.name}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+                
+
                 <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                     <Link href="/revisions/today" style={{ textDecoration: 'none', color: '#fff', background: '#334155', padding: '0.5rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', border: '1px solid #475569' }}>📅 今日</Link>
                     <Link href="/revisions/this-week" style={{ textDecoration: 'none', color: '#fff', background: '#334155', padding: '0.5rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', border: '1px solid #475569' }}>📅 今週</Link>
