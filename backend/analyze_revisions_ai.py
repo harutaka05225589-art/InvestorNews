@@ -200,7 +200,26 @@ def process_revisions():
                     f.write(r.content)
                     pdf_path = f.name
                 
-                result = analyze_revision_pdf(pdf_path, title)
+                # Retry logic for AI Analysis (up to 3 times)
+                MAX_RETRIES = 3
+                retry_count = 0
+                result = None
+                
+                while retry_count < MAX_RETRIES:
+                    try:
+                        result = analyze_revision_pdf(pdf_path, title)
+                        if result: # If successful, break the loop
+                            break
+                    except Exception as ai_e:
+                        retry_count += 1
+                        print(f"  [Retry {retry_count}/{MAX_RETRIES}] AI API Error: {ai_e}")
+                        if retry_count < MAX_RETRIES:
+                            import time
+                            time.sleep(3) # Wait 3 seconds before retrying
+                        else:
+                            print("  Max retries reached. AI Analysis failed.")
+                            raise ai_e # Re-raise to be caught by the outer block
+
                 if os.path.exists(pdf_path):
                     os.remove(pdf_path)
             
