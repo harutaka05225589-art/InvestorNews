@@ -4,7 +4,11 @@ import datetime
 import os
 import json
 import time
+from dotenv import load_dotenv
 from database import get_db_connection
+
+# Load env file explicitly
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
 
 # Known paid domains or rigorous paywalls
 PAID_DOMAINS = [

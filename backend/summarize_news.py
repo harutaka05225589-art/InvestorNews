@@ -3,6 +3,10 @@ import sqlite3
 import os
 import time
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+
+# Load env file explicitly
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
 
 # Config using environment variables
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
