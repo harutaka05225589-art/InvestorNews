@@ -295,6 +295,53 @@ def process_revisions():
                 conn.commit()
                 print("  Saved to DB.")
                 
+                # --- Auto-Sync Master Tables (dividend_history & financial_stats) ---
+                try:
+                    # 1. Dividend Sync
+                    if div_forecast is not None:
+                        # Get the latest period in dividend_history
+                        last_div = c.execute("SELECT id, period, is_forecast FROM dividend_history WHERE ticker = ? ORDER BY period DESC LIMIT 1", (ticker,)).fetchone()
+                        if last_div:
+                            if last_div['is_forecast'] == 1:
+                                # Update existing forecast
+                                c.execute("UPDATE dividend_history SET dividend_amount = ?, created_at = CURRENT_TIMESTAMP WHERE id = ?", (div_forecast, last_div['id']))
+                            else:
+                                # Infer next period and insert
+                                try:
+                                    year, month = last_div['period'].split('.')
+                                    next_period = f"{int(year)+1}.{month}"
+                                    c.execute("INSERT OR REPLACE INTO dividend_history (ticker, period, dividend_amount, is_forecast) VALUES (?, ?, ?, ?)", (ticker, next_period, div_forecast, 1))
+                                except: pass
+
+                    # 2. Financial Stats Sync
+                    if forecast_data and forecast_data.get('revised'):
+                        revised = forecast_data['revised']
+                        sales = revised.get('sales')
+                        op = revised.get('op')
+                        if sales is not None or op is not None:
+                            last_fin = c.execute("SELECT id, period_end, is_forecast FROM financial_stats WHERE ticker = ? AND period_type = 'annual' ORDER BY period_end DESC LIMIT 1", (ticker,)).fetchone()
+                            if last_fin:
+                                if last_fin['is_forecast'] == 1:
+                                    c.execute("""
+                                        UPDATE financial_stats 
+                                        SET sales = ?, operating_profit = ?, ordinary_profit = ?, net_profit = ?
+                                        WHERE id = ?
+                                    """, (sales, op, revised.get('ordinary'), revised.get('net'), last_fin['id']))
+                                else:
+                                    try:
+                                        year, month = last_fin['period_end'].split('-')[0:2] # Format is YYYY-MM
+                                        next_period_end = f"{int(year)+1}-{month}"
+                                        c.execute("""
+                                            INSERT OR REPLACE INTO financial_stats 
+                                            (ticker, period_type, period_end, sales, operating_profit, ordinary_profit, net_profit, is_forecast, source)
+                                            VALUES (?, 'annual', ?, ?, ?, ?, ?, 1, 'TDnet AI')
+                                        """, (ticker, next_period_end, sales, op, revised.get('ordinary'), revised.get('net')))
+                                    except: pass
+                    
+                    conn.commit()
+                except Exception as e_sync:
+                    print(f"  [ERROR] Master DB Sync Failed: {e_sync}")
+                
                 # --- LINE Notification (Registered Users Only) ---
                 # Check for interested users (Portfolio OR Alerts) who have LINE linked
                 query = """

@@ -13,8 +13,8 @@ from fetch_edinet_financials import fetch_edinet_financial_list, download_and_pr
 from fetch_edinet_shareholders import run_daily_edinet_shareholder_update
 from analyze_revisions_ai import process_revisions
 from summarize_market import generate_market_summary
-
 from generate_daily_wrapup import generate_report as generate_daily_wrapup_report
+from update_all_shareholders import run_weekly_shareholder_update
 
 def log(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -97,6 +97,14 @@ def job_daily_wrapup():
     except Exception as e:
         log(f"TASK ERROR: AI Daily Wrapup Report: {e}\n{traceback.format_exc()}")
 
+def job_weekly_shareholders():
+    log("TASK START: Weekly Kabutan Shareholder Update")
+    try:
+        run_weekly_shareholder_update()
+        log("TASK SUCCESS: Weekly Kabutan Shareholder Update")
+    except Exception as e:
+        log(f"TASK ERROR: Weekly Kabutan Shareholder Update: {e}\n{traceback.format_exc()}")
+
 def job_heartbeat():
     log("HEARTBEAT: Scheduler is running...")
 
@@ -123,6 +131,9 @@ if __name__ == "__main__":
     schedule.every().day.at("09:30").do(job_daily_edinet_financials)
     schedule.every().day.at("18:30").do(job_daily_edinet_financials)
     schedule.every().day.at("19:00").do(job_daily_edinet_shareholders)
+
+    # 3.5 WEEKLY SCRAPING (Weekend)
+    schedule.every().sunday.at("20:00").do(job_weekly_shareholders)
 
     # 4. MONITORING
     schedule.every().hour.do(job_heartbeat)

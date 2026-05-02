@@ -410,6 +410,32 @@ export default async function StockPage({ params }: Props) {
                             </h2>
                             <DividendChart history={history} />
                             
+                            {/* 5-Year Dividend History Table */}
+                            <div style={{ marginTop: '1.5rem', overflowX: 'auto' }}>
+                                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center', fontSize: '0.9rem' }}>
+                                    <thead>
+                                        <tr style={{ background: '#334155', color: '#cbd5e1' }}>
+                                            <th style={{ padding: '0.8rem', borderBottom: '1px solid #475569' }}>決算期</th>
+                                            <th style={{ padding: '0.8rem', borderBottom: '1px solid #475569' }}>年間配当（円）</th>
+                                            <th style={{ padding: '0.8rem', borderBottom: '1px solid #475569' }}>状態</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {history.map((h, i) => (
+                                            <tr key={i} style={{ borderBottom: '1px solid #1e293b', background: i % 2 === 0 ? '#0f172a' : '#1e293b' }}>
+                                                <td style={{ padding: '0.8rem' }}>{h.period.replace('.', '年')}月期</td>
+                                                <td style={{ padding: '0.8rem', fontWeight: 'bold', color: h.is_forecast ? '#4ade80' : '#fff' }}>
+                                                    {h.dividend_amount} 円
+                                                </td>
+                                                <td style={{ padding: '0.8rem', color: h.is_forecast ? '#4ade80' : '#94a3b8' }}>
+                                                    {h.is_forecast ? '予想' : '実績'}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
                             <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#0f172a', borderRadius: '8px', border: '1px solid #334155' }}>
                                 <h3 style={{ fontSize: '1rem', color: '#94a3b8', marginBottom: '0.5rem' }}>📝 配当推移の解説と株価への影響</h3>
                                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
