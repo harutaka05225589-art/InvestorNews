@@ -1,7 +1,7 @@
 import os
 import sqlite3
 import datetime
-import google.generativeai as genai
+from google import genai
 from database import get_db_connection
 from dotenv import load_dotenv
 
@@ -14,7 +14,7 @@ if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY not found in .env")
     exit(1)
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def generate_market_summary(date_str=None):
     """
@@ -87,8 +87,11 @@ def generate_market_summary(date_str=None):
     # 4. Generate Content
     try:
         print(f"Generating market summary for {total_count} items on {date_str}...")
-        model = genai.GenerativeModel('gemini-2.0-flash')
-        response = model.generate_content(prompt)
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=prompt
+        )
         summary_text = response.text.strip()
 
         if not summary_text:

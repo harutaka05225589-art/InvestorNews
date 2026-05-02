@@ -2,7 +2,7 @@ import os
 import sqlite3
 import datetime
 import json
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
@@ -12,7 +12,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY not found in .env")
     exit(1)
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def generate_report():
     today = datetime.datetime.now().strftime('%Y-%m-%d')
@@ -85,10 +85,11 @@ def generate_report():
     """
 
     print("Generating report with Gemini...")
-    model = genai.GenerativeModel('gemini-2.5-pro')
-    response = model.generate_content(
-        prompt,
-        generation_config=genai.GenerationConfig(response_mime_type="application/json")
+    client = genai.Client(api_key=GEMINI_API_KEY)
+    response = client.models.generate_content(
+        model='gemini-2.5-pro',
+        contents=prompt,
+        config=genai.types.GenerateContentConfig(response_mime_type="application/json")
     )
     
     try:

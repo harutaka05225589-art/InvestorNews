@@ -4,17 +4,13 @@ import warnings
 # Suppress Google Gemini depreciation warning
 warnings.filterwarnings("ignore", category=FutureWarning)
 
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 from database import get_db_connection
 
 # Load API Key
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# model = genai.GenerativeModel('gemini-2.0-flash-exp')
-# model = genai.GenerativeModel('gemini-1.5-flash')
-model = genai.GenerativeModel('gemini-2.0-flash')
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def get_or_create_profile(ticker, company_name):
     """
@@ -50,7 +46,10 @@ def get_or_create_profile(ticker, company_name):
         }}
         """
         
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=prompt
+        )
         text = response.text.strip()
         
         # Clean up JSON (sometimes Gemini adds ```json ... ```)

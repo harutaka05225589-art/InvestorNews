@@ -1,4 +1,4 @@
-import google.generativeai as genai
+from google import genai
 import sqlite3
 import os
 import time
@@ -19,8 +19,7 @@ def summarize_text(text):
         return None
 
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        model = genai.GenerativeModel('gemini-1.5-flash') 
+        client = genai.Client(api_key=GEMINI_API_KEY)
 
         prompt = f"""
         あなたはプロの金融アナリストです。
@@ -31,7 +30,10 @@ def summarize_text(text):
         {text[:2000]} 
         """
 
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model='gemini-2.0-flash',
+            contents=prompt
+        )
         return response.text.replace('\n', '').strip()
     except Exception as e:
         print(f"AI Summary Failed: {e}")

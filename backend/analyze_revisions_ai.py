@@ -5,7 +5,7 @@ import tempfile
 import json
 import sqlite3
 import datetime
-import google.generativeai as genai
+from google import genai
 from database import get_db_connection
 from dotenv import load_dotenv
 
@@ -17,7 +17,7 @@ if not GEMINI_API_KEY:
     print("Error: GEMINI_API_KEY not found in .env")
     exit(1)
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 def analyze_revision_pdf(pdf_path, title):
     """
@@ -90,15 +90,21 @@ def analyze_revision_pdf(pdf_path, title):
         try:
             # Upload file
             print(f"  Uploading PDF to Gemini (Attempt {attempt+1}/{max_retries})...")
-            sample_file = genai.upload_file(path=pdf_path, display_name="Revision PDF")
+            sample_file = client.files.upload(file=pdf_path, config={'display_name': 'Revision PDF'})
             
             # Wait for processing
-            while sample_file.state.name == "PROCESSING":
-                time.sleep(2)
+            while True:
+                f_state = client.files.get(name=sample_file.name)
+                if f_state.state.name == "PROCESSING":
+                    time.sleep(2)
+                else:
+                    break
 
             # Run Inference
-            model = genai.GenerativeModel('gemini-2.0-flash')
-            response = model.generate_content([prompt, sample_file])
+            response = client.models.generate_content(
+                model='gemini-2.0-flash',
+                contents=[prompt, sample_file]
+            )
             
             # Extract JSON
             text = response.text
