@@ -89,7 +89,7 @@ def generate_market_summary(date_str=None):
         print(f"Generating market summary for {total_count} items on {date_str}...")
         client = genai.Client(api_key=GEMINI_API_KEY)
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-2.5-flash',
             contents=prompt
         )
         summary_text = response.text.strip()

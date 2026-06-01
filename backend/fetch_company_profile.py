@@ -47,7 +47,7 @@ def get_or_create_profile(ticker, company_name):
         """
         
         response = client.models.generate_content(
-            model='gemini-2.0-flash',
+            model='gemini-2.5-flash',
             contents=prompt
         )
         text = response.text.strip()
