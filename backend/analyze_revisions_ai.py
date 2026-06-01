@@ -134,18 +134,24 @@ def process_revisions():
     c = conn.cursor()
 
     # Fetch unanalyzed (ai_analyzed=0) AND failed items for retry (ai_analyzed=2, up to 3 retries)
+    # Only process items from the last 14 days to avoid excessive API costs
+    cutoff_date = (datetime.datetime.now() - datetime.timedelta(days=14)).strftime('%Y-%m-%d')
     rows = c.execute("""
         SELECT * FROM revisions 
-        WHERE ai_analyzed = 0 
-           OR (ai_analyzed = 2 AND COALESCE(retry_count, 0) < 3)
+        WHERE revision_date >= ?
+          AND (
+              ai_analyzed = 0 
+              OR (ai_analyzed = 2 AND COALESCE(retry_count, 0) < 3)
+          )
         ORDER BY 
             ai_analyzed ASC,  -- Process new items first (0 before 2)
             id DESC
-    """).fetchall()
+        LIMIT 50
+    """, (cutoff_date,)).fetchall()
     
     new_count = sum(1 for r in rows if r['ai_analyzed'] == 0)
     retry_count_total = sum(1 for r in rows if r['ai_analyzed'] == 2)
-    print(f"Found {new_count} unanalyzed items, {retry_count_total} items to retry")
+    print(f"Found {new_count} unanalyzed items, {retry_count_total} items to retry (cutoff: {cutoff_date})")
 
     for row in rows:
       try:
@@ -551,8 +557,14 @@ def process_revisions():
         print(f"  [ERROR] Processing row {rev_id} ({ticker}): {e}")
         traceback.print_exc()
         try:
-            c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Processing Error' WHERE id = ?", (rev_id,))
-            conn.commit()
+            # IMPORTANT: Don't overwrite if AI analysis already succeeded (ai_analyzed=1)
+            # The error might have happened AFTER the DB update (e.g. during LINE/X notification)
+            current = c.execute("SELECT ai_analyzed FROM revisions WHERE id = ?", (rev_id,)).fetchone()
+            if current and current['ai_analyzed'] != 1:
+                c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Processing Error' WHERE id = ?", (rev_id,))
+                conn.commit()
+            else:
+                print(f"  [INFO] Analysis already saved successfully, keeping ai_analyzed=1")
         except:
             pass
         # Continue to next item instead of aborting the whole batch
