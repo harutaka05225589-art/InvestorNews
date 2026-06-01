@@ -134,8 +134,8 @@ def process_revisions():
     c = conn.cursor()
 
     # Fetch unanalyzed (ai_analyzed=0) AND failed items for retry (ai_analyzed=2, up to 3 retries)
-    # Only process items from the last 14 days to avoid excessive API costs
-    cutoff_date = (datetime.datetime.now() - datetime.timedelta(days=14)).strftime('%Y-%m-%d')
+    # Only process items from the last 30 days to avoid excessive API costs
+    cutoff_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
     rows = c.execute("""
         SELECT * FROM revisions 
         WHERE revision_date >= ?
