@@ -1,5 +1,6 @@
 import os
 import time
+import traceback
 import requests
 import tempfile
 import json
@@ -230,7 +231,6 @@ def process_revisions():
                     retry_count += 1
                     print(f"  [Retry {retry_count}/{MAX_RETRIES}] AI API Error: {ai_e}")
                     if retry_count < MAX_RETRIES:
-                        import time
                         time.sleep(3) # Wait 3 seconds before retrying
                     else:
                         print("  Max retries reached. AI Analysis failed.")
@@ -241,7 +241,6 @@ def process_revisions():
         
         except Exception as e:
             print(f"  Error downloading/analyzing PDF: {e}")
-            import traceback
             traceback.print_exc()
             result = None
 
@@ -550,7 +549,6 @@ def process_revisions():
             exit(1)
 
         print(f"  [ERROR] Processing row {rev_id} ({ticker}): {e}")
-        import traceback
         traceback.print_exc()
         try:
             c.execute("UPDATE revisions SET ai_analyzed = 2, ai_summary = 'Processing Error' WHERE id = ?", (rev_id,))
