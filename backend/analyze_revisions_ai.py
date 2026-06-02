@@ -94,10 +94,13 @@ def analyze_revision_pdf(pdf_path, title):
             print(f"  Uploading PDF to Gemini (Attempt {attempt+1}/{max_retries})...")
             sample_file = client.files.upload(file=pdf_path, config={'display_name': 'Revision PDF'})
             
-            # Wait for processing
+            # Wait for processing with safety timeout
+            start_wait = time.time()
             while True:
                 f_state = client.files.get(name=sample_file.name)
                 if f_state.state.name == "PROCESSING":
+                    if time.time() - start_wait > 60:
+                        raise Exception("PDF processing timed out on Gemini server (60s limit)")
                     time.sleep(2)
                 else:
                     break
