@@ -115,17 +115,15 @@ if __name__ == "__main__":
 
     # 1. CORE DATA SYNC (Nightly)
     schedule.every().day.at("01:00").do(job_daily_ir_fetch)
-    schedule.every().day.at("01:30").do(job_daily_ai_analysis)
+    # NOTE: AI analysis is handled by tdnet_poller every 60s. No need for separate schedule.
 
     # 1.5. SUMMARY REPORTS (Evening)
     schedule.every().day.at("17:00").do(job_daily_market_summary)
     schedule.every().day.at("17:15").do(job_daily_wrapup)
 
-    # 2. NOTIFICATIONS & PROMOS (Daytime)
-    schedule.every().day.at("08:30").do(job_daily_promo_tweet)
-    schedule.every().day.at("09:00").do(job_daily_calendar_alerts)
+    # 2. NOTIFICATIONS & PROMOS (Daytime) - Max 1 promo/day (tweet limit is 7/day total)
     schedule.every().day.at("12:00").do(job_daily_promo_tweet)
-    schedule.every().day.at("18:00").do(job_daily_promo_tweet)
+    schedule.every().day.at("09:00").do(job_daily_calendar_alerts)
 
     # 3. OFFICIAL DISCLOSURES (Evening)
     schedule.every().day.at("09:30").do(job_daily_edinet_financials)

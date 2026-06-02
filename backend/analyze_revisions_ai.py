@@ -8,6 +8,7 @@ import sqlite3
 import datetime
 from google import genai
 from database import get_db_connection
+from daily_limits import can_call_api, increment_api_calls, remaining_api_calls, can_tweet, increment_tweets
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
@@ -133,6 +134,12 @@ def process_revisions():
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
 
+    # Check daily API call limit FIRST to avoid unnecessary DB queries
+    if not can_call_api():
+        print(f"  [LIMIT] Daily API call limit reached ({remaining_api_calls()} remaining). Skipping AI analysis.")
+        conn.close()
+        return
+
     # Fetch unanalyzed (ai_analyzed=0) AND failed items for retry (ai_analyzed=2, up to 3 retries)
     # Only process items from the last 30 days to avoid excessive API costs
     cutoff_date = (datetime.datetime.now() - datetime.timedelta(days=30)).strftime('%Y-%m-%d')
@@ -146,12 +153,18 @@ def process_revisions():
         ORDER BY 
             ai_analyzed ASC,  -- Process new items first (0 before 2)
             id DESC
-        LIMIT 50
+        LIMIT 10
     """, (cutoff_date,)).fetchall()
     
     new_count = sum(1 for r in rows if r['ai_analyzed'] == 0)
     retry_count_total = sum(1 for r in rows if r['ai_analyzed'] == 2)
     print(f"Found {new_count} unanalyzed items, {retry_count_total} items to retry (cutoff: {cutoff_date})")
+
+    # Cap rows to remaining API calls for the day
+    api_remaining = remaining_api_calls()
+    if len(rows) > api_remaining:
+        print(f"  [LIMIT] Capping batch to {api_remaining} items (daily API limit)")
+        rows = rows[:api_remaining]
 
     for row in rows:
       try:
@@ -223,24 +236,9 @@ def process_revisions():
                 f.write(r.content)
                 pdf_path = f.name
             
-            # Retry logic for AI Analysis (up to 3 times)
-            MAX_RETRIES = 3
-            retry_count = 0
-            result = None
-            
-            while retry_count < MAX_RETRIES:
-                try:
-                    result = analyze_revision_pdf(pdf_path, title)
-                    if result: # If successful, break the loop
-                        break
-                except Exception as ai_e:
-                    retry_count += 1
-                    print(f"  [Retry {retry_count}/{MAX_RETRIES}] AI API Error: {ai_e}")
-                    if retry_count < MAX_RETRIES:
-                        time.sleep(3) # Wait 3 seconds before retrying
-                    else:
-                        print("  Max retries reached. AI Analysis failed.")
-                        raise ai_e # Re-raise to be caught by the outer block
+            # Call AI Analysis (retries for 429 are handled inside analyze_revision_pdf)
+            increment_api_calls()
+            result = analyze_revision_pdf(pdf_path, title)
 
             if os.path.exists(pdf_path):
                 os.remove(pdf_path)
@@ -459,6 +457,11 @@ def process_revisions():
                         should_post = True
                         header_text = "📈 【AI速報: 上方修正判定】"
 
+                # Daily tweet limit check (7 tweets/day across all types)
+                if should_post and not can_tweet():
+                    print(f"  -> X Post SKIPPED (Daily tweet limit of 7 reached)")
+                    should_post = False
+
                 if should_post:
                     try:
                         from send_x import post_to_x
@@ -492,6 +495,7 @@ def process_revisions():
 
                         if tweet_id:
                             print(f"  -> Posted to X successfully: {tweet_id}")
+                            increment_tweets()
                             # Update DB to mark as tweeted
                             c.execute("UPDATE revisions SET tweeted_at = CURRENT_TIMESTAMP WHERE id = ?", (rev_id,))
                             conn.commit()

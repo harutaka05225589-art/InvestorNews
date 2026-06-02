@@ -4,6 +4,7 @@ import datetime
 import yfinance as yf
 import pandas as pd
 from send_x import post_to_x
+from daily_limits import can_tweet, increment_tweets, remaining_tweets
 
 # Config
 DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'investor_news.db')
@@ -80,12 +81,21 @@ def send_ranking_tweet():
     print(msg)
     print("---------------------")
     
+    # Check daily tweet limit before posting
+    if not can_tweet():
+        print(f"[SKIP] Daily tweet limit reached ({remaining_tweets()} remaining). Skipping ranking tweet.")
+        return
+
     # Post
     try:
-        post_to_x(msg)
-        print("✅ Ranking tweet sent!")
+        tweet_id = post_to_x(msg)
+        if tweet_id:
+            print(f"Ranking tweet sent: {tweet_id}")
+            increment_tweets()
+        else:
+            print("Failed to send ranking tweet.")
     except Exception as e:
-        print(f"❌ Failed to send ranking tweet: {e}")
+        print(f"Failed to send ranking tweet: {e}")
 
 if __name__ == "__main__":
     send_ranking_tweet()

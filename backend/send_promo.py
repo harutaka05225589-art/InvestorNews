@@ -1,6 +1,7 @@
 import os
 import random
 from send_x import post_to_x
+from daily_limits import can_tweet, increment_tweets, remaining_tweets
 
 MESSAGES = [
     "📈 【業績修正率ランキング】\n日本株の「上方修正」を修正率順にリストアップ！\nAIが修正理由を詳しく要約。明日の注目銘柄を今すぐチェック。\n\n👉 ランキングを見る\nhttps://rich-investor-news.com/revision-rate-ranking\n\n#日本株 #決算速報 #上方修正 #投資家 #株式投資",
@@ -16,6 +17,11 @@ import datetime
 LOCK_FILE = "last_promo_tweet.txt"
 
 def send_promo():
+    # 0. Check daily tweet limit (promo is lowest priority)
+    if not can_tweet():
+        print(f"  [SKIP] Daily tweet limit reached ({remaining_tweets()} remaining). No promo tweet today.")
+        return
+
     # 1. Check if we already tweeted recently (prevent duplicates)
     if os.path.exists(LOCK_FILE):
         try:
@@ -73,6 +79,7 @@ def send_promo():
     
     if tweet_id:
         print(f"  [SUCCESS] Tweet sent: {tweet_id}")
+        increment_tweets()
     else:
         print("  [ERROR] Failed to send tweet.")
             
