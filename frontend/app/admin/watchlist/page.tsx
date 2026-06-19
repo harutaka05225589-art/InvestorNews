@@ -100,14 +100,20 @@ export default function AdminWatchlistPage() {
     }, [user, loading, router, fetchItems]);
 
     const handleFetchPrice = async () => {
-        if (!form.ticker) {
-            setError('先にティッカーを指定してください');
-            return;
+        let tickerToFetch = form.ticker;
+        if (!tickerToFetch) {
+            const match = form.name.match(/^([0-9A-Z]{4})(\.T)?$/i);
+            if (match) {
+                tickerToFetch = `${match[1].toUpperCase()}.T`;
+            } else {
+                setError('先に銘柄を候補から選ぶか、ティッカーコード（例: 7203）を入力してください');
+                return;
+            }
         }
         setIsFetchingPrice(true);
         setError('');
         try {
-            const res = await fetch(`/api/admin/price?ticker=${form.ticker}`);
+            const res = await fetch(`/api/admin/price?ticker=${tickerToFetch}`);
             const data = await res.json();
             if (res.ok && data.price) {
                 setCurrentPrice(data.price);
@@ -146,9 +152,25 @@ export default function AdminWatchlistPage() {
         setMessage('');
         setError('');
 
+        let finalTicker = form.ticker;
+        let finalName = form.name;
+
+        // Auto-detect ticker from input if missing
+        if (!finalTicker) {
+            const match = finalName.match(/^([0-9A-Z]{4})(\.T)?$/i);
+            if (match) {
+                finalTicker = `${match[1].toUpperCase()}.T`;
+                // Use the ticker as the name if they didn't provide one
+                finalName = finalTicker;
+            } else {
+                setError('ティッカーが不明です。検索候補から選択するか、コード（例: 7203）を入力してください。');
+                return;
+            }
+        }
+
         const body: any = {
-            name: form.name,
-            ticker: form.ticker,
+            name: finalName,
+            ticker: finalTicker,
             price_above: form.price_above ? parseFloat(form.price_above) : null,
             price_below: form.price_below ? parseFloat(form.price_below) : null,
             drop_threshold: parseFloat(form.drop_threshold) || -20,
@@ -258,17 +280,25 @@ export default function AdminWatchlistPage() {
                     </h2>
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div className={styles.formGroup} style={{ position: 'relative' }}>
-                                <label>銘柄検索（コード・会社名） *</label>
-                                <input 
-                                    type="text" 
-                                    value={form.name} 
-                                    onChange={e => setForm({ ...form, name: e.target.value })} 
-                                    onFocus={() => form.name.length >= 2 && setShowSuggestions(true)}
-                                    placeholder="例: トヨタ または 7203" 
-                                    required 
-                                    autoComplete="off"
-                                />
+                            <div className={styles.formGroup} style={{ position: 'relative', gridColumn: '1 / -1' }}>
+                                <label>銘柄（会社名 または コード） *</label>
+                                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                    <input 
+                                        type="text" 
+                                        value={form.name} 
+                                        onChange={e => setForm({ ...form, name: e.target.value, ticker: '' })} 
+                                        onFocus={() => form.name.length >= 2 && setShowSuggestions(true)}
+                                        placeholder="例: トヨタ または 7203" 
+                                        required 
+                                        autoComplete="off"
+                                        style={{ flex: 1 }}
+                                    />
+                                    {form.ticker && (
+                                        <div style={{ fontWeight: 'bold', color: '#38bdf8', whiteSpace: 'nowrap', padding: '0 1rem' }}>
+                                            ✅ 選択中: {form.ticker}
+                                        </div>
+                                    )}
+                                </div>
                                 {/* Suggestions Dropdown */}
                                 {showSuggestions && suggestions.length > 0 && (
                                     <>
@@ -301,10 +331,6 @@ export default function AdminWatchlistPage() {
                                         </ul>
                                     </>
                                 )}
-                            </div>
-                            <div className={styles.formGroup}>
-                                <label>ティッカー *</label>
-                                <input type="text" value={form.ticker} onChange={e => setForm({ ...form, ticker: e.target.value })} placeholder="例: 285A.T" required />
                             </div>
 
                             {/* Auto-Calculator UI */}
