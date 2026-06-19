@@ -40,6 +40,35 @@ export default function AdminWatchlistPage() {
         drop_threshold: '-20', per_limit: '15'
     });
 
+    // Search Suggestions State
+    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    // Debounce Search
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (form.name.length >= 2 && showForm) {
+                fetchSuggestions(form.name);
+            } else {
+                setSuggestions([]);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [form.name, showForm]);
+
+    const fetchSuggestions = async (q: string) => {
+        try {
+            const res = await fetch(`/api/search/companies?q=${encodeURIComponent(q)}`);
+            if (res.ok) {
+                const data = await res.json();
+                setSuggestions(data.results || []);
+                setShowSuggestions(true);
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
+
     const fetchItems = useCallback(async () => {
         try {
             const res = await fetch('/api/admin/watchlist');
@@ -202,9 +231,49 @@ export default function AdminWatchlistPage() {
                     </h2>
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                            <div className={styles.formGroup}>
-                                <label>銘柄名 *</label>
-                                <input type="text" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="例: キオクシア" required />
+                            <div className={styles.formGroup} style={{ position: 'relative' }}>
+                                <label>銘柄検索（コード・会社名） *</label>
+                                <input 
+                                    type="text" 
+                                    value={form.name} 
+                                    onChange={e => setForm({ ...form, name: e.target.value })} 
+                                    onFocus={() => form.name.length >= 2 && setShowSuggestions(true)}
+                                    placeholder="例: トヨタ または 7203" 
+                                    required 
+                                    autoComplete="off"
+                                />
+                                {/* Suggestions Dropdown */}
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <>
+                                        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9 }} onClick={() => setShowSuggestions(false)}></div>
+                                        <ul style={{
+                                            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+                                            background: '#1e293b', border: '1px solid #334155', borderRadius: '4px',
+                                            listStyle: 'none', padding: 0, margin: '4px 0 0 0', maxHeight: '250px', overflowY: 'auto',
+                                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                                        }}>
+                                            {suggestions.map((c) => (
+                                                <li
+                                                    key={c.ticker}
+                                                    onClick={() => {
+                                                        // Auto-fill both name and ticker, append .T to ticker
+                                                        setForm({ ...form, name: c.name, ticker: `${c.ticker}.T` });
+                                                        setShowSuggestions(false);
+                                                    }}
+                                                    style={{
+                                                        padding: '0.6rem 1rem', cursor: 'pointer', borderBottom: '1px solid #334155',
+                                                        display: 'flex', gap: '1rem', alignItems: 'center'
+                                                    }}
+                                                    onMouseEnter={(e) => e.currentTarget.style.background = '#334155'}
+                                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                                >
+                                                    <span style={{ color: '#38bdf8', fontWeight: 'bold', width: '60px' }}>{c.ticker}</span>
+                                                    <span style={{ color: '#f1f5f9' }}>{c.name}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </>
+                                )}
                             </div>
                             <div className={styles.formGroup}>
                                 <label>ティッカー *</label>
