@@ -15,6 +15,7 @@ from analyze_revisions_ai import process_revisions
 from summarize_market import generate_market_summary
 from generate_daily_wrapup import generate_report as generate_daily_wrapup_report
 from update_all_shareholders import run_weekly_shareholder_update
+from check_admin_watchlist import check_watchlist
 
 def log(message):
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -105,6 +106,14 @@ def job_weekly_shareholders():
     except Exception as e:
         log(f"TASK ERROR: Weekly Kabutan Shareholder Update: {e}\n{traceback.format_exc()}")
 
+def job_admin_watchlist_check():
+    log("TASK START: Admin Watchlist Price Check")
+    try:
+        check_watchlist(refresh_only=False)
+        log("TASK SUCCESS: Admin Watchlist Price Check")
+    except Exception as e:
+        log(f"TASK ERROR: Admin Watchlist Price Check: {e}\n{traceback.format_exc()}")
+
 def job_heartbeat():
     log("HEARTBEAT: Scheduler is running...")
 
@@ -130,7 +139,11 @@ if __name__ == "__main__":
     schedule.every().day.at("18:30").do(job_daily_edinet_financials)
     schedule.every().day.at("19:00").do(job_daily_edinet_shareholders)
 
-    # 3.5 WEEKLY SCRAPING (Weekend)
+    # 3.5 ADMIN STOCK WATCHLIST (Market hours)
+    schedule.every().day.at("09:30").do(job_admin_watchlist_check)
+    schedule.every().day.at("15:30").do(job_admin_watchlist_check)
+
+    # 3.6 WEEKLY SCRAPING (Weekend)
     schedule.every().sunday.at("20:00").do(job_weekly_shareholders)
 
     # 4. MONITORING

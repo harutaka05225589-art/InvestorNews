@@ -171,6 +171,13 @@ export default function AdminPage() {
                 >
                     ニュース追加
                 </button>
+                <button
+                    className={styles.tab}
+                    onClick={() => router.push('/admin/watchlist')}
+                    style={{ marginLeft: 'auto' }}
+                >
+                    📊 株価ウォッチリスト
+                </button>
             </div>
 
             {message && <div className={styles.message}>{message}</div>}
