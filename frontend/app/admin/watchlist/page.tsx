@@ -44,6 +44,10 @@ export default function AdminWatchlistPage() {
     const [suggestions, setSuggestions] = useState<any[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
 
+    // Price Auto-Calculator State
+    const [currentPrice, setCurrentPrice] = useState<number | null>(null);
+    const [isFetchingPrice, setIsFetchingPrice] = useState(false);
+
     // Debounce Search
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -94,6 +98,28 @@ export default function AdminWatchlistPage() {
             }
         }
     }, [user, loading, router, fetchItems]);
+
+    const handleFetchPrice = async () => {
+        if (!form.ticker) {
+            setError('先にティッカーを指定してください');
+            return;
+        }
+        setIsFetchingPrice(true);
+        setError('');
+        try {
+            const res = await fetch(`/api/admin/price?ticker=${form.ticker}`);
+            const data = await res.json();
+            if (res.ok && data.price) {
+                setCurrentPrice(data.price);
+            } else {
+                setError(data.error || '株価の取得に失敗しました');
+            }
+        } catch (e) {
+            setError('株価の取得に失敗しました');
+        } finally {
+            setIsFetchingPrice(false);
+        }
+    };
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
@@ -180,6 +206,7 @@ export default function AdminWatchlistPage() {
         setForm({ name: '', ticker: '', price_above: '', price_below: '', drop_threshold: '-20', per_limit: '15' });
         setEditingId(null);
         setShowForm(false);
+        setCurrentPrice(null);
     };
 
     const formatNum = (n: number | null, decimals = 0) => {
@@ -279,6 +306,59 @@ export default function AdminWatchlistPage() {
                                 <label>ティッカー *</label>
                                 <input type="text" value={form.ticker} onChange={e => setForm({ ...form, ticker: e.target.value })} placeholder="例: 285A.T" required />
                             </div>
+
+                            {/* Auto-Calculator UI */}
+                            <div className={styles.formGroup} style={{ gridColumn: '1 / -1', background: '#0f172a', padding: '1rem', borderRadius: '8px', border: '1px solid #334155' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                                    <label style={{ margin: 0, color: '#38bdf8' }}>💡 現在株価から目標値を自動計算</label>
+                                    <button 
+                                        type="button" 
+                                        onClick={handleFetchPrice} 
+                                        disabled={isFetchingPrice}
+                                        style={{ background: '#38bdf8', color: '#000', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', fontWeight: 'bold', cursor: isFetchingPrice ? 'wait' : 'pointer' }}
+                                    >
+                                        {isFetchingPrice ? '取得中...' : '現在の株価を取得'}
+                                    </button>
+                                </div>
+                                
+                                {currentPrice !== null && (
+                                    <div style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 'bold' }}>
+                                        現在株価: <span style={{ color: '#fff' }}>¥{currentPrice.toLocaleString('ja-JP')}</span>
+                                    </div>
+                                )}
+
+                                <div style={{ display: 'flex', gap: '1rem' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: '0.85rem' }}>現在株価から 〇% 上昇（上限アラート）</label>
+                                        <input 
+                                            type="number" 
+                                            placeholder="例: 20" 
+                                            onChange={(e) => {
+                                                const pct = parseFloat(e.target.value);
+                                                if (!isNaN(pct) && currentPrice) {
+                                                    setForm(prev => ({ ...prev, price_above: (currentPrice * (1 + pct / 100)).toFixed(2) }));
+                                                }
+                                            }} 
+                                            disabled={currentPrice === null}
+                                        />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <label style={{ fontSize: '0.85rem' }}>現在株価から 〇% 下落（下限アラート）</label>
+                                        <input 
+                                            type="number" 
+                                            placeholder="例: 20" 
+                                            onChange={(e) => {
+                                                const pct = parseFloat(e.target.value);
+                                                if (!isNaN(pct) && currentPrice) {
+                                                    setForm(prev => ({ ...prev, price_below: (currentPrice * (1 - pct / 100)).toFixed(2) }));
+                                                }
+                                            }} 
+                                            disabled={currentPrice === null}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className={styles.formGroup}>
                                 <label>上限アラート（円）</label>
                                 <input type="number" step="0.01" value={form.price_above} onChange={e => setForm({ ...form, price_above: e.target.value })} placeholder="この価格以上で通知" />

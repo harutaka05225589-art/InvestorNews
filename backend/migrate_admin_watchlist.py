@@ -4,7 +4,8 @@ Migration: Create admin_watchlist table for stock price alerts (admin-only).
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'investor_news.db')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(os.path.dirname(BASE_DIR), 'frontend', 'investor_news.db')
 
 def migrate():
     conn = sqlite3.connect(DB_PATH)

@@ -17,9 +17,10 @@ import json
 import datetime
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'investor_news.db')
+DB_PATH = os.path.join(os.path.dirname(BASE_DIR), 'frontend', 'investor_news.db')
 
 def get_admin_line_id():
     """Get admin's LINE user ID from DB."""
