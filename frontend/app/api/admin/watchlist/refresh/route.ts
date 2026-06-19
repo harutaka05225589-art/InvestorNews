@@ -30,13 +30,12 @@ export async function POST(request: NextRequest) {
 
     try {
         // Execute the Python checker in refresh-only mode (no alerts)
-        const backendDir = path.join(process.cwd(), '..', 'backend');
-        const pythonCmd = `python3 ${path.join(backendDir, 'check_admin_watchlist.py')} --refresh`;
+        const pythonCmd = `cd ../backend && python3 check_admin_watchlist.py --refresh`;
         
         console.log(`[Admin Watchlist] Running: ${pythonCmd}`);
         
         const output = execSync(pythonCmd, {
-            cwd: backendDir,
+            cwd: process.cwd(),
             timeout: 120000, // 2 min timeout
             encoding: 'utf-8',
         });
