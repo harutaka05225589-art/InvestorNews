@@ -107,6 +107,10 @@ def job_weekly_shareholders():
         log(f"TASK ERROR: Weekly Kabutan Shareholder Update: {e}\n{traceback.format_exc()}")
 
 def job_admin_watchlist_check():
+    # Only run on weekdays (Mon=0 .. Fri=4)
+    if datetime.datetime.now().weekday() >= 5:
+        log("SKIP: Admin Watchlist (Weekend)")
+        return
     log("TASK START: Admin Watchlist Price Check")
     try:
         check_watchlist(refresh_only=False)
@@ -139,9 +143,14 @@ if __name__ == "__main__":
     schedule.every().day.at("18:30").do(job_daily_edinet_financials)
     schedule.every().day.at("19:00").do(job_daily_edinet_shareholders)
 
-    # 3.5 ADMIN STOCK WATCHLIST (Market hours)
-    schedule.every().day.at("09:30").do(job_admin_watchlist_check)
-    schedule.every().day.at("15:30").do(job_admin_watchlist_check)
+    # 3.5 ADMIN STOCK WATCHLIST (Every 30 min during market hours, weekdays only)
+    for h in range(9, 16):
+        for m in [0, 30]:
+            if h == 9 and m == 0:  # Start at 9:30, not 9:00
+                continue
+            if h == 15 and m > 30:  # End at 15:30
+                continue
+            schedule.every().day.at(f"{h:02d}:{m:02d}").do(job_admin_watchlist_check)
 
     # 3.6 WEEKLY SCRAPING (Weekend)
     schedule.every().sunday.at("20:00").do(job_weekly_shareholders)

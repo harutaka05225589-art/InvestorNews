@@ -224,6 +224,50 @@ export default function Home() {
         {/* 🔥 UGC Trending Votes Widget */}
         <TrendingVotes />
 
+        {/* 💬 LINE Friend Registration Banner */}
+        <section style={{
+          marginBottom: '1.5rem',
+          padding: '1.5rem',
+          background: 'linear-gradient(135deg, #06c755 0%, #04a847 100%)',
+          borderRadius: '16px',
+          textAlign: 'center',
+          boxShadow: '0 4px 15px rgba(6, 199, 85, 0.3)',
+        }}>
+          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💬</div>
+          <h3 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+            LINE通知で速報を受け取る
+          </h3>
+          <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '1rem' }}>
+            登録した銘柄の上方修正・増配を<br />
+            LINEで即時お届けします（無料）
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', alignItems: 'center' }}>
+            <a
+              href="https://lin.ee/cMLZ4jD"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'inline-block',
+                background: '#fff',
+                color: '#06c755',
+                textDecoration: 'none',
+                padding: '0.7rem 1.5rem',
+                fontWeight: 'bold',
+                borderRadius: '30px',
+                fontSize: '0.95rem',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                transition: 'transform 0.2s',
+                width: 'fit-content',
+              }}
+            >
+              友だち追加する →
+            </a>
+            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
+              追加後、設定画面で連携してください
+            </span>
+          </div>
+        </section>
+
         {/* Dashboard Widget */}
         <section className={styles.widget} style={{ marginBottom: '1.5rem' }}>
           <h2 className={styles.widgetTitle}>
