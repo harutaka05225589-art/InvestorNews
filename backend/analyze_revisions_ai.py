@@ -461,6 +461,8 @@ def process_revisions():
                         header_text = "📈 【AI速報: 上方修正判定】"
 
                 # Daily tweet limit check (7 tweets/day across all types)
+                # FORCE DISABLED: The user only wants 1 promo tweet per day, so no AI revision tweets.
+                should_post = False
                 if should_post and not can_tweet():
                     print(f"  -> X Post SKIPPED (Daily tweet limit of 7 reached)")
                     should_post = False

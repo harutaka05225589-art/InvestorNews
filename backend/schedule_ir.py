@@ -134,8 +134,9 @@ if __name__ == "__main__":
     schedule.every().day.at("17:00").do(job_daily_market_summary)
     schedule.every().day.at("17:15").do(job_daily_wrapup)
 
-    # 2. NOTIFICATIONS & PROMOS (Daytime)
-    # schedule.every().day.at("12:00").do(job_daily_promo_tweet) # Disabled to save the 1 tweet limit for actual IR news
+    # 2. NOTIFICATIONS & PROMOS (Daytime/Evening)
+    # 20:30 is considered an optimal time for investor engagement in Japan (after dinner, before US market)
+    schedule.every().day.at("20:30").do(job_daily_promo_tweet)
     schedule.every().day.at("09:00").do(job_daily_calendar_alerts)
 
     # 3. OFFICIAL DISCLOSURES (Evening)
