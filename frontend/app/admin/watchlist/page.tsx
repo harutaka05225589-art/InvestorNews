@@ -113,7 +113,7 @@ export default function AdminWatchlistPage() {
         setIsFetchingPrice(true);
         setError('');
         try {
-            const res = await fetch(`/api/admin/price?ticker=${tickerToFetch}`);
+            const res = await fetch(`/api/admin/price?ticker=${tickerToFetch}&t=${Date.now()}`);
             const data = await res.json();
             if (res.ok && data.price) {
                 setCurrentPrice(data.price);
