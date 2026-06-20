@@ -57,7 +57,7 @@ def remaining_api_calls():
 # X (Twitter) Tweet Limits (per day)
 # Covers ALL tweet types: alerts, promos, rankings, etc.
 # ============================================================
-TWEET_DAILY_LIMIT = 7
+TWEET_DAILY_LIMIT = 1
 _TWEET_COUNTER_FILE = '.daily_tweet_count.json'
 
 def get_tweet_count():
