@@ -118,10 +118,10 @@ export default function AdminWatchlistPage() {
             if (res.ok && data.price) {
                 setCurrentPrice(data.price);
             } else {
-                setError(data.error || '株価の取得に失敗しました');
+                setError(data.detail || data.error || '株価の取得に失敗しました');
             }
-        } catch (e) {
-            setError('株価の取得に失敗しました');
+        } catch (e: any) {
+            setError(e.message || '株価の取得に失敗しました');
         } finally {
             setIsFetchingPrice(false);
         }

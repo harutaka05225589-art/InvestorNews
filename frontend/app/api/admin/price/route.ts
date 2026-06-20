@@ -43,6 +43,11 @@ export async function GET(request: NextRequest) {
         
         return NextResponse.json({ price });
     } catch (e: any) {
-        return NextResponse.json({ error: 'Failed to fetch price', detail: e.message }, { status: 500 });
+        const stderr = e.stderr ? e.stderr.toString('utf-8') : '';
+        const stdout = e.stdout ? e.stdout.toString('utf-8') : '';
+        return NextResponse.json({ 
+            error: `Failed to fetch price: ${e.message}`, 
+            detail: stderr || stdout || e.toString()
+        }, { status: 500 });
     }
 }
