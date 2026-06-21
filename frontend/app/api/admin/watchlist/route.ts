@@ -53,7 +53,10 @@ export async function POST(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { name, ticker, price_above, price_below, drop_threshold, per_limit } = body;
+        const { name, ticker, price_above, price_below, drop_threshold, per_limit,
+            ath_drop_threshold, pbr_limit, dividend_yield_min,
+            alert_yuutai_change, alert_earnings_date, alert_revision,
+            volume_spike_ratio, alert_dilution } = body;
 
         if (!name || !ticker) {
             return NextResponse.json({ error: '銘柄名とティッカーは必須です' }, { status: 400 });
@@ -61,8 +64,10 @@ export async function POST(request: NextRequest) {
 
         const db = new Database(DB_PATH);
         const stmt = db.prepare(`
-            INSERT INTO admin_watchlist (name, ticker, price_above, price_below, drop_threshold, per_limit)
-            VALUES (?, ?, ?, ?, ?, ?)
+            INSERT INTO admin_watchlist (name, ticker, price_above, price_below, drop_threshold, per_limit,
+                ath_drop_threshold, pbr_limit, dividend_yield_min, alert_yuutai_change, alert_earnings_date,
+                alert_revision, volume_spike_ratio, alert_dilution)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
 
         const result = stmt.run(
@@ -71,7 +76,15 @@ export async function POST(request: NextRequest) {
             price_above || null,
             price_below || null,
             drop_threshold ?? -20,
-            per_limit ?? 15
+            per_limit ?? 15,
+            ath_drop_threshold ?? null,
+            pbr_limit ?? null,
+            dividend_yield_min ?? null,
+            alert_yuutai_change ?? 0,
+            alert_earnings_date ?? 0,
+            alert_revision ?? 0,
+            volume_spike_ratio ?? null,
+            alert_dilution ?? 0
         );
         db.close();
 
@@ -94,7 +107,10 @@ export async function PUT(request: NextRequest) {
 
     try {
         const body = await request.json();
-        const { id, name, ticker, price_above, price_below, drop_threshold, per_limit, is_active } = body;
+        const { id, name, ticker, price_above, price_below, drop_threshold, per_limit, is_active,
+            ath_drop_threshold, pbr_limit, dividend_yield_min,
+            alert_yuutai_change, alert_earnings_date, alert_revision,
+            volume_spike_ratio, alert_dilution } = body;
 
         if (!id) {
             return NextResponse.json({ error: 'ID is required' }, { status: 400 });
@@ -109,7 +125,15 @@ export async function PUT(request: NextRequest) {
                 price_below = ?,
                 drop_threshold = COALESCE(?, drop_threshold),
                 per_limit = COALESCE(?, per_limit),
-                is_active = COALESCE(?, is_active)
+                is_active = COALESCE(?, is_active),
+                ath_drop_threshold = COALESCE(?, ath_drop_threshold),
+                pbr_limit = COALESCE(?, pbr_limit),
+                dividend_yield_min = COALESCE(?, dividend_yield_min),
+                alert_yuutai_change = COALESCE(?, alert_yuutai_change),
+                alert_earnings_date = COALESCE(?, alert_earnings_date),
+                alert_revision = COALESCE(?, alert_revision),
+                volume_spike_ratio = COALESCE(?, volume_spike_ratio),
+                alert_dilution = COALESCE(?, alert_dilution)
             WHERE id = ?
         `).run(
             name || null,
@@ -119,6 +143,14 @@ export async function PUT(request: NextRequest) {
             drop_threshold,
             per_limit,
             is_active,
+            ath_drop_threshold ?? null,
+            pbr_limit ?? null,
+            dividend_yield_min ?? null,
+            alert_yuutai_change ?? null,
+            alert_earnings_date ?? null,
+            alert_revision ?? null,
+            volume_spike_ratio ?? null,
+            alert_dilution ?? null,
             id
         );
         db.close();

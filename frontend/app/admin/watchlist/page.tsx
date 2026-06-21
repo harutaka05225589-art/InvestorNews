@@ -23,6 +23,18 @@ interface WatchlistItem {
     signal_reasons: string;
     last_checked_at: string | null;
     last_alerted_at: string | null;
+    ath_drop_threshold: number | null;
+    pbr_limit: number | null;
+    dividend_yield_min: number | null;
+    alert_yuutai_change: number;
+    alert_earnings_date: number;
+    alert_revision: number;
+    volume_spike_ratio: number | null;
+    alert_dilution: number;
+    current_pbr: number | null;
+    current_dividend_yield: number | null;
+    ath_price: number | null;
+    ath_drop_pct: number | null;
 }
 
 export default function AdminWatchlistPage() {
@@ -37,7 +49,10 @@ export default function AdminWatchlistPage() {
     const [form, setForm] = useState({
         name: '', ticker: '',
         price_above: '', price_below: '',
-        drop_threshold: '-20', per_limit: '15'
+        drop_threshold: '-20', per_limit: '15',
+        ath_drop_threshold: '', pbr_limit: '', dividend_yield_min: '',
+        alert_yuutai_change: false, alert_earnings_date: false,
+        alert_revision: false, volume_spike_ratio: '', alert_dilution: false
     });
 
     // Search Suggestions State
@@ -175,6 +190,14 @@ export default function AdminWatchlistPage() {
             price_below: form.price_below ? parseFloat(form.price_below) : null,
             drop_threshold: parseFloat(form.drop_threshold) || -20,
             per_limit: parseFloat(form.per_limit) || 15,
+            ath_drop_threshold: form.ath_drop_threshold ? parseFloat(form.ath_drop_threshold) : null,
+            pbr_limit: form.pbr_limit ? parseFloat(form.pbr_limit) : null,
+            dividend_yield_min: form.dividend_yield_min ? parseFloat(form.dividend_yield_min) : null,
+            alert_yuutai_change: form.alert_yuutai_change ? 1 : 0,
+            alert_earnings_date: form.alert_earnings_date ? 1 : 0,
+            alert_revision: form.alert_revision ? 1 : 0,
+            volume_spike_ratio: form.volume_spike_ratio ? parseFloat(form.volume_spike_ratio) : null,
+            alert_dilution: form.alert_dilution ? 1 : 0,
         };
 
         if (editingId) body.id = editingId;
@@ -219,13 +242,25 @@ export default function AdminWatchlistPage() {
             price_below: item.price_below?.toString() || '',
             drop_threshold: item.drop_threshold?.toString() || '-20',
             per_limit: item.per_limit?.toString() || '15',
+            ath_drop_threshold: item.ath_drop_threshold?.toString() || '',
+            pbr_limit: item.pbr_limit?.toString() || '',
+            dividend_yield_min: item.dividend_yield_min?.toString() || '',
+            alert_yuutai_change: item.alert_yuutai_change === 1,
+            alert_earnings_date: item.alert_earnings_date === 1,
+            alert_revision: item.alert_revision === 1,
+            volume_spike_ratio: item.volume_spike_ratio?.toString() || '',
+            alert_dilution: item.alert_dilution === 1,
         });
         setEditingId(item.id);
         setShowForm(true);
     };
 
     const resetForm = () => {
-        setForm({ name: '', ticker: '', price_above: '', price_below: '', drop_threshold: '-20', per_limit: '15' });
+        setForm({ name: '', ticker: '', price_above: '', price_below: '', drop_threshold: '-20', per_limit: '15',
+            ath_drop_threshold: '', pbr_limit: '', dividend_yield_min: '',
+            alert_yuutai_change: false, alert_earnings_date: false,
+            alert_revision: false, volume_spike_ratio: '', alert_dilution: false
+        });
         setEditingId(null);
         setShowForm(false);
         setCurrentPrice(null);
@@ -401,6 +436,45 @@ export default function AdminWatchlistPage() {
                                 <label>PER上限（倍）</label>
                                 <input type="number" step="0.1" value={form.per_limit} onChange={e => setForm({ ...form, per_limit: e.target.value })} />
                             </div>
+
+                            {/* === 追加アラート項目 === */}
+                            <div style={{ gridColumn: '1 / -1', borderTop: '1px solid #334155', paddingTop: '1rem', marginTop: '0.5rem' }}>
+                                <h4 style={{ color: '#94a3b8', marginBottom: '0.75rem', fontSize: '0.9rem' }}>📊 追加アラート設定</h4>
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>上場来高値 下落率 (%)</label>
+                                <input type="number" value={form.ath_drop_threshold} onChange={e => setForm({ ...form, ath_drop_threshold: e.target.value })} placeholder="例: -30" />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>PBR上限 (倍)</label>
+                                <input type="number" step="0.1" value={form.pbr_limit} onChange={e => setForm({ ...form, pbr_limit: e.target.value })} placeholder="例: 1.0" />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>配当利回り下限 (%)</label>
+                                <input type="number" step="0.1" value={form.dividend_yield_min} onChange={e => setForm({ ...form, dividend_yield_min: e.target.value })} placeholder="例: 3.0" />
+                            </div>
+                            <div className={styles.formGroup}>
+                                <label>出来高急増 (倍率)</label>
+                                <input type="number" step="0.1" value={form.volume_spike_ratio} onChange={e => setForm({ ...form, volume_spike_ratio: e.target.value })} placeholder="例: 2.0" />
+                            </div>
+                            <div style={{ gridColumn: '1 / -1', display: 'flex', flexWrap: 'wrap', gap: '1.2rem', padding: '0.5rem 0' }}>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#e2e8f0' }}>
+                                    <input type="checkbox" checked={form.alert_earnings_date} onChange={e => setForm({ ...form, alert_earnings_date: e.target.checked })} />
+                                    📅 決算日接近通知
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#e2e8f0' }}>
+                                    <input type="checkbox" checked={form.alert_revision} onChange={e => setForm({ ...form, alert_revision: e.target.checked })} />
+                                    📈 上方/下方修正通知
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#e2e8f0' }}>
+                                    <input type="checkbox" checked={form.alert_yuutai_change} onChange={e => setForm({ ...form, alert_yuutai_change: e.target.checked })} />
+                                    🎁 優待変更・廃止通知
+                                </label>
+                                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: '#e2e8f0' }}>
+                                    <input type="checkbox" checked={form.alert_dilution} onChange={e => setForm({ ...form, alert_dilution: e.target.checked })} />
+                                    ⚠️ 希薄化イベント通知
+                                </label>
+                            </div>
                         </div>
                         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                             <button type="submit" className={styles.submitBtn}>
@@ -459,11 +533,11 @@ export default function AdminWatchlistPage() {
                             <tr>
                                 <th>銘柄</th>
                                 <th style={{ textAlign: 'right' }}>株価</th>
-                                <th style={{ textAlign: 'right' }}>52週高値</th>
                                 <th style={{ textAlign: 'right' }}>下落率</th>
                                 <th style={{ textAlign: 'right' }}>PER</th>
-                                <th style={{ textAlign: 'right' }}>時価総額</th>
-                                <th style={{ textAlign: 'center' }}>アラート設定</th>
+                                <th style={{ textAlign: 'right' }}>PBR</th>
+                                <th style={{ textAlign: 'right' }}>配当利回り</th>
+                                <th style={{ textAlign: 'center' }}>アラート</th>
                                 <th style={{ textAlign: 'center' }}>シグナル</th>
                                 <th>操作</th>
                             </tr>
@@ -486,29 +560,29 @@ export default function AdminWatchlistPage() {
                                         <td style={{ textAlign: 'right', fontFamily: 'monospace', fontSize: '1.05rem', fontWeight: 'bold' }}>
                                             {item.last_price ? `¥${formatNum(item.last_price)}` : '-'}
                                         </td>
-                                        <td style={{ textAlign: 'right', fontFamily: 'monospace', color: '#aaa' }}>
-                                            {item.high_52w ? `¥${formatNum(item.high_52w)}` : '-'}
-                                        </td>
                                         <td style={{ textAlign: 'right', fontFamily: 'monospace', color: dropColor, fontWeight: 'bold' }}>
-                                            {item.drop_pct !== null ? `${item.drop_pct}%` : '-'}
+                                            <div>{item.drop_pct !== null ? `52w: ${item.drop_pct}%` : '-'}</div>
+                                            {(item as any).ath_drop_pct !== null && (item as any).ath_drop_pct !== undefined && (
+                                                <div style={{ fontSize: '0.75rem', color: '#888' }}>ATH: {(item as any).ath_drop_pct}%</div>
+                                            )}
                                         </td>
                                         <td style={{ textAlign: 'right', fontFamily: 'monospace' }}>
                                             {item.current_per !== null ? `${item.current_per}x` : '-'}
                                         </td>
-                                        <td style={{ textAlign: 'right', fontFamily: 'monospace', color: '#aaa' }}>
-                                            {item.market_cap_oku ? `${formatNum(item.market_cap_oku, 0)}億` : '-'}
+                                        <td style={{ textAlign: 'right', fontFamily: 'monospace' }}>
+                                            {(item as any).current_pbr !== null && (item as any).current_pbr !== undefined ? `${(item as any).current_pbr}x` : '-'}
                                         </td>
-                                        <td style={{ textAlign: 'center', fontSize: '0.8rem' }}>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                {item.price_above && (
-                                                    <span style={{ color: '#44cc44' }}>↑ ¥{formatNum(item.price_above)}</span>
-                                                )}
-                                                {item.price_below && (
-                                                    <span style={{ color: '#ff4444' }}>↓ ¥{formatNum(item.price_below)}</span>
-                                                )}
-                                                {!item.price_above && !item.price_below && (
-                                                    <span style={{ color: '#555' }}>-</span>
-                                                )}
+                                        <td style={{ textAlign: 'right', fontFamily: 'monospace', color: (item as any).current_dividend_yield >= 3 ? '#44cc44' : '#ccc' }}>
+                                            {(item as any).current_dividend_yield !== null && (item as any).current_dividend_yield !== undefined ? `${(item as any).current_dividend_yield}%` : '-'}
+                                        </td>
+                                        <td style={{ textAlign: 'center', fontSize: '0.75rem' }}>
+                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2px', justifyContent: 'center' }}>
+                                                {item.price_above && <span title={`上限: ¥${formatNum(item.price_above)}`}>📈</span>}
+                                                {item.price_below && <span title={`下限: ¥${formatNum(item.price_below)}`}>📉</span>}
+                                                {(item as any).alert_earnings_date === 1 && <span title="決算日接近">📅</span>}
+                                                {(item as any).alert_revision === 1 && <span title="上方/下方修正">📊</span>}
+                                                {(item as any).alert_yuutai_change === 1 && <span title="優待変更">🎁</span>}
+                                                {(item as any).alert_dilution === 1 && <span title="希薄化">⚠️</span>}
                                             </div>
                                         </td>
                                         <td style={{ textAlign: 'center' }}>
