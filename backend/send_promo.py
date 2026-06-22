@@ -61,7 +61,7 @@ def send_promo():
 
     # 3. Post to X
     print(f"  [INFO] Posting promo tweet #{idx + 1}/{len(MESSAGES)}...")
-    tweet_id = post_to_x(msg)
+    tweet_id = post_to_x(msg, is_promo=True)
 
     if tweet_id:
         print(f"  [SUCCESS] Tweet sent: {tweet_id}")

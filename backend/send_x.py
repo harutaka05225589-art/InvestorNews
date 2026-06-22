@@ -10,15 +10,19 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'), override=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def post_to_x(message, media_path=None):
+def post_to_x(message, media_path=None, is_promo=False):
     """
     Post a message to X (formerly Twitter).
     Args:
         message (str): The text content of the tweet.
         media_path (str, optional): Path to a media file (image) to upload.
+        is_promo (bool): Flag to ensure only promo tweets are sent.
     Returns:
         str: The Tweet ID if successful, None otherwise.
     """
+    if not is_promo:
+        logger.info("X POST BLOCKED: Only promo tweets are currently allowed per user request.")
+        return None
     api_key = os.getenv("X_API_KEY")
     api_secret = os.getenv("X_API_SECRET")
     access_token = os.getenv("X_ACCESS_TOKEN")
