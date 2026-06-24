@@ -6,7 +6,6 @@ try:
 except ImportError:
     from backports.zoneinfo import ZoneInfo
 from send_x import post_to_x
-from daily_limits import can_tweet, increment_tweets, remaining_tweets
 
 JST = ZoneInfo("Asia/Tokyo")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -21,12 +20,7 @@ LOCK_FILE = os.path.join(BASE_DIR, "last_promo_tweet.txt")
 INDEX_FILE = os.path.join(BASE_DIR, "promo_index.txt")
 
 def send_promo():
-    print(f"  [INFO] send_promo() called at {datetime.datetime.now()}")
-
-    # 0. Check daily tweet limit
-    if not can_tweet():
-        print(f"  [SKIP] Daily tweet limit reached ({remaining_tweets()} remaining). No promo tweet today.")
-        return
+    print(f"  [INFO] send_promo() called at {datetime.datetime.now(JST).strftime('%Y-%m-%d %H:%M:%S JST')}")
 
     # 1. Check if we already tweeted today (prevent duplicates on the same day)
     today_str = datetime.datetime.now(JST).strftime("%Y-%m-%d")
@@ -70,7 +64,6 @@ def send_promo():
 
     if tweet_id:
         print(f"  [SUCCESS] Tweet sent: {tweet_id}")
-        increment_tweets()
         # Write today's date to lock file (1 promo per day)
         with open(LOCK_FILE, "w") as f:
             f.write(today_str)
