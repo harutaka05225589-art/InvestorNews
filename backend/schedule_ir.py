@@ -4,6 +4,12 @@ import datetime
 import traceback
 import sys
 import os
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
+
+JST = ZoneInfo("Asia/Tokyo")
 
 # Import job functions
 from fetch_ir_calendar import run_fetch
@@ -18,7 +24,7 @@ from update_all_shareholders import run_weekly_shareholder_update
 from check_admin_watchlist import check_watchlist
 
 def log(message):
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timestamp = datetime.datetime.now(JST).strftime("%Y-%m-%d %H:%M:%S JST")
     print(f"[{timestamp}] {message}")
     sys.stdout.flush()
 
@@ -107,8 +113,8 @@ def job_weekly_shareholders():
         log(f"TASK ERROR: Weekly Kabutan Shareholder Update: {e}\n{traceback.format_exc()}")
 
 def job_admin_watchlist_check():
-    # Only run on weekdays (Mon=0 .. Fri=4)
-    if datetime.datetime.now().weekday() >= 5:
+    # Only run on weekdays (Mon=0 .. Fri=4) - use JST
+    if datetime.datetime.now(JST).weekday() >= 5:
         log("SKIP: Admin Watchlist (Weekend)")
         return
     log("TASK START: Admin Watchlist Price Check")
@@ -125,42 +131,48 @@ def job_heartbeat():
 
 if __name__ == "__main__":
     log("=== Investor News Scheduler Starting (Unified Daily Mode) ===")
+    log(f"Server time now: {datetime.datetime.now()}")
+    log(f"JST time now:    {datetime.datetime.now(JST)}")
+
+    # ============================================================
+    # ALL TIMES ARE JST (Asia/Tokyo)
+    # The schedule library's .at(time, tz) handles conversion.
+    # ============================================================
 
     # 1. CORE DATA SYNC (Nightly)
-    schedule.every().day.at("01:00").do(job_daily_ir_fetch)
-    # NOTE: AI analysis is handled by tdnet_poller every 60s. No need for separate schedule.
+    schedule.every().day.at("01:00", "Asia/Tokyo").do(job_daily_ir_fetch)
 
     # 1.5. SUMMARY REPORTS (Evening)
-    schedule.every().day.at("17:00").do(job_daily_market_summary)
-    schedule.every().day.at("17:15").do(job_daily_wrapup)
+    schedule.every().day.at("17:00", "Asia/Tokyo").do(job_daily_market_summary)
+    schedule.every().day.at("17:15", "Asia/Tokyo").do(job_daily_wrapup)
 
-    # 2. NOTIFICATIONS & PROMOS (Daytime/Evening)
-    # 20:30 is considered an optimal time for investor engagement in Japan (after dinner, before US market)
-    schedule.every().day.at("20:30").do(job_daily_promo_tweet)
-    schedule.every().day.at("09:00").do(job_daily_calendar_alerts)
+    # 2. NOTIFICATIONS & PROMOS
+    # 20:30 JST - optimal for investor engagement (after dinner, before US market)
+    schedule.every().day.at("20:30", "Asia/Tokyo").do(job_daily_promo_tweet)
+    schedule.every().day.at("09:00", "Asia/Tokyo").do(job_daily_calendar_alerts)
 
-    # 3. OFFICIAL DISCLOSURES (Evening)
-    schedule.every().day.at("09:30").do(job_daily_edinet_financials)
-    schedule.every().day.at("18:30").do(job_daily_edinet_financials)
-    schedule.every().day.at("19:00").do(job_daily_edinet_shareholders)
+    # 3. OFFICIAL DISCLOSURES
+    schedule.every().day.at("09:30", "Asia/Tokyo").do(job_daily_edinet_financials)
+    schedule.every().day.at("18:30", "Asia/Tokyo").do(job_daily_edinet_financials)
+    schedule.every().day.at("19:00", "Asia/Tokyo").do(job_daily_edinet_shareholders)
 
-    # 3.5 ADMIN STOCK WATCHLIST (Every 30 min during market hours, weekdays only)
+    # 3.5 ADMIN STOCK WATCHLIST (Every 30 min during JST market hours, weekdays only)
     for h in range(9, 16):
         for m in [0, 30]:
-            if h == 9 and m == 0:  # Start at 9:30, not 9:00
+            if h == 9 and m == 0:
                 continue
-            if h == 15 and m > 30:  # End at 15:30
+            if h == 15 and m > 30:
                 continue
-            schedule.every().day.at(f"{h:02d}:{m:02d}").do(job_admin_watchlist_check)
+            schedule.every().day.at(f"{h:02d}:{m:02d}", "Asia/Tokyo").do(job_admin_watchlist_check)
 
     # 3.6 WEEKLY SCRAPING (Weekend)
-    schedule.every().sunday.at("20:00").do(job_weekly_shareholders)
+    schedule.every().sunday.at("20:00", "Asia/Tokyo").do(job_weekly_shareholders)
 
     # 4. MONITORING
     schedule.every().hour.do(job_heartbeat)
 
     log(f"Successfully registered {len(schedule.jobs)} jobs.")
-    
+
     # Run once on start for heartbeat confirmation
     job_heartbeat()
 

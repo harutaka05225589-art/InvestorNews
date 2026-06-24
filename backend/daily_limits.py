@@ -1,16 +1,25 @@
 """
 Shared daily limit tracking for API calls and X (Twitter) tweets.
-Uses JSON files to track counts per day. Resets automatically at midnight.
+Uses JSON files to track counts per day. Resets automatically at midnight JST.
 """
 import os
 import json
 import datetime
+try:
+    from zoneinfo import ZoneInfo
+except ImportError:
+    from backports.zoneinfo import ZoneInfo
 
+JST = ZoneInfo("Asia/Tokyo")
 _DIR = os.path.dirname(os.path.abspath(__file__))
+
+def _today_jst():
+    """Get today's date string in JST."""
+    return datetime.datetime.now(JST).strftime("%Y-%m-%d")
 
 def _get_counter(counter_file):
     """Get today's count from a counter file. Returns 0 if file doesn't exist or is from a previous day."""
-    today = datetime.date.today().isoformat()
+    today = _today_jst()
     path = os.path.join(_DIR, counter_file)
     if os.path.exists(path):
         try:
@@ -24,7 +33,7 @@ def _get_counter(counter_file):
 
 def _increment(counter_file):
     """Increment today's count and return the new value."""
-    today = datetime.date.today().isoformat()
+    today = _today_jst()
     count = _get_counter(counter_file) + 1
     path = os.path.join(_DIR, counter_file)
     with open(path, 'w') as f:
