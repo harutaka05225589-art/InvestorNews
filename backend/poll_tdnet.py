@@ -8,29 +8,26 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from fetch_tdnet import fetch_tdnet_revisions
 
+POLL_INTERVAL = 1800  # 30 minutes
+
 def poll_tdnet():
-    print("Starting TDnet Polling Service (Interval: 60s)...")
+    print(f"Starting TDnet Polling Service (Interval: {POLL_INTERVAL}s = {POLL_INTERVAL//60}min)...")
     while True:
         try:
             now = datetime.datetime.now()
-            # Only poll during market hours + buffer (8:00 - 18:00) 
-            # or just always 24/7? TDnet updates mostly 15:00-17:00 but sometimes 08:30.
-            # Let's run 24/7 to be safe and catch everything.
-            
             print(f"\n[Poller] checking at {now.strftime('%H:%M:%S')}...")
-            fetch_tdnet_revisions()
+            # trigger_ai=False: AI analysis is disabled to save API costs
+            fetch_tdnet_revisions(trigger_ai=False)
             
-            # fetch_tdnet_revisions() already triggers process_revisions() automatically.
-            
-            print("[Poller] detailed check complete. Sleeping 60s.")
-            time.sleep(60)
+            print(f"[Poller] check complete. Sleeping {POLL_INTERVAL//60}min.")
+            time.sleep(POLL_INTERVAL)
             
         except KeyboardInterrupt:
             print("Stopping Poller...")
             break
         except Exception as e:
             print(f"Poller Error: {e}")
-            time.sleep(60) # Sleep even on error to avoid rapid loop
+            time.sleep(POLL_INTERVAL)
 
 if __name__ == "__main__":
     poll_tdnet()

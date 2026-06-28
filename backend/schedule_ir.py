@@ -142,9 +142,9 @@ if __name__ == "__main__":
     # 1. CORE DATA SYNC (Nightly)
     schedule.every().day.at("01:00", "Asia/Tokyo").do(job_daily_ir_fetch)
 
-    # 1.5. SUMMARY REPORTS (Evening)
-    schedule.every().day.at("17:00", "Asia/Tokyo").do(job_daily_market_summary)
-    schedule.every().day.at("17:15", "Asia/Tokyo").do(job_daily_wrapup)
+    # 1.5. SUMMARY REPORTS (DISABLED - AI costs)
+    # schedule.every().day.at("17:00", "Asia/Tokyo").do(job_daily_market_summary)
+    # schedule.every().day.at("17:15", "Asia/Tokyo").do(job_daily_wrapup)
 
     # 2. NOTIFICATIONS & PROMOS
     # 20:30 JST - optimal for investor engagement (after dinner, before US market)
