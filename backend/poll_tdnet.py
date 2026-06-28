@@ -16,8 +16,7 @@ def poll_tdnet():
         try:
             now = datetime.datetime.now()
             print(f"\n[Poller] checking at {now.strftime('%H:%M:%S')}...")
-            # trigger_ai=False: AI analysis is disabled to save API costs
-            fetch_tdnet_revisions(trigger_ai=False)
+            fetch_tdnet_revisions()
             
             print(f"[Poller] check complete. Sleeping {POLL_INTERVAL//60}min.")
             time.sleep(POLL_INTERVAL)
