@@ -1,13 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import Link from 'next/link';
 
 export default function SettingsPage() {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const isWelcome = searchParams.get('welcome') === '1';
+    
     const [isDeleting, setIsDeleting] = useState(false);
     const [settings, setSettings] = useState({
         emailNotifications: false,
@@ -122,6 +125,101 @@ export default function SettingsPage() {
         <div style={{ maxWidth: '600px', margin: '2rem auto', padding: '0 1rem' }}>
             <h1 style={{ marginBottom: '2rem', borderBottom: '1px solid #333', paddingBottom: '0.5rem' }}>アカウント設定</h1>
 
+            {isWelcome && (
+                <div style={{ background: 'linear-gradient(135deg, #06c755 0%, #04a847 100%)', color: 'white', padding: '1.5rem', borderRadius: '8px', marginBottom: '2rem', boxShadow: '0 4px 15px rgba(6, 199, 85, 0.3)' }}>
+                    <h2 style={{ fontSize: '1.3rem', marginBottom: '0.5rem' }}>🎉 登録完了！まずはLINE連携をしましょう</h2>
+                    <p style={{ fontSize: '0.95rem', lineHeight: '1.5' }}>
+                        ウォッチリストに登録した銘柄の決算速報や増配ニュースをLINEで受け取るために、以下の手順でシステムと連携させてください。
+                    </p>
+                </div>
+            )}
+
+            {/* LINE連携を最上部に移動 */}
+            <section style={{ marginBottom: '3rem' }}>
+                <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>LINE連携</h2>
+                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
+                    <div style={{ marginBottom: '1rem' }}>
+                        <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                            公式アカウントと連携すると、あなただけの重要なお知らせ（ウォッチリスト通知など）を受け取れるようになります。
+                        </p>
+
+                        <div style={{ background: '#0f172a', padding: '1rem', borderRadius: '4px', border: '1px dashed #475569' }}>
+                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 1. 友達追加</h3>
+                            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                                <a
+                                    href="https://lin.ee/cMLZ4jD"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                        display: 'inline-block',
+                                        background: '#06c755',
+                                        color: 'white',
+                                        textDecoration: 'none',
+                                        padding: '0.6rem 1.2rem',
+                                        fontWeight: 'bold',
+                                        borderRadius: '4px'
+                                    }}
+                                >
+                                    LINEで友達追加する
+                                </a>
+                            </div>
+
+                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 2. 連携（重要）</h3>
+                            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
+                                友達追加しただけでは、あなた専用の通知（登録銘柄のアラート）が届きません。<br />
+                                以下の手順でシステムと連携させてください。
+                            </p>
+                            <ol style={{ paddingLeft: '1.5rem', color: '#cbd5e1', fontSize: '0.9rem', margin: 0 }}>
+                                <li style={{ marginBottom: '0.5rem' }}>下の「コードを発行」ボタンを押す</li>
+                                <li style={{ marginBottom: '0.5rem' }}>表示された6桁の数字をコピー</li>
+                                <li>LINE公式アカウントのトーク画面で、その数字だけを送信</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+                        <button
+                            onClick={async () => {
+                                const btn = document.getElementById('line-code-btn') as HTMLButtonElement;
+                                const display = document.getElementById('line-code-display');
+                                if (!btn || !display) return;
+
+                                btn.disabled = true;
+                                btn.textContent = '発行中...';
+
+                                try {
+                                    const res = await fetch(`/api/line/code?userId=${user.id}`);
+                                    const data = await res.json();
+                                    if (data.code) {
+                                        display.innerHTML = `<span style="font-size: 2rem; letter-spacing: 0.5rem; color: #4ade80;">${data.code}</span><br/><span style="font-size: 0.8rem; color: #94a3b8;">(有効期限: 10分)</span>`;
+                                    } else {
+                                        display.innerText = 'エラーが発生しました';
+                                    }
+                                } catch (e) {
+                                    display.innerText = 'エラーが発生しました';
+                                }
+
+                                btn.textContent = 'コードを再発行';
+                                btn.disabled = false;
+                            }}
+                            id="line-code-btn"
+                            style={{
+                                background: '#334155',
+                                color: 'white',
+                                border: '1px solid #475569',
+                                padding: '0.6rem 1.2rem',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontWeight: 'bold'
+                            }}
+                        >
+                            連携コードを発行
+                        </button>
+                        <div id="line-code-display" style={{ marginTop: '1rem', minHeight: '3rem' }}></div>
+                    </div>
+                </div>
+            </section>
+
             <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>プロフィール情報</h2>
                 <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
@@ -199,115 +297,7 @@ export default function SettingsPage() {
                 </div>
             </section>
 
-            <section style={{ marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: '#fff' }}>LINE連携</h2>
-                <div style={{ background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-                    <div style={{ marginBottom: '1rem' }}>
-                        <p style={{ color: '#cbd5e1', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                            公式アカウントと連携すると、あなただけの重要なお知らせ（ウォッチリスト通知など）を受け取れるようになります。
-                        </p>
 
-                        <div style={{ background: '#0f172a', padding: '1rem', borderRadius: '4px', border: '1px dashed #475569' }}>
-                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 1. 友達追加</h3>
-                            <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                                <a
-                                    href="https://lin.ee/cMLZ4jD"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    style={{
-                                        display: 'inline-block',
-                                        background: '#06c755',
-                                        color: 'white',
-                                        textDecoration: 'none',
-                                        padding: '0.6rem 1.2rem',
-                                        fontWeight: 'bold',
-                                        borderRadius: '4px'
-                                    }}
-                                >
-                                    LINEで友達追加する
-                                </a>
-                            </div>
-
-                            <h3 style={{ fontSize: '0.9rem', color: '#94a3b8', marginBottom: '0.5rem' }}>Step 2. 連携（重要）</h3>
-                            <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginBottom: '0.5rem' }}>
-                                友達追加しただけでは、あなた専用の通知（登録銘柄のアラート）が届きません。<br />
-                                以下の手順でシステムと連携させてください。
-                            </p>
-                            <ol style={{ paddingLeft: '1.5rem', color: '#cbd5e1', fontSize: '0.9rem', margin: 0 }}>
-                                <li style={{ marginBottom: '0.5rem' }}>下の「コードを発行」ボタンを押す</li>
-                                <li style={{ marginBottom: '0.5rem' }}>表示された6桁の数字をコピー</li>
-                                <li>LINE公式アカウントのトーク画面で、その数字だけを送信</li>
-                            </ol>
-                        </div>
-                    </div>
-
-                    <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-                        <button
-                            onClick={async () => {
-                                const btn = document.getElementById('line-code-btn') as HTMLButtonElement;
-                                const display = document.getElementById('line-code-display');
-                                if (!btn || !display) return;
-
-                                btn.disabled = true;
-                                btn.innerText = '発行中...';
-
-                                try {
-                                    const res = await fetch('/api/settings/line_code', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({ userId: user.id })
-                                    });
-                                    const data = await res.json();
-
-                                    if (data.success) {
-                                        display.innerText = data.code;
-                                        display.style.display = 'block';
-                                        btn.style.display = 'none';
-                                    } else {
-                                        alert('エラーが発生しました');
-                                        btn.disabled = false;
-                                        btn.innerText = 'コードを発行';
-                                    }
-                                } catch (e) {
-                                    alert('通信エラー');
-                                    btn.disabled = false;
-                                    btn.innerText = 'コードを発行';
-                                }
-                            }}
-                            id="line-code-btn"
-                            style={{
-                                background: '#22c55e', // LINE Green
-                                color: '#fff',
-                                border: 'none',
-                                padding: '0.8rem 1.5rem',
-                                borderRadius: '30px',
-                                fontWeight: 'bold',
-                                cursor: 'pointer',
-                                fontSize: '1rem'
-                            }}
-                        >
-                            LINE連携コードを発行する
-                        </button>
-
-                        <div
-                            id="line-code-display"
-                            style={{
-                                display: 'none',
-                                fontSize: '2.5rem',
-                                fontWeight: 'bold',
-                                color: '#fbbf24',
-                                letterSpacing: '0.5rem',
-                                marginTop: '1rem'
-                            }}
-                        >
-                            ------
-                        </div>
-                        <p style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#64748b' }}>
-                            ※ コードの有効期限は一時的です。すぐに送信してください。
-                        </p>
-                    </div>
-                </div>
-            </section>
 
             {/* 
             <section style={{ marginBottom: '3rem' }}>

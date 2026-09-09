@@ -7,6 +7,7 @@ import FinancialChart from '@/components/FinancialChart';
 import ShareholderList from '@/components/ShareholderList';
 import RevisionHistoryChart from '@/components/RevisionHistoryChart';
 import UserVoteClient from '@/components/UserVoteClient';
+import SignupBanner from '@/components/SignupBanner';
 
 export const dynamic = 'force-dynamic';
 
@@ -292,6 +293,8 @@ export default async function StockPage({ params }: Props) {
                             </p>
                         </div>
                     )}
+
+                    <SignupBanner />
 
                     {/* 2. Latest AI Analysis */}
                     {latestRevision ? (

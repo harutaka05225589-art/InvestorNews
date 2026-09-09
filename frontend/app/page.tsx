@@ -99,9 +99,24 @@ export default function Home() {
               毎日発表される膨大な適時開示情報（TDnet）の中から、<br />
               株価が動く「上方修正」や「増配」をAIが瞬時に判定し、分かりやすく要約します。
             </p>
-            <Link href="/revisions" className={styles.heroCta}>
-              <span>👉 本日の業績修正を見る</span>
-            </Link>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+              <Link href="/revisions" className={styles.heroCta}>
+                <span>👉 本日の業績修正を見る</span>
+              </Link>
+              <Link href="/auth/signup" style={{ 
+                background: 'var(--accent)', 
+                color: '#000', 
+                padding: '0.8rem 1.5rem', 
+                borderRadius: '8px', 
+                fontWeight: 'bold', 
+                textDecoration: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                boxShadow: '0 4px 14px 0 rgba(74, 222, 128, 0.39)'
+              }}>
+                <span>🔔 無料で通知を受け取る</span>
+              </Link>
+            </div>
           </div>
 
           {/* AI MARKET SUMMARY (NEW Phase 20) */}
@@ -167,6 +182,50 @@ export default function Home() {
               </section>
             );
           })()}
+
+          {/* LINE Notification Banner (NEW - UX Improvement) */}
+          <section style={{
+            margin: '2rem 0',
+            padding: '2rem',
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
+            borderRadius: '16px',
+            border: '2px solid #06c755',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            boxShadow: '0 10px 25px -5px rgba(6, 199, 85, 0.2)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-30px',
+              left: '-30px',
+              fontSize: '8rem',
+              opacity: 0.05,
+              userSelect: 'none'
+            }}>💬</div>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', fontWeight: 'bold' }}>
+              持株の決算速報を<span style={{ color: '#06c755' }}>LINE</span>で受け取る
+            </h2>
+            <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6', maxWidth: '600px' }}>
+              仕事中や移動中でも大事なIR発表を見逃しません。無料アカウントを作成してポートフォリオを登録すると、あなたの保有銘柄の「上方修正」や「増配」などの重要なお知らせがLINEに直接届きます。
+            </p>
+            <Link href="/auth/signup" style={{
+              background: '#06c755',
+              color: '#fff',
+              padding: '1rem 2.5rem',
+              borderRadius: '30px',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              fontSize: '1.1rem',
+              boxShadow: '0 4px 15px rgba(6, 199, 85, 0.4)',
+              transition: 'transform 0.2s'
+            }}>
+              ✨ 無料登録してLINE通知を設定する
+            </Link>
+          </section>
 
           {/* Elevated: Latest Revisions Feed (Core Value 1) */}
           <section style={{ marginTop: '3rem', marginBottom: '4rem' }}>

@@ -162,8 +162,8 @@ export default function Header() {
                         </div>
                     ) : (
                         <div className={styles.guestMenu}>
-                            <Link href="/auth/signin" className={styles.loginLink}>Sign In</Link>
-                            <Link href="/auth/signup" className={styles.signupBtn}>Sign Up</Link>
+                            <Link href="/auth/signin" className={styles.loginLink}>ログイン</Link>
+                            <Link href="/auth/signup" className={styles.signupBtn}>無料登録</Link>
                         </div>
                     )}
                 </div>
@@ -185,6 +185,17 @@ export default function Header() {
                     <Link href="/inquiry" onClick={() => setMenuOpen(false)}>お問い合わせ</Link>
                     <Link href="/request" onClick={() => setMenuOpen(false)}>投資家追加リクエスト</Link>
                     <Link href="/privacy" onClick={() => setMenuOpen(false)}>プライバシーポリシー</Link>
+                    
+                    {!user && (
+                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                            <Link href="/auth/signup" onClick={() => setMenuOpen(false)} style={{ background: 'var(--accent)', color: '#000', textAlign: 'center', padding: '0.8rem', borderRadius: '6px', fontWeight: 'bold' }}>
+                                無料登録して通知を受け取る
+                            </Link>
+                            <Link href="/auth/signin" onClick={() => setMenuOpen(false)} style={{ color: '#cbd5e1', textAlign: 'center', padding: '0.5rem' }}>
+                                ログインはこちら
+                            </Link>
+                        </div>
+                    )}
                 </nav>
             </div>
 

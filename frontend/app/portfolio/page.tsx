@@ -452,7 +452,8 @@ export default function PortfolioPage() {
                     shares: finalShares,
                     price: Number(formPrice),
                     date: formDate || null,
-                    accountType: formAccount
+                    accountType: formAccount,
+                    type: formType
                 })
             });
 

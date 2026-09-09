@@ -43,7 +43,7 @@ export default function SignUpPage() {
         const data = await res.json();
 
         if (res.ok) {
-            window.location.href = '/'; // Force reload to update header
+            window.location.href = '/settings?welcome=1'; // Redirect to settings for onboarding
         } else {
             setError(data.error || '登録に失敗しました');
         }

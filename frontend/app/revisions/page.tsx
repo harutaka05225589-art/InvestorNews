@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import Link from 'next/link';
 import styles from './revisions.module.css';
 import AdSenseInFeed from '../../components/ads/AdSenseInFeed';
+import SignupBanner from '../../components/SignupBanner';
 import db from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -228,6 +229,7 @@ export default async function RevisionsPage({
                 <button type="submit" style={{ position: 'absolute', right: '1.2rem', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', color: '#60a5fa', cursor: 'pointer', fontWeight: 'bold' }}>検索</button>
             </form>
 
+            <SignupBanner />
             <div className={styles.tableContainer}>
                 <table className={styles.table}>
                     <thead>
