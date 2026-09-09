@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../hooks/useAuth';
 import Link from 'next/link';
 
-export default function SettingsPage() {
+function SettingsContent() {
     const { user, loading, logout } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -418,5 +418,13 @@ export default function SettingsPage() {
                 &larr; ホームに戻る
             </Link>
         </div >
+    );
+}
+
+export default function SettingsPage() {
+    return (
+        <Suspense fallback={<div style={{ padding: '2rem', color: '#fff', textAlign: 'center' }}>読み込み中...</div>}>
+            <SettingsContent />
+        </Suspense>
     );
 }
