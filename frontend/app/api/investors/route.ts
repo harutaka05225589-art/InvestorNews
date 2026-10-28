@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
+import { verifyAdminBasicPassThrough } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,8 @@ export async function GET(_request: NextRequest) {
 
 // POST / PUT are used from /admin (protected by nginx HTTP Basic Auth on the production server).
 export async function POST(request: NextRequest) {
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     try {
         const body = await request.json();
         const { name, style_description, image_url, twitter_url, aliases } = body;
@@ -54,6 +57,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     try {
         const body = await request.json();
         const { id, name, style_description, image_url, twitter_url, aliases } = body;

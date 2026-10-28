@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
+import { verifyAdminBasicPassThrough } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
@@ -8,6 +9,8 @@ const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
 // Protected by nginx HTTP Basic Auth on the production server.
 export async function POST(request: NextRequest) {
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     try {
         const body = await request.json();
         const { investor_id, title, url, summary, published_at } = body;
@@ -36,6 +39,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');

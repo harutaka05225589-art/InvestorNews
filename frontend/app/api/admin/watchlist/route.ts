@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
+import { verifyAdminBasicPassThrough } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
 // Protected by nginx HTTP Basic Auth on the production server.
-async function checkAdmin() {
-    return 1;
+async function checkAdmin(request: NextRequest) {
+    return verifyAdminBasicPassThrough(request) === null;
 }
 
 // GET: List all watchlist items
 export async function GET(request: NextRequest) {
-    const adminId = await checkAdmin();
+    const adminId = await checkAdmin(request);
     if (!adminId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -37,7 +38,7 @@ export async function GET(request: NextRequest) {
 
 // POST: Add new watchlist item
 export async function POST(request: NextRequest) {
-    const adminId = await checkAdmin();
+    const adminId = await checkAdmin(request);
     if (!adminId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -91,7 +92,7 @@ export async function POST(request: NextRequest) {
 
 // PUT: Update watchlist item
 export async function PUT(request: NextRequest) {
-    const adminId = await checkAdmin();
+    const adminId = await checkAdmin(request);
     if (!adminId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -155,7 +156,7 @@ export async function PUT(request: NextRequest) {
 
 // DELETE: Remove watchlist item
 export async function DELETE(request: NextRequest) {
-    const adminId = await checkAdmin();
+    const adminId = await checkAdmin(request);
     if (!adminId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

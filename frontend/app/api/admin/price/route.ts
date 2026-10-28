@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { execSync } from 'child_process';
+import { verifyAdminBasicPassThrough } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 // Protected by nginx HTTP Basic Auth on the production server.
 export async function GET(request: NextRequest) {
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     const ticker = request.nextUrl.searchParams.get('ticker');
     if (!ticker || !/^[0-9A-Z.]{1,10}$/i.test(ticker)) {
         return NextResponse.json({ error: 'Valid ticker is required' }, { status: 400 });

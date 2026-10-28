@@ -2,13 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
 import { execSync } from 'child_process';
+import { verifyAdminBasicPassThrough } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
 // Protected by nginx HTTP Basic Auth on the production server.
-export async function POST(_request: NextRequest) {
+export async function POST(request: NextRequest) {
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     try {
         const pythonCmd = `cd ../backend && python3 check_admin_watchlist.py --refresh`;
 
