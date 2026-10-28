@@ -18,9 +18,9 @@ def init_db():
     CREATE TABLE IF NOT EXISTS investors (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
-        aliases TEXT,  -- JSON string of aliases
+        aliases TEXT,
         style_description TEXT,
-        profile TEXT,  -- Detailed Wiki-style bio
+        profile TEXT,
         twitter_url TEXT,
         image_url TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -62,19 +62,19 @@ def init_db():
         ticker TEXT NOT NULL,
         company_name TEXT NOT NULL,
         event_date DATE NOT NULL,
-        event_type TEXT, -- e.g. "1Q", "2Q", "3Q", "4Q", "Forecast"
+        event_type TEXT,
         description TEXT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
 
-    # Financial Stats Table (Added 2026-02-08)
+    # Financial Stats Table
     c.execute('''
     CREATE TABLE IF NOT EXISTS financial_stats (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ticker TEXT NOT NULL,
-        period_type TEXT, -- 'annual' or 'quarter'
-        period_end TEXT, -- 'YYYY-MM'
+        period_type TEXT,
+        period_end TEXT,
         sales REAL,
         operating_profit REAL,
         ordinary_profit REAL,
@@ -86,8 +86,8 @@ def init_db():
         UNIQUE(ticker, period_type, period_end)
     )
     ''')
-    
-    # Master Companies Table (Added 2026-02-08)
+
+    # Master Companies Table
     c.execute('''
     CREATE TABLE IF NOT EXISTS companies (
         ticker TEXT PRIMARY KEY,
@@ -97,21 +97,8 @@ def init_db():
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     ''')
-    
-    c.execute('''
-    CREATE TABLE IF NOT EXISTS notifications (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER NOT NULL,
-        alert_id INTEGER, -- Optional, if linked to a specific alert
-        message TEXT NOT NULL,
-        is_read BOOLEAN DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
-        FOREIGN KEY (alert_id) REFERENCES alerts (id) ON DELETE CASCADE
-    )
-    ''')
 
-    # Market Summaries Table (Added Phase 20)
+    # Market Summaries Table
     c.execute('''
     CREATE TABLE IF NOT EXISTS market_summaries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -121,10 +108,9 @@ def init_db():
     )
     ''')
 
-    # Seed Initial Investors
     initial_investors = [
         ("テスタ", '["Testa"]', "デイトレード・スキャルピング中心、数十億運用", "https://twitter.com/testa001"),
-        ("藤本茂(シゲルさん)", '["シゲル"]', "88歳の現役デイトレーダー", ""), 
+        ("藤本茂(シゲルさん)", '["シゲル"]', "88歳の現役デイトレーダー", ""),
         ("弍億貯男", '["2okutameo"]', "割安成長株、サラリーマン投資家", "https://twitter.com/2okutameo"),
         ("テンバガー投資家X", '[]', "中長期の成長株投資", "https://twitter.com/Investor__X"),
         ("かんち", '["kanchi"]', "高配当・優待バリュー株", "https://twitter.com/kanto990"),
@@ -135,7 +121,6 @@ def init_db():
         ("かぶ1000", '["kabu1000"]', "バリュー株・資産バリュー", "https://twitter.com/kabu1000")
     ]
 
-    # Check if investors exist, if not seed
     c.execute('SELECT count(*) FROM investors')
     if c.fetchone()[0] == 0:
         print("Seeding initial investors...")

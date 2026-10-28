@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
-import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
+// Protected by nginx HTTP Basic Auth on the production server.
 export async function POST(request: NextRequest) {
-    const session = await getSession();
-    if (!session || !session.isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
         const body = await request.json();
         const { investor_id, title, url, summary, published_at } = body;
@@ -28,11 +23,11 @@ export async function POST(request: NextRequest) {
         `);
 
         stmt.run(investor_id, title, url, summary || '', published_at || new Date().toISOString());
+        db.close();
 
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Database Error:', error);
-        // Handle unique constraint violation for URL
         if (String(error).includes('UNIQUE constraint failed')) {
             return NextResponse.json({ error: 'News with this URL already exists' }, { status: 409 });
         }
@@ -41,11 +36,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
-    const session = await getSession();
-    if (!session || !session.isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
         const { searchParams } = new URL(request.url);
         const id = searchParams.get('id');
@@ -57,6 +47,7 @@ export async function DELETE(request: NextRequest) {
         const db = new Database(DB_PATH);
         const stmt = db.prepare('DELETE FROM news_items WHERE id = ?');
         const result = stmt.run(id);
+        db.close();
 
         if (result.changes === 0) {
             return NextResponse.json({ error: 'News item not found' }, { status: 404 });

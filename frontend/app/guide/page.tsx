@@ -15,13 +15,13 @@ export default function GuidePage() {
             <section style={{ marginBottom: '3rem' }}>
                 <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>このサイトについて</h2>
                 <p>
-                    「億り人・決算速報」は、上場企業の適時開示情報（TDnet）をAIが自動監視し、
-                    投資家にとって重要な「業績修正」や「増配」情報をリアルタイムで配信するサービスです。
+                    「億り人・決算速報」は、上場企業の適時開示情報（TDnet）や大量保有報告書（EDINET）をAIが自動監視し、
+                    投資家にとって重要な「業績修正」「増配」「自社株買い」情報をリアルタイムで配信するサービスです。アカウント登録不要で、すべての機能を無料でご利用いただけます。
                 </p>
                 <ul style={{ listStyle: 'disc', paddingLeft: '1.5rem', marginTop: '1rem', color: '#cbd5e1' }}>
                     <li style={{ marginBottom: '0.5rem' }}>AIが「ポジティブ（上方修正・増配）」か「ネガティブ」かを即座に判定</li>
                     <li style={{ marginBottom: '0.5rem' }}>難しい決算短信を要約し、修正の「理由」をわかりやすく解説</li>
-                    <li style={{ marginBottom: '0.5rem' }}>LINE連携で、保有株・ウォッチ株の重要ニュースをプッシュ通知</li>
+                    <li style={{ marginBottom: '0.5rem' }}>著名投資家・大株主の保有変動やIRカレンダーを一目でチェック</li>
                 </ul>
             </section>
 
@@ -29,33 +29,27 @@ export default function GuidePage() {
                 <h2 style={{ fontSize: '1.4rem', color: '#38bdf8', marginBottom: '1rem' }}>主な機能と使い方</h2>
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>1. 決算速報（トップページ）</h3>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>1. 決算速報・業績修正</h3>
                     <p>
                         最新の業績修正情報が時系列で表示されます。<br />
-                        <span style={{ color: '#4ade80', fontWeight: 'bold' }}>青色背景</span>は上方修正や増配、
-                        <span style={{ color: '#f87171', fontWeight: 'bold' }}>赤色背景</span>は下方修正や減配を表します。
+                        <span style={{ color: '#4ade80', fontWeight: 'bold' }}>緑・青色</span>は上方修正や増配、
+                        <span style={{ color: '#f87171', fontWeight: 'bold' }}>赤色</span>は下方修正や減配を表します。
                         クリックすると、詳細ページでAIによる解説や元データ（PDF）を確認できます。
                     </p>
                 </div>
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>2. ウォッチリスト管理</h3>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>2. 銘柄ページ・匿名アンケート</h3>
                     <p style={{ color: '#cbd5e1', lineHeight: '1.6', marginBottom: '1rem', fontSize: '0.95rem' }}>
-                        気になる銘柄をウォッチリストに登録できます。「配当管理」機能とも連携しており、登録した銘柄の年間配当予定額や利回りを自動計算してグラフ化します。で可視化できます。<br />
-                        さらに、登録した銘柄に「上方修正」や「増配」が出た際、LINEやメールで通知を受け取ることができます。
+                        上部の検索バーから銘柄コードや企業名を検索すると、過去の業績・配当推移、大株主一覧、AIによる評価をまとめて確認できます。また、ログイン不要・匿名で「強気・弱気」アンケートに投票できます。
                     </p>
                 </div>
 
                 <div style={{ marginBottom: '2rem' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #06c755', paddingLeft: '0.5rem' }}>3. LINE通知連携</h3>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#fff', marginBottom: '0.5rem', borderLeft: '4px solid #38bdf8', paddingLeft: '0.5rem' }}>3. IRカレンダー</h3>
                     <p>
-                        設定ページからLINE公式アカウントと連携することで、自分だけの重要通知を受け取れます。
+                        決算発表スケジュールを週間・月間カレンダーで確認できます。市場区分（プライム・スタンダード・グロース）や決算期（1Q〜本決算）での絞り込みも可能です。
                     </p>
-                    <ul style={{ background: '#1e293b', padding: '1rem', borderRadius: '4px', marginTop: '0.5rem', fontSize: '0.9rem' }}>
-                        <li>🔔 <strong>決算アラート:</strong> 保有株の決算発表日が近づくとお知らせ</li>
-                        <li>🚀 <strong>サプライズ通知:</strong> 保有株に上方修正や自社株買いが出た瞬間に速報</li>
-                        <li>💰 <strong>目標株価到達:</strong> 設定した価格に到達した際にお知らせ</li>
-                    </ul>
                 </div>
             </section>
 

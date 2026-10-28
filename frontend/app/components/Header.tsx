@@ -1,60 +1,13 @@
-'use client'; // Header v2
+'use client'; // Header v3 (account system removed)
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
 import styles from './Header.module.css';
 
 import SearchCompanies from './SearchCompanies'; // Added
 
 export default function Header() {
-    const { user, loading, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
-    const [profileOpen, setProfileOpen] = useState(false);
-    const [notifOpen, setNotifOpen] = useState(false);
-
-    // Notification State
-    const [notifications, setNotifications] = useState<any[]>([]);
-    const [unreadCount, setUnreadCount] = useState(0);
-
-    // Fetch Notifications on load if user exists
-    useEffect(() => {
-        if (user) {
-            fetchNotifications();
-            // Polling every 60 seconds
-            const interval = setInterval(fetchNotifications, 60000);
-            return () => clearInterval(interval);
-        }
-    }, [user]);
-
-    const fetchNotifications = async () => {
-        try {
-            const res = await fetch('/api/notifications');
-            if (res.ok) {
-                const data = await res.json();
-                setNotifications(data.notifications);
-                setUnreadCount(data.unreadCount);
-            }
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
-    const handleNotifClick = async () => {
-        setNotifOpen(!notifOpen);
-        setProfileOpen(false); // Close other menu
-
-        if (!notifOpen && unreadCount > 0) {
-            // Mark all as read when opening
-            try {
-                await fetch('/api/notifications', { method: 'PUT', body: JSON.stringify({}) });
-                setUnreadCount(0); // Optimistic update
-                fetchNotifications(); // Refresh to be sure
-            } catch (e) {
-                console.error(e);
-            }
-        }
-    };
 
     return (
         <header className={styles.header}>
@@ -96,77 +49,9 @@ export default function Header() {
                     <Link href="/calendar">IRカレンダー</Link>
                     <Link href="/revisions">業績修正</Link>
                     <Link href="/revisions/ranking/hot">ランキング</Link>
-                    <Link href="/portfolio">所持銘柄</Link>
-                    <Link href="/alerts">通知リスト</Link>
                     <Link href="/introduction">投資家紹介</Link>
                     <Link href="/request">リクエスト</Link>
                 </nav>
-
-                {/* Auth Indicator (Right) */}
-                <div className={styles.authContainer}>
-                    {loading ? (
-                        <div className={styles.spinner}></div>
-                    ) : user ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                            {/* Notification Bell */}
-                            <div className={styles.notifWrapper}>
-                                <button className={styles.notifBtn} onClick={handleNotifClick} aria-label="Notifications">
-                                    <span>🔔</span>
-                                    <span className={styles.notifText}>お知らせ</span>
-                                    {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
-                                </button>
-
-                                {notifOpen && (
-                                    <div className={styles.notifDropdown}>
-                                        <div className={styles.notifHeader}>お知らせ</div>
-                                        <div className={styles.notifList}>
-                                            {notifications.length === 0 ? (
-                                                <p className={styles.notifEmpty}>お知らせはありません</p>
-                                            ) : (
-                                                notifications.map(n => (
-                                                    <div key={n.id} className={`${styles.notifItem} ${n.is_read ? '' : styles.unread}`}>
-                                                        <p className={styles.notifMsg}>{n.message}</p>
-                                                        <span className={styles.notifDate}>{new Date(n.created_at).toLocaleString()}</span>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* User Menu */}
-                            <div className={styles.userMenu}>
-                                <button
-                                    className={styles.avatarBtn}
-                                    onClick={() => { setProfileOpen(!profileOpen); setNotifOpen(false); }}
-                                    title={user.nickname}
-                                >
-                                    <div className={styles.avatarDot}></div>
-                                </button>
-                                {/* Dropdown for User */}
-                                {profileOpen && (
-                                    <div className={styles.dropdown}>
-                                        <div className={styles.userInfo}>
-                                            <p className={styles.userName}>{user.nickname}</p>
-                                            <p className={styles.userId} style={{ fontFamily: 'monospace' }}>@{user.accountId}</p>
-                                        </div>
-                                        <hr className={styles.divider} />
-                                        <Link href="/settings" className={styles.menuItem}>アカウント編集</Link>
-                                        <button onClick={logout} className={`${styles.menuItem} ${styles.logout}`}>
-                                            サインアウト
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div className={styles.guestMenu}>
-                            <Link href="/auth/signin" className={styles.loginLink}>ログイン</Link>
-                            <Link href="/auth/signup" className={styles.signupBtn}>無料登録</Link>
-                        </div>
-                    )}
-                </div>
             </div>
 
             {/* Slide-out Menu (Overlay) */}
@@ -177,41 +62,16 @@ export default function Header() {
                     <Link href="/calendar" onClick={() => setMenuOpen(false)}>IRカレンダー</Link>
                     <Link href="/revisions" onClick={() => setMenuOpen(false)}>業績修正</Link>
                     <Link href="/revisions/ranking/hot" onClick={() => setMenuOpen(false)}>ランキング</Link>
-                    <Link href="/portfolio" onClick={() => setMenuOpen(false)}>所持銘柄</Link>
-                    <Link href="/alerts" onClick={() => setMenuOpen(false)}>通知リスト</Link>
-                    {/* <Link href="/plans" onClick={() => setMenuOpen(false)}>プラン</Link> */}
                     <Link href="/guide" onClick={() => setMenuOpen(false)}>使い方ガイド</Link>
                     <Link href="/introduction" onClick={() => setMenuOpen(false)}>投資家紹介</Link>
                     <Link href="/inquiry" onClick={() => setMenuOpen(false)}>お問い合わせ</Link>
                     <Link href="/request" onClick={() => setMenuOpen(false)}>投資家追加リクエスト</Link>
                     <Link href="/privacy" onClick={() => setMenuOpen(false)}>プライバシーポリシー</Link>
-                    
-                    {!user && (
-                        <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #334155', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                            <Link href="/auth/signup" onClick={() => setMenuOpen(false)} style={{ background: 'var(--accent)', color: '#000', textAlign: 'center', padding: '0.8rem', borderRadius: '6px', fontWeight: 'bold' }}>
-                                無料登録して通知を受け取る
-                            </Link>
-                            <Link href="/auth/signin" onClick={() => setMenuOpen(false)} style={{ color: '#cbd5e1', textAlign: 'center', padding: '0.5rem' }}>
-                                ログインはこちら
-                            </Link>
-                        </div>
-                    )}
                 </nav>
             </div>
 
             {/* Backdrop for menu */}
             {menuOpen && <div className={styles.backdrop} onClick={() => setMenuOpen(false)}></div>}
-
-            {/* Transparent Backdrop for Dropdowns (Profile/Notif) */}
-            {(profileOpen || notifOpen) && (
-                <div
-                    className={styles.transparentBackdrop}
-                    onClick={() => {
-                        setProfileOpen(false);
-                        setNotifOpen(false);
-                    }}
-                ></div>
-            )}
         </header>
     );
 }

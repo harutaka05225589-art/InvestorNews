@@ -1,52 +1,37 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
-import { getSession } from '@/lib/auth';
+import { verifyAdminBasicPassThrough } from '@/lib/adminAuth';
 
 export const dynamic = 'force-dynamic';
 
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
+// Protected by nginx HTTP Basic Auth on the production server.
 export async function GET(request: NextRequest) {
-    // 1. Check Authentication & Admin Status
-    const session = await getSession();
-
-    // Explicitly cast session to expected type for TS
-    const payload = session as { userId: string | number; nickname: string } | null;
-
-    if (!payload || !payload.userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
+    const blocked = verifyAdminBasicPassThrough(request);
+    if (blocked) return blocked;
     try {
         const db = new Database(DB_PATH, { readonly: true });
 
-        // Retrieve userId from payload (it's directly in the session, not in session.user)
-        const user = db.prepare('SELECT is_admin FROM users WHERE id = ?').get(payload.userId) as { is_admin: number };
+        const safeCount = (table: string) => {
+            try {
+                const row = db.prepare(`SELECT COUNT(*) as count FROM ${table}`).get() as { count: number };
+                return row?.count ?? 0;
+            } catch {
+                return 0;
+            }
+        };
 
-        if (!user || user.is_admin !== 1) {
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-        }
+        const stats = {
+            totalRevisions: safeCount('revisions'),
+            totalCompanies: safeCount('companies'),
+            totalVotes: safeCount('user_votes'),
+            watchlistCount: safeCount('admin_watchlist'),
+        };
+        db.close();
 
-        // 2. Fetch Stats
-        const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
-        const alertCount = db.prepare('SELECT COUNT(*) as count FROM alerts').get() as { count: number };
-        const activeAlertCount = db.prepare('SELECT COUNT(*) as count FROM alerts WHERE is_active = 1').get() as { count: number };
-        const notifCount = db.prepare('SELECT COUNT(*) as count FROM notifications').get() as { count: number };
-
-        // Fetch recent users (Limit 5)
-        const recentUsers = db.prepare('SELECT id, account_id, nickname, email, created_at FROM users ORDER BY created_at DESC LIMIT 10').all();
-
-        return NextResponse.json({
-            stats: {
-                totalUsers: userCount.count,
-                totalAlerts: alertCount.count,
-                activeAlerts: activeAlertCount.count,
-                totalNotifications: notifCount.count
-            },
-            recentUsers
-        });
+        return NextResponse.json({ stats, recentUsers: [] });
     } catch (error) {
         console.error('Database Error:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

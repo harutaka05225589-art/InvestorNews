@@ -103,19 +103,6 @@ export default function Home() {
               <Link href="/revisions" className={styles.heroCta}>
                 <span>👉 本日の業績修正を見る</span>
               </Link>
-              <Link href="/auth/signup" style={{ 
-                background: 'var(--accent)', 
-                color: '#000', 
-                padding: '0.8rem 1.5rem', 
-                borderRadius: '8px', 
-                fontWeight: 'bold', 
-                textDecoration: 'none',
-                display: 'flex',
-                alignItems: 'center',
-                boxShadow: '0 4px 14px 0 rgba(74, 222, 128, 0.39)'
-              }}>
-                <span>🔔 無料で通知を受け取る</span>
-              </Link>
             </div>
           </div>
 
@@ -183,50 +170,6 @@ export default function Home() {
             );
           })()}
 
-          {/* LINE Notification Banner (NEW - UX Improvement) */}
-          <section style={{
-            margin: '2rem 0',
-            padding: '2rem',
-            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-            borderRadius: '16px',
-            border: '2px solid #06c755',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            boxShadow: '0 10px 25px -5px rgba(6, 199, 85, 0.2)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              position: 'absolute',
-              top: '-30px',
-              left: '-30px',
-              fontSize: '8rem',
-              opacity: 0.05,
-              userSelect: 'none'
-            }}>💬</div>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: '#fff', fontWeight: 'bold' }}>
-              持株の決算速報を<span style={{ color: '#06c755' }}>LINE</span>で受け取る
-            </h2>
-            <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6', maxWidth: '600px' }}>
-              仕事中や移動中でも大事なIR発表を見逃しません。無料アカウントを作成してポートフォリオを登録すると、あなたの保有銘柄の「上方修正」や「増配」などの重要なお知らせがLINEに直接届きます。
-            </p>
-            <Link href="/auth/signup" style={{
-              background: '#06c755',
-              color: '#fff',
-              padding: '1rem 2.5rem',
-              borderRadius: '30px',
-              fontWeight: 'bold',
-              textDecoration: 'none',
-              fontSize: '1.1rem',
-              boxShadow: '0 4px 15px rgba(6, 199, 85, 0.4)',
-              transition: 'transform 0.2s'
-            }}>
-              ✨ 無料登録してLINE通知を設定する
-            </Link>
-          </section>
-
           {/* Elevated: Latest Revisions Feed (Core Value 1) */}
           <section style={{ marginTop: '3rem', marginBottom: '4rem' }}>
             <h2 style={{ fontSize: '1.8rem', marginBottom: '1.5rem', borderLeft: '5px solid var(--accent)', paddingLeft: '1rem' }}>
@@ -282,50 +225,6 @@ export default function Home() {
         
         {/* 🔥 UGC Trending Votes Widget */}
         <TrendingVotes />
-
-        {/* 💬 LINE Friend Registration Banner */}
-        <section style={{
-          marginBottom: '1.5rem',
-          padding: '1.5rem',
-          background: 'linear-gradient(135deg, #06c755 0%, #04a847 100%)',
-          borderRadius: '16px',
-          textAlign: 'center',
-          boxShadow: '0 4px 15px rgba(6, 199, 85, 0.3)',
-        }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💬</div>
-          <h3 style={{ color: '#fff', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-            LINE通知で速報を受け取る
-          </h3>
-          <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.85rem', lineHeight: '1.6', marginBottom: '1rem' }}>
-            登録した銘柄の上方修正・増配を<br />
-            LINEで即時お届けします（無料）
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', alignItems: 'center' }}>
-            <a
-              href="https://lin.ee/cMLZ4jD"
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                display: 'inline-block',
-                background: '#fff',
-                color: '#06c755',
-                textDecoration: 'none',
-                padding: '0.7rem 1.5rem',
-                fontWeight: 'bold',
-                borderRadius: '30px',
-                fontSize: '0.95rem',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                transition: 'transform 0.2s',
-                width: 'fit-content',
-              }}
-            >
-              友だち追加する →
-            </a>
-            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
-              追加後、設定画面で連携してください
-            </span>
-          </div>
-        </section>
 
         {/* Dashboard Widget */}
         <section className={styles.widget} style={{ marginBottom: '1.5rem' }}>
@@ -434,7 +333,7 @@ export default function Home() {
               彼らが注目するセクターや銘柄を知ることで、次のトレンドを先読みするヒントが得られます。
             </li>
             <li>
-              <strong>ウォッチリスト＆カレンダー対応:</strong> 気になる銘柄をリストに登録しておけば、決算発表日が一目でわかるIRカレンダー機能と連携・統合して管理できます。
+              <strong>決算・IRカレンダー対応:</strong> 今週・今月の決算発表スケジュールを市場区分や決算期ごとに一覧でき、注目企業の発表日を逃さず把握できます。
             </li>
           </ul>
 

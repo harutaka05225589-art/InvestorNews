@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
         rules: {
             userAgent: '*',
             allow: ['/', '/api/og'],
-            disallow: ['/admin/', '/settings/', '/api/'],
+            disallow: ['/admin/', '/settings/', '/portfolio/', '/alerts/', '/auth/', '/plans/', '/api/'],
         },
         sitemap: 'https://rich-investor-news.com/sitemap.xml',
     };

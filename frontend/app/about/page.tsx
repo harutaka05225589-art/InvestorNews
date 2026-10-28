@@ -9,7 +9,6 @@ export const metadata = {
 export default function AboutPage() {
     return (
         <div style={{ maxWidth: '800px', margin: '3rem auto', padding: '0 1.5rem', color: '#e2e8f0', lineHeight: '1.8' }}>
-            {/* JSON-LD Structured Data for YMYL SEO */}
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{
@@ -58,7 +57,7 @@ export default function AboutPage() {
                 <h2 style={{ fontSize: '1.4rem', color: '#4ade80', marginBottom: '1rem' }}>当サイトの目的</h2>
                 <p>
                     「億り人・決算速報」は、個人投資家が機関投資家に負けないための情報武装ツールです。<br />
-                    膨大な適時開示情報（TDnet）の中から、株価に影響を与える重要なニュースだけを厳選し、AIによる即時分析を加えてお届けします。
+                    膨大な適時開示情報（TDnet）や大量保有報告書（EDINET）の中から、株価に影響を与える重要なニュースだけを厳選し、AIによる即時分析を加えてお届けします。
                 </p>
             </section>
 
@@ -74,18 +73,17 @@ export default function AboutPage() {
                 </div>
 
                 <div style={{ marginBottom: '1.5rem', background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>2. 資産管理＆配当グラフ</h3>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#38bdf8', marginBottom: '0.5rem' }}>2. 著名投資家・大株主の保有変動追跡</h3>
                     <p style={{ fontSize: '0.95rem' }}>
-                        お気に入り銘柄を登録するだけで、注目銘柄の配当金受け取り予定などが一目でわかります。<br />
-                        NISA口座や特定口座の税金計算にも簡易対応しています。
+                        金融庁のEDINETで公開される大量保有報告書（5%ルール報告）や企業の有価証券報告書から、著名個人投資家やファンドの保有状況を自動で集計し、わかりやすく可視化します。
                     </p>
                 </div>
 
                 <div style={{ marginBottom: '1.5rem', background: '#1e293b', padding: '1.5rem', borderRadius: '8px' }}>
-                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#06c755', marginBottom: '0.5rem' }}>3. LINEリアルタイム通知</h3>
+                    <h3 style={{ fontSize: '1.1rem', fontWeight: 'bold', color: '#06c755', marginBottom: '0.5rem' }}>3. アカウント登録不要・完全無料</h3>
                     <p style={{ fontSize: '0.95rem' }}>
-                        あなたの保有銘柄に動き（決算発表、上方修正、増配など）があった瞬間、LINEで通知を受け取れます。<br />
-                        もう重要なニュースを見逃すことはありません。
+                        メールアドレスやSNS連携などの個人情報登録は一切不要です。<br />
+                        すべての業績修正レポート・IRカレンダー・ランキングをそのまま無料でご覧いただけます。
                     </p>
                 </div>
             </section>

@@ -30,12 +30,8 @@ load_dotenv(os.path.join(BASE_DIR, '.env'), override=True)
 DB_PATH = os.path.join(os.path.dirname(BASE_DIR), 'frontend', 'investor_news.db')
 
 def get_admin_line_id():
-    """Get admin's LINE user ID from DB."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    row = conn.execute("SELECT line_user_id FROM users WHERE is_admin = 1 AND line_user_id IS NOT NULL LIMIT 1").fetchone()
-    conn.close()
-    return row['line_user_id'] if row else None
+    """Users table was removed for privacy protection; optional admin LINE ID comes from env only."""
+    return os.getenv("ADMIN_LINE_USER_ID") or None
 
 def check_watchlist(refresh_only=False):
     """

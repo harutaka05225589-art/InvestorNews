@@ -33,56 +33,6 @@ try {
 
 export default db;
 
-// --- Portfolio Helpers ---
-
-export interface PortfolioTransaction {
-    id: number;
-    user_id: number;
-    ticker: string;
-    shares: number;
-    price: number;
-    transaction_date: string | null;
-    account_type: 'nisa' | 'general';
-    created_at: string;
-}
-
-export function addPortfolioTransaction(userId: number, ticker: string, shares: number, price: number, date: string | null, accountType: string) {
-    try {
-        const stmt = db.prepare(`
-            INSERT INTO portfolio_transactions (user_id, ticker, shares, price, transaction_date, account_type)
-            VALUES (?, ?, ?, ?, ?, ?)
-        `);
-        return stmt.run(userId, ticker, shares, price, date, accountType);
-    } catch (e) {
-        console.error("Add transaction error:", e);
-        throw e;
-    }
-}
-
-export function getPortfolioTransactions(userId: number): PortfolioTransaction[] {
-    try {
-        const stmt = db.prepare(`
-            SELECT * FROM portfolio_transactions
-            WHERE user_id = ?
-            ORDER BY transaction_date DESC, created_at DESC
-        `);
-        return stmt.all(userId) as PortfolioTransaction[];
-    } catch (e) {
-        console.error("Get transactions error:", e);
-        return [];
-    }
-}
-
-export function deletePortfolioTransaction(transactionId: number, userId: number) {
-    try {
-        const stmt = db.prepare('DELETE FROM portfolio_transactions WHERE id = ? AND user_id = ?');
-        return stmt.run(transactionId, userId);
-    } catch (e) {
-        console.error("Delete transaction error:", e);
-        throw e;
-    }
-}
-
 // --- Dividend Helpers ---
 
 export interface DividendInfo {
@@ -845,19 +795,18 @@ export function getMarketSummary(dateStr?: string): MarketSummary | null {
     }
 }
 
-// --- UGC Voting System (Pillar 4) ---
+// --- Anonymous Voting System (Pillar 4) ---
 
-export function submitUserVote(userId: string, ticker: string, voteType: 'bull' | 'bear', comment?: string) {
+export function submitUserVote(userId: string, ticker: string, voteType: 'bull' | 'bear') {
     try {
         const stmt = db.prepare(`
-            INSERT INTO user_votes (user_id, ticker, vote_type, comment)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO user_votes (user_id, ticker, vote_type)
+            VALUES (?, ?, ?)
             ON CONFLICT(user_id, ticker) DO UPDATE SET 
                 vote_type = excluded.vote_type,
-                comment = CASE WHEN excluded.comment IS NOT NULL AND excluded.comment != '' THEN excluded.comment ELSE user_votes.comment END,
                 created_at = CURRENT_TIMESTAMP
         `);
-        stmt.run(userId, ticker, voteType, comment || null);
+        stmt.run(userId, ticker, voteType);
     } catch (e) {
         console.error("Submit user vote error:", e);
     }
@@ -865,8 +814,8 @@ export function submitUserVote(userId: string, ticker: string, voteType: 'bull' 
 
 export function getUserVote(userId: string, ticker: string) {
     try {
-        const stmt = db.prepare('SELECT vote_type, comment FROM user_votes WHERE user_id = ? AND ticker = ?');
-        const result = stmt.get(userId, ticker) as { vote_type: 'bull' | 'bear', comment: string | null } | undefined;
+        const stmt = db.prepare('SELECT vote_type FROM user_votes WHERE user_id = ? AND ticker = ?');
+        const result = stmt.get(userId, ticker) as { vote_type: 'bull' | 'bear' } | undefined;
         return result || null;
     } catch (e) {
         console.error("Get user vote error:", e);
@@ -895,23 +844,6 @@ export function getVoteStats(ticker: string) {
     } catch (e) {
         console.error("Get vote stats error:", e);
         return { bull_count: 0, bear_count: 0, total: 0, bull_percent: 0 };
-    }
-}
-
-export function getRecentComments(ticker: string, limit: number = 10) {
-    try {
-        const stmt = db.prepare(`
-            SELECT v.vote_type, v.comment, v.created_at, u.nickname as user_name
-            FROM user_votes v
-            LEFT JOIN users u ON v.user_id = u.id
-            WHERE v.ticker = ? AND v.comment IS NOT NULL AND v.comment != ''
-            ORDER BY v.created_at DESC
-            LIMIT ?
-        `);
-        return stmt.all(ticker, limit) as any[];
-    } catch (e) {
-        console.error("Get recent comments error:", e);
-        return [];
     }
 }
 
@@ -956,75 +888,6 @@ export function getRecentReports(limit: number = 30) {
         return [];
     }
 }
-
-// --- Pillar 3: Viral Portfolio Share ---
-
-export function getUserByAccountId(accountId: string) {
-    try {
-        const stmt = db.prepare('SELECT id, nickname FROM users WHERE account_id = ?');
-        return stmt.get(accountId) as { id: number, nickname: string } | undefined;
-    } catch(e) {
-        console.error(e);
-        return undefined;
-    }
-}
-
-export function getSharedPortfolioData(userId: number) {
-    try {
-        const transactions = getPortfolioTransactions(userId);
-        
-        // Very basic server-side aggregate calculation
-        const map = new Map<string, any>();
-        let totalInvested = 0;
-        let totalNetDividend = 0;
-
-        transactions.forEach(tx => {
-            const key = `${tx.ticker}-${tx.account_type}`;
-            if (!map.has(key)) {
-                const divInfo = getLatestDividend(tx.ticker);
-                map.set(key, {
-                    ticker: tx.ticker,
-                    name: divInfo.companyName || tx.ticker,
-                    accountType: tx.account_type,
-                    totalShares: 0,
-                    averagePrice: 0,
-                    invested: 0,
-                    divAmount: divInfo.amount || 0
-                });
-            }
-            const current = map.get(key);
-            if (tx.shares > 0) {
-                current.totalShares += tx.shares;
-                current.invested += (tx.shares * tx.price);
-                current.averagePrice = current.totalShares > 0 ? current.invested / current.totalShares : 0;
-            } else {
-                current.totalShares -= Math.abs(tx.shares);
-                current.invested = current.totalShares * current.averagePrice;
-                if (current.totalShares <= 0) {
-                    current.totalShares = 0;
-                    current.invested = 0;
-                }
-            }
-        });
-
-        const holdings = Array.from(map.values()).filter(h => h.totalShares > 0);
-        
-        holdings.forEach(h => {
-            totalInvested += h.invested;
-            const grossDiv = h.totalShares * h.divAmount;
-            const taxRate = h.accountType === 'nisa' ? 0 : 0.20315;
-            totalNetDividend += (grossDiv * (1 - taxRate));
-            h.netDividend = grossDiv * (1 - taxRate);
-        });
-
-        return { holdings, totalInvested, totalNetDividend };
-
-    } catch(e) {
-        console.error(e);
-        return { holdings: [], totalInvested: 0, totalNetDividend: 0 };
-    }
-}
-
 
 export function getRevisionHistory(ticker: string, limit: number = 10) {
     try {

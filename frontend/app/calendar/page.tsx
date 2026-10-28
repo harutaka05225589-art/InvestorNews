@@ -2,38 +2,22 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../hooks/useAuth';
 import styles from './calendar.module.css';
 import AdSenseDisplay from '../../components/ads/AdSenseDisplay';
-
-// Mock Data
-const MOCK_EVENTS = [
-    // Jan 2026
-    { id: 1, ticker: "7203", name: "トヨタ自動車", date: "2026-01-15", type: "3Q" },
-    { id: 2, ticker: "6758", name: "ソニーG", date: "2026-01-16", type: "3Q" },
-    { id: 3, ticker: "9984", name: "ソフトバンクG", date: "2026-01-20", type: "Full" },
-    { id: 4, ticker: "6861", name: "キーエンス", date: "2026-01-22", type: "1Q" },
-    // Feb 2026
-    { id: 5, ticker: "6098", name: "リクルートHD", date: "2026-02-01", type: "2Q" },
-];
 
 // Helper to get needed YYYY-MM pairs
 function getRequiredMonths(baseDate: Date, additionalDate?: Date) {
     const months = new Set<string>();
 
-    // Helper to add
     const add = (d: Date) => months.add(`${d.getFullYear()}-${d.getMonth() + 1}`);
 
     // View Month
     add(baseDate);
 
     // Current Week (Today to Today+6)
-    const today = new Date();
-    // Use `additionalDate` if provided, otherwise assume standard week logic
     if (additionalDate) {
         add(additionalDate);
     } else {
-        // Just add today and today+6days
         const weekStart = new Date();
         const weekEnd = new Date();
         weekEnd.setDate(weekEnd.getDate() + 7);
@@ -49,32 +33,15 @@ function getRequiredMonths(baseDate: Date, additionalDate?: Date) {
 
 export default function CalendarPage() {
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
-    const [currentMonth, setCurrentMonth] = useState(new Date()); // State for month view navigation
+    const [currentMonth, setCurrentMonth] = useState(new Date());
     const [events, setEvents] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [filterType, setFilterType] = useState('ALL'); // ALL, 1Q, 2Q, 3Q, 4Q
 
-    // Auth for My Calendar
-    const { user } = useAuth();
-    const [myTickers, setMyTickers] = useState<string[]>([]);
-
-    React.useEffect(() => {
-        if (user) {
-            fetch('/api/alerts')
-                .then(res => res.json())
-                .then(data => {
-                    if (data.alerts) {
-                        setMyTickers(data.alerts.map((a: any) => a.ticker));
-                    }
-                })
-                .catch(err => console.error(err));
-        }
-    }, [user]);
-
     // Memoize week days to avoid re-calc jitter
     const weekDays = React.useMemo(() => {
         const days = [];
-        const today = new Date(); // Browser local time
+        const today = new Date();
         for (let i = 0; i < 7; i++) {
             const d = new Date();
             d.setDate(today.getDate() + i);
@@ -84,7 +51,7 @@ export default function CalendarPage() {
     }, []);
 
     const viewYear = currentMonth.getFullYear();
-    const viewMonth = currentMonth.getMonth(); // 0-indexed
+    const viewMonth = currentMonth.getMonth();
 
     const currentMonthStart = new Date(viewYear, viewMonth, 1);
     const currentMonthEnd = new Date(viewYear, viewMonth + 1, 0);
@@ -101,23 +68,13 @@ export default function CalendarPage() {
         return events.filter(e => {
             if (e.date !== dateStr) return false;
 
-            // Market Filter
             if (marketFilter !== 'ALL') {
                 if (!e.market) return false;
-                // DB stores "Prime", "Standard", "Growth"
-                // Note: Ensure DB values match these EXACTLY. 
-                // If script used normalized names (Prime/Standard/Growth), this is fine.
                 if (e.market !== marketFilter) return false;
-            }
-
-            // My Calendar Filter
-            if (filterType === 'MY') {
-                return myTickers.some(t => String(t).trim() === String(e.ticker).trim());
             }
 
             if (filterType === 'ALL') return true;
 
-            // Normalize Type
             const t = (e.type || "").toLowerCase();
             if (filterType === '1Q' && (t.includes('1q') || t.includes('第1'))) return true;
             if (filterType === '2Q' && (t.includes('2q') || t.includes('第2') || t.includes('中間'))) return true;
@@ -131,11 +88,8 @@ export default function CalendarPage() {
     const [ipoStart, setIpoStart] = useState<string>('');
     const [ipoEnd, setIpoEnd] = useState<string>('');
 
-    // Applied states triggers the fetch
     const [appliedIpoStart, setAppliedIpoStart] = useState<string>('');
     const [appliedIpoEnd, setAppliedIpoEnd] = useState<string>('');
-
-    // ...
 
     // Unified Fetch Logic
     React.useEffect(() => {
@@ -144,7 +98,6 @@ export default function CalendarPage() {
         const fetchAll = async () => {
             setLoading(true);
             try {
-                // Determine which months we need to fetch
                 const promises = required.map(req =>
                     fetch(`/api/calendar?year=${req.year}&month=${req.month}&listing_start=${appliedIpoStart}&listing_end=${appliedIpoEnd}`).then(r => r.json())
                 );
@@ -157,28 +110,13 @@ export default function CalendarPage() {
                         if (data.events) allNewEvents = [...allNewEvents, ...data.events];
                     });
 
-                    // Merge and Deduplicate
                     const eventMap = new Map();
-                    // Just overwrite completely if we are filtering? 
-                    // No, existing logic might rely on accumulation.
-                    // But if we apply a filter, we probably want to CLEAR unrelated events ideally.
-                    // However, `required` only covers viewable months.
-                    // Let's stick to simple merging but maybe we need to clear events if filter changes drastically. 
-                    // For now, let's keep robust merging.
-
                     [...prev, ...allNewEvents].forEach(e => {
                         const key = `${e.ticker}-${e.date}`;
                         if (!eventMap.has(key)) {
                             eventMap.set(key, e);
                         }
                     });
-
-                    // If filter is active, maybe we should filter out events that don't match?
-                    // The backend returns filtered events, but `prev` might have unfiltered ones.
-                    // Ideally setEvents(allNewEvents) if we want to replace.
-                    // But `prev` holds events for other months that might be cached?
-                    // Let's reset events when filter changes? 
-                    // To keep it simple: Let's Just Return New Events if filter changed.
 
                     return Array.from(eventMap.values());
                 });
@@ -190,30 +128,18 @@ export default function CalendarPage() {
             }
         };
 
-        // If filters changed, we might want to clear events to avoid stale data
-        // But let's rely on fetch.
-        // Actually, to ensure the View is correct, we should probably clear events if it's a new filter search.
-        // But `useEffect` flow makes that tricky.
-
-        // Simple fix: Always clear query-based lists? 
-        // Let's just run fetch.
         fetchAll();
-    }, [viewYear, viewMonth, appliedIpoStart, appliedIpoEnd]); // Re-run when APPLIED filters change
+    }, [viewYear, viewMonth, appliedIpoStart, appliedIpoEnd]);
 
     const handleSearch = () => {
-        // Trigger the effect by updating applied states
-        // Also clear current events to ensure we only see filtered results?
         setEvents([]);
         setAppliedIpoStart(ipoStart);
         setAppliedIpoEnd(ipoEnd);
     };
 
-    // ... (Navigation Handlers remain same)
-
-    // Navigation Handlers
     const handlePrevMonth = () => {
         setCurrentMonth(new Date(viewYear, viewMonth - 1, 1));
-        setSelectedDate(null); // Clear selection on switch
+        setSelectedDate(null);
     };
 
     const handleNextMonth = () => {
@@ -221,7 +147,6 @@ export default function CalendarPage() {
         setSelectedDate(null);
     };
 
-    // Helper for Type Color
     const getTypeClass = (type: string, isBg = false) => {
         const t = (type || "").toLowerCase();
         if (t.includes('1q')) return isBg ? styles.bgQ1 : styles.q1;
@@ -232,21 +157,9 @@ export default function CalendarPage() {
     };
 
     return (
-
         <main className={styles.container}>
             <header className={styles.header}>
-                {/* ... existing header ... */}
             </header>
-
-            {/* Guidance for Watchlist */}
-            <div style={{ textAlign: 'center', marginBottom: '1.5rem', background: 'var(--card-bg)', padding: '1rem', borderRadius: '8px', border: '1px dashed var(--accent)' }}>
-                <p style={{ marginBottom: '0.5rem', fontSize: '0.95rem' }}>
-                    <strong>💡 ヒント:</strong> 自分の保有銘柄や監視銘柄だけをカレンダーに表示できます。
-                </p>
-                <Link href="/alerts" style={{ color: 'var(--primary)', fontWeight: 'bold', textDecoration: 'underline' }}>
-                    &rarr; こちらから銘柄を登録する (ウォッチリスト)
-                </Link>
-            </div>
 
             {/* IPO Year Filter */}
             <div className={styles.filterSection} style={{ justifyContent: 'center', marginBottom: '1rem', gap: '0.5rem', alignItems: 'center' }}>
@@ -327,16 +240,6 @@ export default function CalendarPage() {
                     すべて
                 </button>
 
-                {/* My Calendar Tab (Only if logged in) */}
-                {user && (
-                    <button
-                        onClick={() => setFilterType('MY')}
-                        className={`${styles.tabBtnMy} ${filterType === 'MY' ? styles.tabBtnMyActive : ''}`}
-                    >
-                        <span>★ Myカレンダー</span>
-                    </button>
-                )}
-
                 {['1Q', '2Q', '3Q', '4Q'].map(type => (
                     <button
                         key={type}
@@ -369,7 +272,7 @@ export default function CalendarPage() {
                 <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
             </div>
 
-            {/* Monthly View (Continued...) */}
+            {/* Monthly View */}
             <section className={styles.layoutSplit}>
                 <div>
                     <div className={styles.monthHeader}>
@@ -381,17 +284,14 @@ export default function CalendarPage() {
                     </div>
 
                     <div className={styles.calendarGrid}>
-                        {/* Headers */}
                         {['日', '月', '火', '水', '木', '金', '土'].map(d => (
                             <div key={d} className={styles.dayHeader}>{d}</div>
                         ))}
 
-                        {/* Empty cells for start of month */}
                         {Array.from({ length: startDayOfWeek }).map((_, i) => (
                             <div key={`empty-${i}`} className={styles.calendarCell} style={{ background: 'transparent', cursor: 'default' }}></div>
                         ))}
 
-                        {/* Days */}
                         {Array.from({ length: daysInMonth }).map((_, i) => {
                             const d = new Date(viewYear, viewMonth, i + 1);
                             const dateStr = formatDate(d);
@@ -437,7 +337,6 @@ export default function CalendarPage() {
                                             </Link>
                                         </div>
                                     </div>
-                                    {/* Use Background Style for Labels in Details */}
                                     <span className={`${styles.typeLabel} ${getTypeClass(e.type, true)}`}>
                                         {e.type}
                                     </span>
@@ -459,16 +358,15 @@ export default function CalendarPage() {
             <div style={{ marginTop: '3rem' }}>
                 <AdSenseDisplay slotId="6065455983" format="auto" responsive={true} />
             </div>
-        </main >
+        </main>
     );
 }
 
 // Sub-component for Daily Box in Weekly View
 function WeeklyDayBox({ date, events, isToday, getTypeClass }: { date: Date, events: any[], isToday: boolean, getTypeClass: (t: string, b?: boolean) => string }) {
     const [expanded, setExpanded] = useState(false);
-    const LIMIT = 5; // Default items to show
+    const LIMIT = 5;
 
-    // Safety check
     const safeEvents = events || [];
     const showEvents = expanded ? safeEvents : safeEvents.slice(0, LIMIT);
     const hasMore = safeEvents.length > LIMIT;
@@ -484,7 +382,6 @@ function WeeklyDayBox({ date, events, isToday, getTypeClass }: { date: Date, eve
                     <>
                         {showEvents.map(e => (
                             <div key={e.id || `${e.ticker}-${e.date}`} className={styles.eventTag}>
-                                {/* Use Text Color Style for Weekly List */}
                                 <span className={`${styles.eventType} ${getTypeClass(e.type, false)}`}>{e.type}</span>
                                 <Link href={`/stocks/${e.ticker}`} style={{ color: 'inherit', textDecoration: 'none', marginLeft: '0.3rem' }} className="hover:underline">
                                     {e.name}

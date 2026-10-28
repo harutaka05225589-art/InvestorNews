@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Database from 'better-sqlite3';
 import path from 'path';
-import { getSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
 const DB_PATH = path.join(process.cwd(), 'investor_news.db');
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         const db = new Database(DB_PATH, { readonly: true });
 
-        // Fetch investors
-        // Order by ID or explicit order
         const stmt = db.prepare(`
             SELECT id, name, style_description, image_url, aliases 
             FROM investors 
@@ -20,6 +17,7 @@ export async function GET(request: NextRequest) {
         `);
 
         const investors = stmt.all();
+        db.close();
 
         return NextResponse.json({ investors });
 
@@ -29,12 +27,8 @@ export async function GET(request: NextRequest) {
     }
 }
 
+// POST / PUT are used from /admin (protected by nginx HTTP Basic Auth on the production server).
 export async function POST(request: NextRequest) {
-    const session = await getSession();
-    if (!session || !session.isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
         const body = await request.json();
         const { name, style_description, image_url, twitter_url, aliases } = body;
@@ -50,6 +44,7 @@ export async function POST(request: NextRequest) {
         `);
 
         stmt.run(name, style_description || '', image_url || '', twitter_url || '', aliases || '[]');
+        db.close();
 
         return NextResponse.json({ success: true });
     } catch (error) {
@@ -59,11 +54,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function PUT(request: NextRequest) {
-    const session = await getSession();
-    if (!session || !session.isAdmin) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     try {
         const body = await request.json();
         const { id, name, style_description, image_url, twitter_url, aliases } = body;
@@ -80,6 +70,7 @@ export async function PUT(request: NextRequest) {
         `);
 
         const result = stmt.run(name, style_description || '', image_url || '', twitter_url || '', aliases || '[]', id);
+        db.close();
 
         if (result.changes === 0) {
             return NextResponse.json({ error: 'Investor not found' }, { status: 404 });

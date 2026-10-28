@@ -124,7 +124,7 @@ export default function RootLayout({
               <Link href="/about" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>サイトについて</Link>
               <Link href="/about-ai" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>AI解析の仕組み</Link>
               <Link href="/guide" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>使い方ガイド</Link>
-              <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>運営者情報・公式LINE</Link>
+              <Link href="/disclaimer" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>運営者情報・免責事項</Link>
               <Link href="/privacy" style={{ color: 'var(--secondary)', textDecoration: 'none' }}>プライバシーポリシー</Link>
             </div>
             <p style={{ textAlign: 'center', color: 'var(--secondary)', fontSize: '0.8rem' }}>&copy; {new Date().getFullYear()} Investor News. All rights reserved.</p>

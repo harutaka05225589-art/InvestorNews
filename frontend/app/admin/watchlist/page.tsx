@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../hooks/useAuth';
 import styles from '../admin.module.css';
 
 interface WatchlistItem {
@@ -38,7 +37,7 @@ interface WatchlistItem {
 }
 
 export default function AdminWatchlistPage() {
-    const { user, loading } = useAuth();
+    const loading = false;
     const router = useRouter();
     const [items, setItems] = useState<WatchlistItem[]>([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -105,14 +104,8 @@ export default function AdminWatchlistPage() {
     }, []);
 
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                router.push('/auth/signin');
-            } else {
-                fetchItems();
-            }
-        }
-    }, [user, loading, router, fetchItems]);
+        fetchItems();
+    }, [fetchItems]);
 
     const handleFetchPrice = async () => {
         let tickerToFetch = form.ticker;

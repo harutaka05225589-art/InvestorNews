@@ -1,52 +1,9 @@
 import { NextResponse } from 'next/server';
-import db from '@/lib/db';
-import { getSession, logout } from '@/lib/auth';
 
-export async function DELETE() {
-    const session = await getSession();
-    if (!session) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+// Account system removed for privacy protection. This endpoint is permanently disabled.
+const gone = () => NextResponse.json({ error: 'This feature has been discontinued.' }, { status: 410 });
 
-    try {
-        // Transaction to delete everything related to the user
-        const deleteUser = db.transaction(() => {
-            // 1. Delete Alerts (includes memos)
-            db.prepare('DELETE FROM alerts WHERE user_id = ?').run(session.userId);
-
-            // 2. Delete Portfolio Transactions
-            try {
-                db.prepare('DELETE FROM portfolio_transactions WHERE user_id = ?').run(session.userId);
-            } catch (e) {
-                // Table might not exist
-            }
-
-            // 3. Unlink Invitation Codes (keep code but remove user association)
-            try {
-                db.prepare('UPDATE invitation_codes SET used_by_user_id = NULL WHERE used_by_user_id = ?').run(session.userId);
-            } catch (e) {
-                // Table might not exist
-            }
-
-            // 4. Delete Notifications (if table exists, future proofing)
-            try {
-                db.prepare('DELETE FROM notifications WHERE user_id = ?').run(session.userId);
-            } catch (e) {
-                // Table might not exist yet, ignore
-            }
-
-            // 5. Delete User
-            db.prepare('DELETE FROM users WHERE id = ?').run(session.userId);
-        });
-
-        deleteUser();
-
-        // 4. Clear Session
-        await logout();
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("Delete account failed", error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
-}
+export const GET = gone;
+export const POST = gone;
+export const PUT = gone;
+export const DELETE = gone;

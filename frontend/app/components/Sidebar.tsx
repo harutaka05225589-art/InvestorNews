@@ -17,10 +17,6 @@ export default function Sidebar() {
                         <span className={styles.icon}>🏠</span>
                         <span className={styles.label}>ホーム</span>
                     </Link>
-                    <Link href="/portfolio" className={`${styles.item} ${isActive('/portfolio')}`}>
-                        <span className={styles.icon}>💰</span>
-                        <span className={styles.label}>ウォッチリスト</span>
-                    </Link>
                     <Link href="/reports" className={`${styles.item} ${isActive('/reports')}`}>
                         <span className={styles.icon}>⚡</span>
                         <span className={styles.label}>速報リスト</span>
@@ -39,10 +35,6 @@ export default function Sidebar() {
                     <Link href="/introduction" className={`${styles.item} ${isActive('/introduction')}`}>
                         <span className={styles.icon}>👥</span>
                         <span className={styles.label}>投資家紹介</span>
-                    </Link>
-                    <Link href="/alerts" className={`${styles.item} ${isActive('/alerts')}`}>
-                        <span className={styles.icon}>🔔</span>
-                        <span className={styles.label}>登録銘柄</span>
                     </Link>
                 </nav>
 

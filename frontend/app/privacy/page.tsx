@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export default function PrivacyPolicy() {
@@ -7,18 +6,19 @@ export default function PrivacyPolicy() {
             <h1 style={{ fontSize: '2rem', marginBottom: '2rem', borderBottom: '1px solid #334155', paddingBottom: '1rem' }}>プライバシーポリシー</h1>
 
             <section style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>1. 個人情報の取り扱い</h2>
+                <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>1. 個人情報の非取得について</h2>
                 <p>
-                    当サイト「Investor News」（以下、本サービス）では、ユーザーの利便性向上のために、ウォッチリスト情報（保有・关注銘柄など）を入力・保存する機能を提供しています。
-                    これらの情報は、ユーザー自身の情報管理のみに使用され、第三者に提供・販売されることはありません。
+                    当サイト「億り人・決算速報（Investor News）」（以下、本サービス）は、アカウント登録機能を設けておらず、氏名・メールアドレス・電話番号・SNSアカウント識別子・保有資産情報などの個人情報を取得・保存いたしません。
+                </p>
+                <p style={{ marginTop: '0.5rem' }}>
+                    銘柄ページの「強気・弱気」アンケート機能では、同一ブラウザからの重複投票を防ぐ目的でのみランダムな匿名識別子（Cookie）を使用しており、個人を特定する情報は一切含まれません。
                 </p>
             </section>
 
             <section style={{ marginBottom: '2rem' }}>
                 <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--accent)' }}>2. AIによる分析</h2>
                 <p>
-                    本サービスでは、適時開示情報（TDnet）の分析にGoogle Gemini等のAI技術を使用しています。
-                    公開されている企業情報のみを分析対象としており、ユーザーの非公開データ（ウォッチリスト詳細など）をAIの学習データとして送信することはありません。
+                    本サービスでは、適時開示情報（TDnet）および大量保有報告書（EDINET）などの公開企業情報の分析にGoogle Gemini等のAI技術を使用しています。
                 </p>
             </section>
 
@@ -52,7 +52,7 @@ export default function PrivacyPolicy() {
 
             <div style={{ marginTop: '4rem', fontSize: '0.9rem', color: '#94a3b8' }}>
                 <p>制定日: 2025年1月1日</p>
-                <p>改定日: 2026年2月1日</p>
+                <p>改定日: 2026年10月27日</p>
             </div>
         </main>
     );

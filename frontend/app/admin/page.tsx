@@ -1,24 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-// Define types if not already defined
-interface User {
-    id: number;
-    account_id: string; // Added
-    nickname: string;
-    email: string;
-    created_at: string;
-}
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../hooks/useAuth';
 import styles from './admin.module.css';
 
+// Note: Access to /admin and /api/admin/* is protected by nginx HTTP Basic Auth on the production server.
 export default function AdminPage() {
-    const { user, loading } = useAuth();
     const router = useRouter();
     const [activeTab, setActiveTab] = useState('dashboard');
     const [stats, setStats] = useState<any>(null);
-    const [recentUsers, setRecentUsers] = useState<any[]>([]);
     const [investors, setInvestors] = useState<any[]>([]);
     const [newsForm, setNewsForm] = useState({ title: '', url: '', summary: '', investor_id: '' });
     const [investorForm, setInvestorForm] = useState({ id: '', name: '', twitter_url: '', image_url: '', style_description: '', aliases: '' });
@@ -27,15 +17,9 @@ export default function AdminPage() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (!loading) {
-            if (!user) {
-                router.push('/auth/signin');
-            } else {
-                fetchStats();
-                fetchInvestors();
-            }
-        }
-    }, [user, loading, router]);
+        fetchStats();
+        fetchInvestors();
+    }, []);
 
     const fetchStats = async () => {
         try {
@@ -43,9 +27,8 @@ export default function AdminPage() {
             if (res.ok) {
                 const data = await res.json();
                 setStats(data.stats);
-                setRecentUsers(data.recentUsers);
             } else {
-                setError('管理者権限がありません');
+                setError('統計データの取得に失敗しました');
             }
         } catch (e) {
             console.error(e);
@@ -82,7 +65,7 @@ export default function AdminPage() {
                 alert(data.error);
             }
         } catch (e) {
-            alert('工ラーが発生しました');
+            alert('エラーが発生しました');
         }
     };
 
@@ -92,15 +75,7 @@ export default function AdminPage() {
         const method = isEditingInvestor ? 'PUT' : 'POST';
         const body: any = { ...investorForm };
 
-        // Parse aliases from string to array if needed to be safe, but API handles it? 
-        // Actually our API expects `aliases` as string or JSON? 
-        // The DB stores it as JSON string. The API implementation I wrote passes it directly.
-        // Let's ensure we send what standard usage expects. The existing DB content is `["Alias"]`.
-        // So the input should probably be a comma separated string that we can convert to JSON array string on submit?
-        // Or just let user type JSON. Let's try comma separated for UX.
-
         try {
-            // Convert comma separated string to JSON string array
             const aliasArray = investorForm.aliases.split(',').map(s => s.trim()).filter(s => s);
             body.aliases = JSON.stringify(aliasArray);
 
@@ -124,7 +99,6 @@ export default function AdminPage() {
     };
 
     const startEditInvestor = (inv: any) => {
-        // aliases is stored as JSON string `["a", "b"]` from DB.
         let aliasStr = '';
         try {
             const parsed = JSON.parse(inv.aliases || '[]');
@@ -145,7 +119,6 @@ export default function AdminPage() {
         setActiveTab('investors');
     };
 
-    if (loading) return <div className={styles.container}>Loading...</div>;
     if (error) return <div className={styles.container} style={{ color: 'red' }}>{error}</div>;
 
     return (
@@ -183,50 +156,24 @@ export default function AdminPage() {
             {message && <div className={styles.message}>{message}</div>}
 
             {activeTab === 'dashboard' && stats && (
-                <>
-                    <div className={styles.grid}>
-                        <div className={styles.card}>
-                            <h3>総ユーザー数</h3>
-                            <p className={styles.number}>{stats.totalUsers}</p>
-                        </div>
-                        <div className={styles.card}>
-                            <h3>総アラート数</h3>
-                            <p className={styles.number}>{stats.totalAlerts}</p>
-                        </div>
-                        <div className={styles.card}>
-                            <h3>稼働中アラート</h3>
-                            <p className={styles.number}>{stats.activeAlerts}</p>
-                        </div>
-                        <div className={styles.card}>
-                            <h3>送信済み通知</h3>
-                            <p className={styles.number}>{stats.totalNotifications}</p>
-                        </div>
+                <div className={styles.grid}>
+                    <div className={styles.card}>
+                        <h3>業績修正総数</h3>
+                        <p className={styles.number}>{stats.totalRevisions ?? 0}</p>
                     </div>
-
-                    <div className={styles.section}>
-                        <h2>最近登録したユーザー</h2>
-                        <table className={styles.table}>
-                            <thead>
-                                <tr>
-                                    <th>ニックネーム</th>
-                                    <th>Account ID</th>
-                                    <th>Email</th>
-                                    <th>登録日時</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {recentUsers.map((u, i) => (
-                                    <tr key={i}>
-                                        <td>{u.nickname}</td>
-                                        <td style={{ fontFamily: 'monospace' }}>@{u.account_id}</td>
-                                        <td>{u.email}</td>
-                                        <td>{new Date(u.created_at).toLocaleString()}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className={styles.card}>
+                        <h3>登録企業数</h3>
+                        <p className={styles.number}>{stats.totalCompanies ?? 0}</p>
                     </div>
-                </>
+                    <div className={styles.card}>
+                        <h3>匿名投票総数</h3>
+                        <p className={styles.number}>{stats.totalVotes ?? 0}</p>
+                    </div>
+                    <div className={styles.card}>
+                        <h3>監視リスト銘柄数</h3>
+                        <p className={styles.number}>{stats.watchlistCount ?? 0}</p>
+                    </div>
+                </div>
             )}
 
             {activeTab === 'investors' && (

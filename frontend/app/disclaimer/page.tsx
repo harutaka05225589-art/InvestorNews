@@ -48,9 +48,6 @@ export default function DisclaimerPage() {
                                     <a href="https://x.com/stock_calendar" target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                         <span>𝕏 (旧Twitter):</span> @stock_calendar
                                     </a>
-                                    <a href="https://lin.ee/cMLZ4jD" target="_blank" rel="noopener noreferrer" style={{ color: '#06c755', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
-                                        <span>LINE:</span> 公式アカウント
-                                    </a>
                                 </div>
                             </td>
                         </tr>
